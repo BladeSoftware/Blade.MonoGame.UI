@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>ef9cc630-77c8-49f9-93e0-fc736dd3daf6</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>BladeGame.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\BladeWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\ColumnDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\Converter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\GridLength.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\GridMeasurer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\GridMeasurerSizing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\GridUnitType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\HorizontalAlignmentType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\LayoutParams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\RenderParams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\Thickness.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\UIHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\RowDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\Size.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\VerticalAlignmentType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Components\Visibility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Container.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Events\UIFocusChangedEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Events\UIHoverChangedEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\UIComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Controls\Border.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Controls\Button.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Control.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Controls\Grid.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Controls\Label.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Controls\Panel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Controls\Rectangle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Controls\Templates\ButtonTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Controls\TextBox.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Quad2D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Quad.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Binding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\Renderer\UIRenderer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\UIContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BladeUI\UIEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Physics\Colliders\CircleCollider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Physics\Colliders\Collider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Physics\Colliders\QuadColider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Physics\Colliders\RectangleColider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Primitives\Primitives2D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Primitives\Quad.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteAnimations\SpriteAnimation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteAnimations\Frame.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteAnimations\SpriteAnimationSequence.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteAnimations\StoryBoard.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteAnimations\StoryBoardItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteAnimations\StoryBoardItemBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteAnimations\StoryBoardItemRedirect.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Collections\ConcurrentSet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\RandomExt.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GameBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GameEntity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GameHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GameInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GameServices.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GameView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MathHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sprites\MomentumSprite2D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sprites\Sprite2D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sprites\SpriteBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sprites\SpriteTexture2D.cs" />
+  </ItemGroup>
+</Project>
