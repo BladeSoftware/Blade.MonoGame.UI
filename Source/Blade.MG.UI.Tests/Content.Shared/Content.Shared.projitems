@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>fb798430-5211-4b9b-b59a-c2fde47466f3</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Content.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory).config\dotnet-tools.json" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Fonts\Poppins-SemiBold.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Fonts\Raleway-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\arrow_right_small - Copy.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\arrow_right_small.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\arrow_up_small - Copy.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\arrow_up_small.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\background - large.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\blade_logo_1116x540.jpg" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\ceres_asteroid.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\Kelsey\Kelsey1.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\Kelsey\Kelsey2.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\Kelsey\Kelsey_Cloud.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\Kelsey\Kelsey_Sun.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_collision_flat.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_dive_1.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_dive_2.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_dive_3.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_dive_4.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_dive_5.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_dive_6.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_para_1.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_para_2.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_para_3.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_para_4.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_para_5.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_para_6.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_para_7.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_static_1.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_static_2.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_static_3.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_up_down_down_3.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_up_down_mid_2.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_up_down_up_1.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_yaw_left_1.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_yaw_mid_2.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\lash\lash_freefall_yaw_right_3.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\Pong\pong_ball_512x512.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\Pong\pong_paddle_128x512.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Models\checkered_red_blue_64.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\circle_solid.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\circle.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\paper.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\pixel.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\spaceship1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\star.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\background.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\yellow.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="$(MSBuildThisFileDirectory)Content\BoundingVolumes\cube.fbx" />
+    <None Include="$(MSBuildThisFileDirectory)Content\BoundingVolumes\sphere.fbx" />
+    <None Include="$(MSBuildThisFileDirectory)Content\SpriteFonts\Arial-10.spritefont" />
+    <None Include="$(MSBuildThisFileDirectory)Content\SpriteFonts\Arial-11.spritefont" />
+    <None Include="$(MSBuildThisFileDirectory)Content\SpriteFonts\Arial-12.spritefont" />
+    <None Include="$(MSBuildThisFileDirectory)Content\SpriteFonts\Arial-14.spritefont" />
+    <None Include="$(MSBuildThisFileDirectory)Content\SpriteFonts\Arial-8.spritefont" />
+    <None Include="$(MSBuildThisFileDirectory)Content\SpriteFonts\Default.spritefont" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Models\axis.fbx" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Models\biplane.fbx" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Models\block.fbx" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Models\red-white-grid.fbx" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Models\scene1.fbx" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Sounds\battle003.wma">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Content\Sounds\scifi002.wma">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Images\gradient1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Content\UI\pixel.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Content\Content.mgcb" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Models\untitled.fbx" />
+  </ItemGroup>
+  <ItemGroup>
+    <MonoGameContentReference Include="..\Content.Shared\Content\Content.mgcb" />
+  </ItemGroup>
+</Project>

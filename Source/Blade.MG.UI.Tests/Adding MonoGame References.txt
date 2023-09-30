@@ -1,0 +1,30 @@
+
+Create a new Universal Windows project: Asteroids.MonoGame
+Crate a new Shared Project            : Asteroids.Shared
+
+In the UWP project
+------------------
+  - Add a reference to the Shared Project
+  - add a NuGet reference to 'MonoGame.Framework.WindowsUniversal'
+  - Change the 'Assembly Name' and 'Default namespace'  to Game1
+
+
+
+The Solution should look something like
+----------------------------------------
+Asteroids.MonoGame (Solution)
+  - Asteroids.Shared
+  - Asteroids.UWP
+
+
+
+
+
+--=-=-=-=-=-=-=-=-=-=-=-=
+
+
+    Create a Shared Project "GameContent"
+    just like any monogame project, add a "Content" folder , add the mgcb file and the asset files. Using the property panel, set any file that needs to be copied to the output folder to "Copy If Newer"
+    As mentionned above make sure the Content.mgcb file is set the build action to "MonogameContentReference "
+    From your regular C# projects, "Add Reference...", then you'll see a Tab "Shared Project" and select the "GameContent" project.
+
