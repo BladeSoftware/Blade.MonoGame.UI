@@ -1,4 +1,4 @@
-﻿namespace Blade.UI.Components
+﻿namespace Blade.MG.UI.Components
 {
     internal class GridMeasurer
     {
@@ -53,7 +53,7 @@
                 desiredSize -= existingSize;
                 if (desiredSize >= 0)
                 {
-                    float delta = desiredSize / (float)span;
+                    float delta = desiredSize / span;
                     for (int i = origin; i < origin + span; i++)
                     {
                         if (float.IsNaN(Measurables[i].CalcSize))
@@ -148,7 +148,7 @@
                     }
 
                     //measurable.CalcSize = (measurable.Size.Value / totalWeight) * availableSize;
-                    measurable.CalcSize = (float)Math.Round((measurable.Size.Value / totalWeight) * availableSize, 0);
+                    measurable.CalcSize = (float)Math.Round(measurable.Size.Value / totalWeight * availableSize, 0);
 
                     sizeUsed += measurable.CalcSize;
                 }

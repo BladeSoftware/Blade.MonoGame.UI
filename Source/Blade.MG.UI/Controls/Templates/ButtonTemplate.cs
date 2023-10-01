@@ -1,8 +1,8 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls.Templates
+namespace Blade.MG.UI.Controls.Templates
 {
     public class ButtonTemplate : Control
     {
@@ -35,8 +35,8 @@ namespace Blade.UI.Controls.Templates
         {
             button = Parent as Button;
 
-            this.HorizontalAlignment = HorizontalAlignmentType.Stretch;
-            this.VerticalAlignment = VerticalAlignmentType.Stretch;
+            HorizontalAlignment = HorizontalAlignmentType.Stretch;
+            VerticalAlignment = VerticalAlignmentType.Stretch;
 
             //this.HorizontalAlignment = button.HorizontalAlignment;
             //this.VerticalAlignment = button.VerticalAlignment;
@@ -90,7 +90,7 @@ namespace Blade.UI.Controls.Templates
 
         public override async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
-            if (uiEvent.Hover == false || this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.Hover == false || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await base.HandleHoverChangedAsync(uiWindow, uiEvent);
             }

@@ -1,7 +1,7 @@
-﻿using Blade.UI.Components;
+﻿using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     public class Control : UIComponentDrawable
     {

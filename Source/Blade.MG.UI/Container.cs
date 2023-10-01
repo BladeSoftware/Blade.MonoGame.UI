@@ -1,7 +1,7 @@
-﻿using Blade.UI.Components;
+﻿using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     //    [Serializable()]
     public class Container : UIComponentDrawable
@@ -19,17 +19,17 @@ namespace Blade.UI
             item.DataContext = dataContext ?? DataContext ?? parent?.DataContext;
 
             item.Parent = parent ?? this;
-            ((List<UIComponent>)Children).Add(item);
+            Children.Add(item);
         }
 
         public bool RemoveChild(UIComponent item)
         {
-            return ((List<UIComponent>)Children).Remove(item);
+            return Children.Remove(item);
         }
 
         public int RemoveAllChildren()
         {
-            return ((List<UIComponent>)Children).RemoveAll(p => true);
+            return Children.RemoveAll(p => true);
         }
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)

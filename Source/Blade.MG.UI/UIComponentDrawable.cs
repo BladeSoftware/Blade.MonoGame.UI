@@ -1,8 +1,9 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Theming;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Theming;
+using Blade.MG.UI;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     public abstract class UIComponentDrawable : UIComponentEvents
     {

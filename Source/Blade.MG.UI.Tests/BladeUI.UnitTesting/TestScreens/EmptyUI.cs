@@ -1,4 +1,4 @@
-﻿using Blade.UI;
+﻿using Blade.MG.UI;
 using Microsoft.Xna.Framework;
 
 namespace BladeUI.UnitTesting

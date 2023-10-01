@@ -1,7 +1,8 @@
-﻿using Microsoft.VisualStudio.Threading;
+﻿using Blade.MG.UI;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class ModalBase : UIWindow
     {

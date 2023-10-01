@@ -4,6 +4,20 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>true</ImplicitUsings>
     <RootNamespace>Blade.MG.UI</RootNamespace>
+    
+    <PackageId>BladeSoftware.MonoGame.UI</PackageId>
+    <Title>WPF Inspired MonoGame UI Library </Title>
+    <PackageVersion>1.0.1-alpha</PackageVersion>
+    <Company>Blade Software</Company>
+    <Description>WPF Inspired MonoGame UI Library </Description>
+    <Copyright>Copyright (c) Blade Software 2023</Copyright>
+    <RepositoryUrl>https://github.com/BladeSoftware/Blade.MonoGame.UI</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Blade Software; MonoGame</PackageTags>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Authors>Blade Software</Authors>
+    <PackageReadmeFile>README.md</PackageReadmeFile>    
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,15 +27,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FontStashSharp.MonoGame" Version="1.2.8" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.4.33" />
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" ExcludeAssets="runtime" />
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Blade.MG.Core">
-      <HintPath>..\..\..\Blade.MonoGame.Core\Source\Blade.MG.Core\bin\Debug\net7.0\Blade.MG.Core.dll</HintPath>
-    </Reference>
+    <PackageReference Include="BladeSoftware.MonoGame.Core" Version="1.0.1-alpha" />
+    <PackageReference Include="FontStashSharp.MonoGame" Version="1.2.8" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.4.33" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" ExcludeAssets="runtime" />
   </ItemGroup>
 
 </Project>

@@ -1,11 +1,13 @@
 ﻿using Blade.MG.Primitives;
-using Blade.UI.Theming;
+using Blade.MG.UI;
+using Blade.MG.UI.Components;
+using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     public enum UITaskType
     {
@@ -261,7 +263,7 @@ namespace Blade.UI
             // Arrange layout
             foreach (var ui in uiWindows)
             {
-                if (ui.Value.Visible.Value == Components.Visibility.Visible)
+                if (ui.Value.Visible.Value == Visibility.Visible)
                 {
                     ui.Value.PerformLayout(gameTime);
                 }
@@ -282,7 +284,7 @@ namespace Blade.UI
 
                     foreach (var ui in uiWindows)
                     {
-                        if (ui.Value.Visible.Value == Components.Visibility.Visible)
+                        if (ui.Value.Visible.Value == Visibility.Visible)
                         {
                             ui.Value.RenderLayout(gameTime);
                             //ui.RenderLayout(graphicsDevice.Viewport.Bounds);

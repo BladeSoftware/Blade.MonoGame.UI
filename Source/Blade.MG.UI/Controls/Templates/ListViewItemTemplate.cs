@@ -1,9 +1,9 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Blade.UI.Controls.Templates
+namespace Blade.MG.UI.Controls.Templates
 {
     public class ListViewItemTemplate : Control
     {
@@ -39,10 +39,10 @@ namespace Blade.UI.Controls.Templates
             //this.HorizontalAlignment = Parent.HorizontalContentAlignment;
             //this.VerticalAlignment = Parent.VerticalContentAlignment;
 
-            this.HorizontalAlignment = HorizontalAlignmentType.Stretch;
-            this.VerticalAlignment = VerticalAlignmentType.Stretch;
-            this.HorizontalContentAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment;
-            this.VerticalContentAlignment = VerticalAlignmentType.Center; //Parent.VerticalContentAlignment;
+            HorizontalAlignment = HorizontalAlignmentType.Stretch;
+            VerticalAlignment = VerticalAlignmentType.Stretch;
+            HorizontalContentAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment;
+            VerticalContentAlignment = VerticalAlignmentType.Center; //Parent.VerticalContentAlignment;
 
             label1 = new Label()
             {

@@ -1,4 +1,4 @@
-﻿namespace Blade.UI.Models
+﻿namespace Blade.MG.UI.Models
 {
     public class MenuOption : IMenuOption
     {

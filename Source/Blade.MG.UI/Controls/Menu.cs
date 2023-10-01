@@ -1,10 +1,10 @@
 ﻿using Blade.MG.Input;
-using Blade.UI.Components;
-using Blade.UI.Events;
-using Blade.UI.Models;
+using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
+using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class Menu : ModalBase
     {

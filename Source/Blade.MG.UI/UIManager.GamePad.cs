@@ -1,7 +1,8 @@
 ﻿using Blade.MG.Input;
+using Blade.MG.UI;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     public partial class UIManager //: GameEntity
     {

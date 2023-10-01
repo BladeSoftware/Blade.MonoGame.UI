@@ -1,5 +1,5 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Controls;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Controls;
 using Examples.UI.Components;
 
 namespace Examples.UI.HelpPages

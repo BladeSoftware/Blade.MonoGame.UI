@@ -1,6 +1,6 @@
 ﻿using FontStashSharp;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     /// <summary>
     /// Service to manage multiple registered fonts
@@ -36,7 +36,7 @@ namespace Blade.UI
         public SpriteFontBase GetFontOrDefault(string fontName, float? size)
         {
             fontName = string.IsNullOrWhiteSpace(fontName) ? DefaultFontName : fontName;
-            size = (size == null || size <= 0) ? DefaultFontSize : size;
+            size = size == null || size <= 0 ? DefaultFontSize : size;
 
             return GetFont(fontName, size.Value);
         }

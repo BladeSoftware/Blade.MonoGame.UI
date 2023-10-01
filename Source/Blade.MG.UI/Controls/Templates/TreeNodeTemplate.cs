@@ -1,9 +1,9 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Events;
-using Blade.UI.Models;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
+using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls.Templates
+namespace Blade.MG.UI.Controls.Templates
 {
     public class TreeNodeTemplate : Border
     {
@@ -39,10 +39,10 @@ namespace Blade.UI.Controls.Templates
             //button = Parent as Button;
             ITreeNode treeNode = (ITreeNode)DataContext;
 
-            this.HorizontalAlignment = HorizontalAlignmentType.Stretch; //Parent.HorizontalAlignment;
-            this.VerticalAlignment = VerticalAlignmentType.Stretch; //Parent.VerticalAlignment;
-            this.HorizontalContentAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment;
-            this.VerticalContentAlignment = VerticalAlignmentType.Center; //Parent.VerticalContentAlignment;
+            HorizontalAlignment = HorizontalAlignmentType.Stretch; //Parent.HorizontalAlignment;
+            VerticalAlignment = VerticalAlignmentType.Stretch; //Parent.VerticalAlignment;
+            HorizontalContentAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment;
+            VerticalContentAlignment = VerticalAlignmentType.Center; //Parent.VerticalContentAlignment;
 
             //button1 = new Button()
             //{
@@ -67,7 +67,7 @@ namespace Blade.UI.Controls.Templates
                 Width = 16,
                 Height = 32,
                 //Text = ">",
-                Text = (treeNode?.Children != null && treeNode?.Children?.Count > 0) ? ">" : " ",
+                Text = treeNode?.Children != null && treeNode?.Children?.Count > 0 ? ">" : " ",
                 TextColor = Theme.Tertiary, //Color.Black,
                 Background = Color.Transparent,
                 Margin = new Thickness(10, 0, 0, 0),
@@ -126,7 +126,7 @@ namespace Blade.UI.Controls.Templates
             //    uiEvent.Handled = true;
             //};
 
-            this.OnDoubleClick = (sender, uiEvent) =>
+            OnDoubleClick = (sender, uiEvent) =>
             {
                 treeNode.IsExpanded = !treeNode.IsExpanded;
                 uiEvent.Handled = true;
@@ -188,7 +188,7 @@ namespace Blade.UI.Controls.Templates
 
             // Normal State
             //((StackPanel)Content).Background = Color.Transparent;
-            this.Background = Color.Transparent;
+            Background = Color.Transparent;
 
             if (label1 == null)
             {
@@ -215,31 +215,31 @@ namespace Blade.UI.Controls.Templates
             //    this.Background = Color.Transparent;
             //}
 
-            this.BorderThickness = 0;
-            this.BorderColor = Theme.Outline; // Color.MidnightBlue;
-            this.CornerRadius = 5;
+            BorderThickness = 0;
+            BorderColor = Theme.Outline; // Color.MidnightBlue;
+            CornerRadius = 5;
 
             label1.TextColor = Theme.OnPrimaryContainer;
 
             if (treeNode.IsSelected && MouseHover.Value)
             {
-                this.Background = Theme.SecondaryContainer; //Color.SlateBlue;
-                this.BorderColor = Theme.Tertiary; // Color.MidnightBlue;
-                this.BorderThickness = 2;
+                Background = Theme.SecondaryContainer; //Color.SlateBlue;
+                BorderColor = Theme.Tertiary; // Color.MidnightBlue;
+                BorderThickness = 2;
 
                 label1.TextColor = Theme.OnSecondaryContainer;
             }
             else if (treeNode.IsSelected)
             {
-                this.Background = Theme.SecondaryContainer; // Color.MediumSlateBlue;
-                this.BorderThickness = 2;
+                Background = Theme.SecondaryContainer; // Color.MediumSlateBlue;
+                BorderThickness = 2;
                 label1.TextColor = Theme.OnSecondaryContainer;
 
             }
             else if (MouseHover.Value)
             {
-                this.BorderColor = Theme.Tertiary; // Color.MidnightBlue;
-                this.BorderThickness = 2;
+                BorderColor = Theme.Tertiary; // Color.MidnightBlue;
+                BorderThickness = 2;
             }
 
         }

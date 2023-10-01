@@ -1,9 +1,9 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Blade.UI.Controls.Templates
+namespace Blade.MG.UI.Controls.Templates
 {
     public class CheckBoxTemplate : Control
     {
@@ -113,7 +113,7 @@ namespace Blade.UI.Controls.Templates
             int boxHeight = boxWidth;
             int padding = 4;
 
-            boxRect = new Rectangle { X = FinalRect.X + 2, Y = (FinalRect.Top + FinalRect.Bottom) / 2 - (boxHeight / 2), Width = boxWidth, Height = boxHeight };
+            boxRect = new Rectangle { X = FinalRect.X + 2, Y = (FinalRect.Top + FinalRect.Bottom) / 2 - boxHeight / 2, Width = boxWidth, Height = boxHeight };
 
             //if (img == null)
             //{

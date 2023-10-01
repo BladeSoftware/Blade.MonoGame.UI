@@ -1,4 +1,4 @@
-﻿namespace Blade.UI.Components
+﻿namespace Blade.MG.UI.Components
 {
     public enum StretchType
     {

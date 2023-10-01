@@ -1,4 +1,4 @@
-﻿namespace Blade.UI
+﻿namespace Blade.MG.UI
 {
     public class UIEvent
     {

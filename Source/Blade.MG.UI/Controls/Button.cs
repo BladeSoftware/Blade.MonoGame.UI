@@ -1,8 +1,8 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Controls.Templates;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Controls.Templates;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class Button : Control
     {

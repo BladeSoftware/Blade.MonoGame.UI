@@ -1,8 +1,8 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Models;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls.Dialogs
+namespace Blade.MG.UI.Controls.Dialogs
 {
     public class MessageDialog : DialogBase
     {
@@ -61,7 +61,7 @@ namespace Blade.UI.Controls.Dialogs
         {
             base.LoadContent();
 
-            BuildScreen(base.Game);
+            BuildScreen(Game);
         }
 
         public void BuildScreen(Game game)

@@ -1,7 +1,7 @@
-﻿using Blade.UI.Components;
+﻿using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class Panel : Container
     {
@@ -28,7 +28,7 @@ namespace Blade.UI.Controls
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
-            if (this.Visible.Value != Visibility.Visible)
+            if (Visible.Value != Visibility.Visible)
             {
                 return;
             }

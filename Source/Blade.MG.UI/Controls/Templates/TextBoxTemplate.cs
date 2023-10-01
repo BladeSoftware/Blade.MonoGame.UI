@@ -1,7 +1,7 @@
-﻿using Blade.UI.Events;
+﻿using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls.Templates
+namespace Blade.MG.UI.Controls.Templates
 {
     public class TextBoxTemplate : Control
     {
@@ -34,10 +34,10 @@ namespace Blade.UI.Controls.Templates
         {
             textBox = Parent as TextBox;
 
-            this.HorizontalAlignment = Parent.HorizontalAlignment;
-            this.VerticalAlignment = Parent.VerticalAlignment;
-            this.HorizontalContentAlignment = Parent.HorizontalContentAlignment;
-            this.VerticalContentAlignment = Parent.VerticalContentAlignment;
+            HorizontalAlignment = Parent.HorizontalAlignment;
+            VerticalAlignment = Parent.VerticalAlignment;
+            HorizontalContentAlignment = Parent.HorizontalContentAlignment;
+            VerticalContentAlignment = Parent.VerticalContentAlignment;
 
             label1 = new Label()
             {

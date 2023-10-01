@@ -1,9 +1,9 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using System.Runtime.InteropServices;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class ScrollPanel : Panel
     {
@@ -129,7 +129,7 @@ namespace Blade.UI.Controls
             Rectangle childBounds = Children.FirstOrDefault()?.FinalRect ?? Rectangle.Empty;
 
             //foreach (var child in Children)
-            foreach (var child in CollectionsMarshal.AsSpan<UIComponent>((List<UIComponent>)Children))
+            foreach (var child in CollectionsMarshal.AsSpan(Children))
             {
                 childBounds = Rectangle.Union(childBounds, child.FinalRect);
             }
@@ -171,7 +171,7 @@ namespace Blade.UI.Controls
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
-            if (this.Visible.Value != Visibility.Visible)
+            if (Visible.Value != Visibility.Visible)
             {
                 return;
             }

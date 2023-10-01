@@ -1,10 +1,11 @@
 ﻿using Blade.MG.Input;
 using Blade.MG.Input.Keyboards;
-using Blade.UI.Events;
+using Blade.MG.UI;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     public partial class UIManager //: GameEntity
     {

@@ -1,10 +1,10 @@
-﻿using Blade.UI.Renderer;
-using Blade.UI.Theming;
+﻿using Blade.MG.UI.Renderer;
+using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     public class UIContext
     {

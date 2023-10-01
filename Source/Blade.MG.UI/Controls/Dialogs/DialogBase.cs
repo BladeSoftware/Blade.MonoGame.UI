@@ -1,6 +1,6 @@
-﻿using Blade.UI.Models;
+﻿using Blade.MG.UI.Models;
 
-namespace Blade.UI.Controls.Dialogs
+namespace Blade.MG.UI.Controls.Dialogs
 {
     public class DialogBase : ModalBase
     {

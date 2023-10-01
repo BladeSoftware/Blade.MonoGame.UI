@@ -1,6 +1,6 @@
-﻿using Blade.UI.Events;
+﻿using Blade.MG.UI.Events;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     /// <summary>
     /// Handle Common Events for UI Components
@@ -35,7 +35,7 @@ namespace Blade.UI
 
         public override async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            if (this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await base.HandleClickEventAsync(uiWindow, uiEvent);
 
@@ -48,7 +48,7 @@ namespace Blade.UI
 
         public override async Task HandleDoubleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            if (this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await base.HandleDoubleClickEventAsync(uiWindow, uiEvent);
                 OnDoubleClick?.Invoke(this, uiEvent);
@@ -58,7 +58,7 @@ namespace Blade.UI
 
         public override async Task HandleRightClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            if (this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await base.HandleRightClickEventAsync(uiWindow, uiEvent);
                 OnRightClick?.Invoke(this, uiEvent);
@@ -68,7 +68,7 @@ namespace Blade.UI
 
         public override async Task HandleMouseDownEventAsync(UIWindow uiWindow, UIMouseDownEvent uiEvent)
         {
-            if (this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await base.HandleMouseDownEventAsync(uiWindow, uiEvent);
                 OnMouseDown?.Invoke(this, uiEvent);
@@ -78,7 +78,7 @@ namespace Blade.UI
 
         public override async Task HandleMouseUpEventAsync(UIWindow uiWindow, UIMouseUpEvent uiEvent)
         {
-            if (uiEvent.ForcePropogation || this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.ForcePropogation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await base.HandleMouseUpEventAsync(uiWindow, uiEvent);
                 OnMouseUp?.Invoke(this, uiEvent);
@@ -88,7 +88,7 @@ namespace Blade.UI
 
         public override async Task HandleMouseWheelScrollEventAsync(UIWindow uiWindow, UIMouseWheelScrollEvent uiEvent)
         {
-            if (this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await base.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent);
                 OnMouseWheelScroll?.Invoke(this, uiEvent);
@@ -108,7 +108,7 @@ namespace Blade.UI
 
         public override async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
-            if (uiEvent.ForcePropogation || this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.ForcePropogation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await base.HandleHoverChangedAsync(uiWindow, uiEvent);
                 OnHoverChanged?.Invoke(uiEvent);

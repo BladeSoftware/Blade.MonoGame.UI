@@ -1,9 +1,9 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Events;
-using Blade.UI.Models;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
+using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls.Templates
+namespace Blade.MG.UI.Controls.Templates
 {
     public class MenuItemTemplate : Control
     {
@@ -68,7 +68,7 @@ namespace Blade.UI.Controls.Templates
 
         public override async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
-            if (uiEvent.Hover == false || this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.Hover == false || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await base.HandleHoverChangedAsync(uiWindow, uiEvent);
             }

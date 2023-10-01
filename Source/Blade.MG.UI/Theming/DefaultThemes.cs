@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Theming
+namespace Blade.MG.UI.Theming
 {
     public static class DefaultThemes
     {

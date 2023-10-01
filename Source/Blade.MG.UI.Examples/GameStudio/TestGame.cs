@@ -1,5 +1,5 @@
 ﻿using Blade.MG.Input;
-using Blade.UI;
+using Blade.MG.UI;
 using Examples.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;

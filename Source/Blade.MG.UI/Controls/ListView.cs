@@ -1,10 +1,10 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Controls.Templates;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Controls.Templates;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using System.Runtime.InteropServices;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class ListView : StackPanel
     {
@@ -34,7 +34,7 @@ namespace Blade.UI.Controls
             var desiredize = DesiredSize;
 
             //foreach (var child in Children)
-            foreach (var child in CollectionsMarshal.AsSpan<UIComponent>((List<UIComponent>)Children))
+            foreach (var child in CollectionsMarshal.AsSpan(Children))
             {
                 child.Measure(context, ref desiredize, ref parentMinMax);
 
@@ -94,7 +94,7 @@ namespace Blade.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            frameID = (frameID % 2000000) + 1;
+            frameID = frameID % 2000000 + 1;
 
             base.Arrange(context, layoutBounds, parentLayoutBounds);
 
@@ -169,13 +169,13 @@ namespace Blade.UI.Controls
             {
                 if (!isExistingNode)
                 {
-                    this.AddChild(nodeTemplate, this, itemDataContext);
+                    AddChild(nodeTemplate, this, itemDataContext);
                     TempNodeTemplate = null;
                 }
             }
             else if (isExistingNode)
             {
-                this.RemoveChild(nodeTemplate);
+                RemoveChild(nodeTemplate);
             }
 
         }
@@ -192,7 +192,7 @@ namespace Blade.UI.Controls
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
-            if (this.Visible.Value != Visibility.Visible)
+            if (Visible.Value != Visibility.Visible)
             {
                 return;
             }
@@ -203,7 +203,7 @@ namespace Blade.UI.Controls
 
         private UIComponent GetNodeTemplate(object itemDataContext, out bool isExistingNode)
         {
-            var nodeTemplate = this.Children.Where(p => p.DataContext.GetHashCode() == itemDataContext.GetHashCode()).FirstOrDefault() as UIComponent;
+            var nodeTemplate = Children.Where(p => p.DataContext.GetHashCode() == itemDataContext.GetHashCode()).FirstOrDefault() as UIComponent;
             if (nodeTemplate != null)
             {
                 isExistingNode = true;

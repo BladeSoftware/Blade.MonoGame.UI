@@ -1,9 +1,9 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Controls.Templates;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Controls.Templates;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class MenuItem : Control
     {
@@ -31,7 +31,7 @@ namespace Blade.UI.Controls
                 throw new Exception("Menu Item Template must derive from UIComponent");
             }
 
-            itemTemplate.DataContext = this.DataContext;
+            itemTemplate.DataContext = DataContext;
             Content = itemTemplate;
         }
 
@@ -53,7 +53,7 @@ namespace Blade.UI.Controls
         // ---=== UI Events ===---
         public override async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            if (!this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (!FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 return;
             }

@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
 
     public interface IBinding
@@ -38,11 +38,11 @@ namespace Blade.UI
         /// var Score = new AutoBinding<int>(10);
         /// </summary>
         /// <param name="initialValue"></param>
-        public Binding(T initialValue = default(T))
+        public Binding(T initialValue = default)
         {
             backingVar = initialValue;
-            this.Getter = () => backingVar;
-            this.Setter = (value) => backingVar = value;
+            Getter = () => backingVar;
+            Setter = (value) => backingVar = value;
         }
 
         /// <summary>
@@ -52,8 +52,8 @@ namespace Blade.UI
         /// </summary>
         public Binding(Func<T> getter, Action<T> setter = null)
         {
-            this.Getter = getter;
-            this.Setter = setter;
+            Getter = getter;
+            Setter = setter;
         }
 
         public Type BaseType => typeof(T);
@@ -184,7 +184,7 @@ namespace Blade.UI
             Setter((T2)new T3().ConvertTo(value));
         }
 
-        public Binding(T2 initialValue = default(T2)) : base((T1)new T3().ConvertFrom((T2)initialValue))
+        public Binding(T2 initialValue = default) : base((T1)new T3().ConvertFrom(initialValue))
         {
             Getter = () => { return (T2)new T3().ConvertTo(base.Getter()); };
             Setter = (value) => { base.Setter((T1)new T3().ConvertFrom(value)); };

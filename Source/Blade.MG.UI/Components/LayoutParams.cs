@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Components
+namespace Blade.MG.UI.Components
 {
     public struct Layout
     {

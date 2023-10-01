@@ -1,7 +1,7 @@
-﻿using Blade.UI.Components;
+﻿using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls.Templates
+namespace Blade.MG.UI.Controls.Templates
 {
     public class TabHeaderTemplate : Control
     {

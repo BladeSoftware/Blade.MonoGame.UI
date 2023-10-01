@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     public class Quad
     {

@@ -1,9 +1,10 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Controls;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Controls;
+using Blade.MG.UI.Events;
+using Blade.MG.UI;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Common
+namespace Blade.MG.UI.Common
 {
     public class FpsUI : UIWindow
     {
@@ -31,7 +32,7 @@ namespace Blade.UI.Common
             //fontArial = Game.Content.Load<SpriteFont>("Fonts/Arial");
             //fontArial8 = Game.Content.Load<SpriteFont>("Fonts/Arial-8");
 
-            BuildScreen(base.Game);
+            BuildScreen(Game);
         }
 
         public override void PerformLayout(GameTime gameTime)
@@ -41,7 +42,7 @@ namespace Blade.UI.Common
 
             var currentTime = DateTime.Now;
             double elapsed = (currentTime - lastPhysicsTime).Milliseconds;
-            PhysicsRate = PhysicsRate * 0.95f + (float)((1000.0 / elapsed) * 0.05);
+            PhysicsRate = PhysicsRate * 0.95f + (float)(1000.0 / elapsed * 0.05);
             lastPhysicsTime = currentTime;
 
             if (!float.IsNormal(PhysicsRate))
@@ -56,7 +57,7 @@ namespace Blade.UI.Common
         {
             var currentTime = DateTime.Now;
             double elapsed = (currentTime - lastRedawTime).Milliseconds;
-            ScreenRedawRate = ScreenRedawRate * 0.95f + (float)((1000.0 / elapsed) * 0.05);
+            ScreenRedawRate = ScreenRedawRate * 0.95f + (float)(1000.0 / elapsed * 0.05);
             lastRedawTime = currentTime;
 
             if (!float.IsNormal(ScreenRedawRate))

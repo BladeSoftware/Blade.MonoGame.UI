@@ -1,7 +1,7 @@
-﻿using Blade.UI.Components;
+﻿using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class Grid : Panel
     {
@@ -143,8 +143,8 @@ namespace Blade.UI.Controls
             parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
 
             // If we have no Rows or Columns then add a default Row/Column set to Auto
-            columnMeasurer = (ColumnDefinitions.Count > 0) ? new GridMeasurer(ColumnDefinitions) : new GridMeasurer(defaultColumns);
-            rowMeasurer = (RowDefinitions.Count > 0) ? new GridMeasurer(RowDefinitions) : new GridMeasurer(defaultRows);
+            columnMeasurer = ColumnDefinitions.Count > 0 ? new GridMeasurer(ColumnDefinitions) : new GridMeasurer(defaultColumns);
+            rowMeasurer = RowDefinitions.Count > 0 ? new GridMeasurer(RowDefinitions) : new GridMeasurer(defaultRows);
 
 
             // Calc Child Sizes
@@ -155,10 +155,10 @@ namespace Blade.UI.Controls
 
                 //child.Measure(context, ref availableSize, ref parentMinMax);
 
-                int col = this.GetColumn(child);
-                int colSpan = this.GetColumnSpan(child);
-                int row = this.GetRow(child);
-                int rowSpan = this.GetRowSpan(child);
+                int col = GetColumn(child);
+                int colSpan = GetColumnSpan(child);
+                int row = GetRow(child);
+                int rowSpan = GetRowSpan(child);
 
                 columnMeasurer.MeasureChild(child, child.DesiredSize.Width + child.Margin.Value.Horizontal, col, colSpan);
                 rowMeasurer.MeasureChild(child, child.DesiredSize.Height + child.Margin.Value.Vertical, row, rowSpan);
@@ -270,7 +270,7 @@ namespace Blade.UI.Controls
             gridHeight += Padding.Value.Top + Padding.Value.Bottom;
 
 
-            this.DesiredSize = new Size(gridWidth, gridHeight);
+            DesiredSize = new Size(gridWidth, gridHeight);
 
             ClampDesiredSize(availableSize, parentMinMax);
         }

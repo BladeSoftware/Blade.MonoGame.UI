@@ -1,11 +1,11 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     // Implement DataContractResolver: https://docs.microsoft.com/en-us/dotnet/framework/wcf/samples/datacontractserializer-datacontractresolver-netdatacontractserializer
     // Implement custom serialiser for Colours / binding etc ? https://weblogs.asp.net/pwelter34/444961   :  https://stackoverflow.com/questions/29624215/using-c-sharp-xml-serializer-to-produce-custom-xml-format
@@ -787,7 +787,7 @@ namespace Blade.UI
             {
                 dw = MaxWidth.ToPixels(availableSize.Width);
             }
-            if (!float.IsNaN(maxW) && (dw > maxW))
+            if (!float.IsNaN(maxW) && dw > maxW)
             {
                 dw = maxW;
             }
@@ -815,7 +815,7 @@ namespace Blade.UI
             {
                 dh = MaxHeight.ToPixels(availableSize.Height);
             }
-            if (!float.IsNaN(maxH) && (dh > maxH))
+            if (!float.IsNaN(maxH) && dh > maxH)
             {
                 dh = maxH;
             }
@@ -1072,7 +1072,7 @@ namespace Blade.UI
         public virtual async Task HandleMouseDownEventAsync(UIWindow uiWindow, UIMouseDownEvent uiEvent)
         {
             // Limit Mouse Events to the component layout window
-            if (this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
@@ -1090,7 +1090,7 @@ namespace Blade.UI
         public virtual async Task HandleMouseUpEventAsync(UIWindow uiWindow, UIMouseUpEvent uiEvent)
         {
             // Limit Mouse Events to the component layout window
-            if (uiEvent.ForcePropogation || this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.ForcePropogation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
@@ -1108,7 +1108,7 @@ namespace Blade.UI
         public virtual async Task HandleMouseWheelScrollEventAsync(UIWindow uiWindow, UIMouseWheelScrollEvent uiEvent)
         {
             // Limit Mouse Events to the component layout window
-            if (this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
@@ -1118,7 +1118,7 @@ namespace Blade.UI
                     }
                 });
 
-                if (this.HitTestVisible) uiEvent.Handled = true;
+                if (HitTestVisible) uiEvent.Handled = true;
             }
 
             //if (this.HitTestVisible && this.finalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
@@ -1127,7 +1127,7 @@ namespace Blade.UI
         public virtual async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // Limit Mouse Events to the component layout window
-            if (this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
@@ -1145,7 +1145,7 @@ namespace Blade.UI
         public virtual async Task HandleDoubleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // Limit Mouse Events to the component layout window
-            if (this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
@@ -1163,7 +1163,7 @@ namespace Blade.UI
         public virtual async Task HandleRightClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // Limit Mouse Events to the component layout window
-            if (this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
@@ -1202,7 +1202,7 @@ namespace Blade.UI
 
         public virtual async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
-            if (uiEvent.ForcePropogation || this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.ForcePropogation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {

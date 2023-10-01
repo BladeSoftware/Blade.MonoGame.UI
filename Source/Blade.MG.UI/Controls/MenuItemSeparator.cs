@@ -1,8 +1,8 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class MenuItemSeparator : Control
     {
@@ -48,7 +48,7 @@ namespace Blade.UI.Controls
             {
                 context.Renderer.BeginBatch(transform: parentTransform); // Transform.Combine(parentTransform, Transform)
 
-                context.Renderer.DrawRect(this.FinalContentRect, Color.LightGray);
+                context.Renderer.DrawRect(FinalContentRect, Color.LightGray);
 
                 //if (this.Background.Value != Color.Transparent)
                 //{
@@ -70,7 +70,7 @@ namespace Blade.UI.Controls
         // ---=== UI Events ===---
         public override async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            if (!this.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (!FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 return;
             }

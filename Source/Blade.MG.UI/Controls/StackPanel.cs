@@ -1,8 +1,8 @@
-﻿using Blade.UI.Components;
+﻿using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
 using System.Runtime.InteropServices;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class StackPanel : ScrollPanel
     {
@@ -31,7 +31,7 @@ namespace Blade.UI.Controls
             var desiredsize = DesiredSize;
 
             //foreach (var child in Children)
-            foreach (var child in CollectionsMarshal.AsSpan<UIComponent>((List<UIComponent>)Children))
+            foreach (var child in CollectionsMarshal.AsSpan(Children))
             {
                 if (child.Visible.Value == Visibility.Collapsed)
                 {
@@ -103,7 +103,7 @@ namespace Blade.UI.Controls
             int height = 0;
 
             //foreach (var child in Children)
-            foreach (var child in CollectionsMarshal.AsSpan<UIComponent>((List<UIComponent>)Children))
+            foreach (var child in CollectionsMarshal.AsSpan(Children))
             {
                 if (Orientation == Orientation.Horizontal)
                 {
@@ -236,7 +236,7 @@ namespace Blade.UI.Controls
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
-            if (this.Visible.Value != Visibility.Visible)
+            if (Visible.Value != Visibility.Visible)
             {
                 return;
             }

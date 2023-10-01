@@ -1,6 +1,6 @@
-﻿using Blade.UI;
-using Blade.UI.Components;
-using Blade.UI.Controls;
+﻿using Blade.MG.UI;
+using Blade.MG.UI.Components;
+using Blade.MG.UI.Controls;
 using Microsoft.Xna.Framework;
 
 namespace BladeUI.UnitTesting

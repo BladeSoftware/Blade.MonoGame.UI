@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using System.Xml;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     public static class UISerialiser
     {

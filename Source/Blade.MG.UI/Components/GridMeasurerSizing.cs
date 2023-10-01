@@ -1,4 +1,4 @@
-﻿namespace Blade.UI.Components
+﻿namespace Blade.MG.UI.Components
 {
     internal class GridMeasurerSizing
     {
@@ -9,15 +9,15 @@
 
         public GridMeasurerSizing()
         {
-            this.MaxSize = float.NaN;
-            this.MinSize = float.NaN;
+            MaxSize = float.NaN;
+            MinSize = float.NaN;
         }
 
         public GridMeasurerSizing(ColumnDefinition column)
         {
-            this.Size = column.Width;
-            this.MaxSize = column.MaxWidth;
-            this.MinSize = column.MinWidth;
+            Size = column.Width;
+            MaxSize = column.MaxWidth;
+            MinSize = column.MinWidth;
 
             if (IsAbsolute)
             {
@@ -27,9 +27,9 @@
 
         public GridMeasurerSizing(RowDefinition row)
         {
-            this.Size = row.Height;
-            this.MaxSize = row.MaxHeight;
-            this.MinSize = row.MinHeight;
+            Size = row.Height;
+            MaxSize = row.MaxHeight;
+            MinSize = row.MinHeight;
 
             if (IsAbsolute)
             {

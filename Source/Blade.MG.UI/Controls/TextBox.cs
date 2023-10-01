@@ -1,10 +1,10 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Controls.Templates;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Controls.Templates;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class TextBox : Control
     {
@@ -16,7 +16,7 @@ namespace Blade.UI.Controls
             get { return text; }
             set
             {
-                text.Value = (value.Value == null || value.Value.Length <= MaxLength) ? value.Value : value.Value.Substring(0, MaxLength);
+                text.Value = value.Value == null || value.Value.Length <= MaxLength ? value.Value : value.Value.Substring(0, MaxLength);
             }
         }
 

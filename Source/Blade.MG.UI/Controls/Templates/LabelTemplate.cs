@@ -1,9 +1,9 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Controls.Templates
+namespace Blade.MG.UI.Controls.Templates
 {
     public class LabelTemplate : Control
     {
@@ -47,7 +47,7 @@ namespace Blade.UI.Controls.Templates
             {
                 context.Renderer.BeginBatch(transform: parentTransform); // Transform.Combine(parentTransform, Transform)
 
-                if (this.Background.Value != Color.Transparent)
+                if (Background.Value != Color.Transparent)
                 {
                     ////context.Renderer.FillRect(FinalRect, Background.Value, layoutBounds);
                     context.Renderer.FillRect(FinalContentRect, Background.Value, layoutBounds);

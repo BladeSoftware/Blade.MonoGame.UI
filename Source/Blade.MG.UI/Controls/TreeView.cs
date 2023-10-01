@@ -1,11 +1,11 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Controls.Templates;
-using Blade.UI.Events;
-using Blade.UI.Models;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Controls.Templates;
+using Blade.MG.UI.Events;
+using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
 
     public class TreeView : StackPanel
@@ -178,7 +178,7 @@ namespace Blade.UI.Controls
                 return;
             }
 
-            frameID = (frameID % 2000000) + 1;
+            frameID = frameID % 2000000 + 1;
 
             Rectangle nodeBounds = layoutBounds;
             Size availableSize = new Size(layoutBounds.Width, layoutBounds.Height);
@@ -227,13 +227,13 @@ namespace Blade.UI.Controls
             {
                 if (!isExistingNode)
                 {
-                    this.AddChild(nodeTemplate, this, node);
+                    AddChild(nodeTemplate, this, node);
                     TempNodeTemplate = null;
                 }
             }
             else if (isExistingNode)
             {
-                this.RemoveChild(nodeTemplate);
+                RemoveChild(nodeTemplate);
             }
 
             collapsed = collapsed || !node.IsExpanded;
@@ -278,7 +278,7 @@ namespace Blade.UI.Controls
         /// <returns></returns>
         protected UIComponent GetExistingNodeTemplate(ITreeNode node)
         {
-            var nodeTemplate = this.Children.Where(p => p.DataContext.GetHashCode() == node.GetHashCode()).FirstOrDefault() as UIComponent;
+            var nodeTemplate = Children.Where(p => p.DataContext.GetHashCode() == node.GetHashCode()).FirstOrDefault() as UIComponent;
 
             return nodeTemplate;
         }
@@ -291,7 +291,7 @@ namespace Blade.UI.Controls
         /// <returns></returns>
         protected UIComponent GetNodeTemplate(ITreeNode node, out bool isExistingNode)
         {
-            var nodeTemplate = this.Children.Where(p => p.DataContext.GetHashCode() == node.GetHashCode()).FirstOrDefault() as UIComponent;
+            var nodeTemplate = Children.Where(p => p.DataContext.GetHashCode() == node.GetHashCode()).FirstOrDefault() as UIComponent;
             if (nodeTemplate != null)
             {
                 isExistingNode = true;
@@ -327,7 +327,7 @@ namespace Blade.UI.Controls
 
             ((UIComponentEvents)TempNodeTemplate).OnFocusChangedAsync = async (eventSource, uiEvent) =>
             {
-                var nodeTemplate = ((UIComponent)eventSource);
+                var nodeTemplate = (UIComponent)eventSource;
                 var treeNode = nodeTemplate.DataContext as ITreeNode;
 
                 if (!uiEvent.Focused && focusedNodeHash == nodeTemplate.DataContext.GetHashCode())
@@ -367,7 +367,7 @@ namespace Blade.UI.Controls
                 }
             };
 
-            bool hasFocus = (focusedNodeHash == TempNodeTemplate.DataContext.GetHashCode());
+            bool hasFocus = focusedNodeHash == TempNodeTemplate.DataContext.GetHashCode();
             if (hasFocus != TempNodeTemplate.HasFocus.Value)
             {
                 //TempNodeTemplate.HasFocus = hasFocus;

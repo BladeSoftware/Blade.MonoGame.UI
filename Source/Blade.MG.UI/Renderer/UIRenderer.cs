@@ -1,10 +1,10 @@
 ﻿using Blade.MG.Primitives;
-using Blade.UI.Components;
+using Blade.MG.UI.Components;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Blade.UI.Renderer
+namespace Blade.MG.UI.Renderer
 {
     public class UIRenderer
     {
@@ -30,10 +30,10 @@ namespace Blade.UI.Renderer
 
         public UIRenderer(UIContext context)
         {
-            this.Context = context;
-            this.spriteBatch = context.SpriteBatch;
+            Context = context;
+            spriteBatch = context.SpriteBatch;
 
-            this.rasterizerState = new RasterizerState
+            rasterizerState = new RasterizerState
             {
                 ScissorTestEnable = true,
                 CullMode = CullMode.None,
@@ -323,7 +323,7 @@ namespace Blade.UI.Renderer
                 {
                     case HorizontalAlignmentType.Left: translateX = 0f; break;
                     case HorizontalAlignmentType.Center: translateX = (clippingRect.Value.Width - rectangle.Width) / 2f; break;
-                    case HorizontalAlignmentType.Right: translateX = (clippingRect.Value.Width - rectangle.Width); break;
+                    case HorizontalAlignmentType.Right: translateX = clippingRect.Value.Width - rectangle.Width; break;
                     default: translateX = (clippingRect.Value.Width - rectangle.Width) / 2f; break;
 
                 }
@@ -332,7 +332,7 @@ namespace Blade.UI.Renderer
                 {
                     case VerticalAlignmentType.Top: translateY = 0f; break;
                     case VerticalAlignmentType.Center: translateY = (clippingRect.Value.Height - rectangle.Height) / 2f; break;
-                    case VerticalAlignmentType.Bottom: translateY = (clippingRect.Value.Height - rectangle.Height); break;
+                    case VerticalAlignmentType.Bottom: translateY = clippingRect.Value.Height - rectangle.Height; break;
                     default: translateY = (clippingRect.Value.Height - rectangle.Height) / 2f; break;
                 }
 
@@ -347,7 +347,7 @@ namespace Blade.UI.Renderer
             basicEffect.Texture = textureLayout.Texture;
             basicEffect.TextureEnabled = true;
             basicEffect.DiffuseColor = textureLayout.Tint.ToVector3();
-            basicEffect.Alpha = (float)(int)textureLayout.Tint.A / 255f;
+            basicEffect.Alpha = textureLayout.Tint.A / 255f;
 
             Context.Renderer.PushState();
 
@@ -356,11 +356,11 @@ namespace Blade.UI.Renderer
                 Context.Renderer.ClipToRect(clippingRect.Value);
             }
 
-            float scaleX = ((float)rectangle.Width / (float)textureLayout.Texture.Width);
-            float scaleY = ((float)rectangle.Height / (float)textureLayout.Texture.Height);
+            float scaleX = rectangle.Width / (float)textureLayout.Texture.Width;
+            float scaleY = rectangle.Height / (float)textureLayout.Texture.Height;
 
-            int backgroundScaleX = (int)((scaleX * textureLayout.Texture.Width) * scale.X);
-            int backgroundScaleY = (int)((scaleY * textureLayout.Texture.Height) * scale.Y);
+            int backgroundScaleX = (int)(scaleX * textureLayout.Texture.Width * scale.X);
+            int backgroundScaleY = (int)(scaleY * textureLayout.Texture.Height * scale.Y);
 
             // Draw background image
             Context.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointWrap, null, Context.Renderer.rasterizerState, basicEffect);
@@ -398,7 +398,7 @@ namespace Blade.UI.Renderer
 
                 case HorizontalAlignmentType.Center:
                 case HorizontalAlignmentType.Stretch:
-                    x = ((rectangle.Left + rectangle.Right) / 2) - ((int)textSize.X / 2);
+                    x = (rectangle.Left + rectangle.Right) / 2 - (int)textSize.X / 2;
                     if (x < rectangle.Left)
                     {
                         //x = rectangle.Left;
@@ -423,7 +423,7 @@ namespace Blade.UI.Renderer
 
                 case VerticalAlignmentType.Center:
                 case VerticalAlignmentType.Stretch:
-                    y = ((rectangle.Top + rectangle.Bottom) / 2) - ((int)textSize.Y / 2);
+                    y = (rectangle.Top + rectangle.Bottom) / 2 - (int)textSize.Y / 2;
                     if (y < rectangle.Top)
                     {
                         y = rectangle.Top;

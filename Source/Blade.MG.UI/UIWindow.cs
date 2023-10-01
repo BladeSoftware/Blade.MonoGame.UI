@@ -1,14 +1,15 @@
 ﻿using Blade.MG.Input;
 using Blade.MG.Primitives;
-using Blade.UI.Components;
-using Blade.UI.Events;
-using Blade.UI.Renderer;
-using Blade.UI.Theming;
+using Blade.MG.UI.CompiledResources;
+using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
+using Blade.MG.UI.Renderer;
+using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Blade.UI
+namespace Blade.MG.UI
 {
     public partial class UIWindow : Container, IDisposable  // , IGameEntity
     {
@@ -50,7 +51,7 @@ namespace Blade.UI
             Context.Renderer = new UIRenderer(Context);
 
 
-            Context.FontService.RegisterFont("Default", CompiledResources.DefaultFont.Data);
+            Context.FontService.RegisterFont("Default", DefaultFont.Data);
             //Context.FontService.RegisterFont("Default", File.ReadAllBytes(@"Content/Fonts/Poppins-SemiBold.ttf"));
             //Context.FontService.RegisterFont("Poppins-SemiBold", File.ReadAllBytes(@"Content/Fonts/Poppins-SemiBold.ttf"));
 
@@ -93,14 +94,14 @@ namespace Blade.UI
             if (width < 0) width = 0;
             if (height < 0) height = 0;
 
-            this.FinalRect = new Rectangle(left, top, width, height);
+            FinalRect = new Rectangle(left, top, width, height);
 
             left += Padding.Value.Left;
             top += Padding.Value.Top;
-            width -= (Padding.Value.Left + Padding.Value.Right);
-            height -= (Padding.Value.Top + Padding.Value.Bottom);
+            width -= Padding.Value.Left + Padding.Value.Right;
+            height -= Padding.Value.Top + Padding.Value.Bottom;
 
-            this.FinalContentRect = new Rectangle(left, top, width, height);
+            FinalContentRect = new Rectangle(left, top, width, height);
 
             //Size availableSize = new Size(layoutRect.Width, layoutRect.Height);
             Size availableSize = new Size(FinalContentRect.Width, FinalContentRect.Height);
@@ -124,14 +125,14 @@ namespace Blade.UI
         {
             // Render Layout
 
-            this.Transform.CalcCenterPoint(this);
+            Transform.CalcCenterPoint(this);
 
             // Clear Stencil Buffer
             Context.Renderer.ClearStencilBuffer();
 
             foreach (var child in Children)
             {
-                child.RenderControl(Context, layoutRect, Transform.Combine(this.Transform, child.Transform, child));
+                child.RenderControl(Context, layoutRect, Transform.Combine(Transform, child.Transform, child));
             }
 
         }
@@ -149,14 +150,14 @@ namespace Blade.UI
                     selected.Add(current);
                 }
 
-                if ((current as Control) != null)
+                if (current as Control != null)
                 {
                     if (((Control)current).Content != null)
                     {
                         SelectComponentsInternal(((Control)current).Content);
                     }
                 }
-                else if ((current as Container) != null)
+                else if (current as Container != null)
                 {
                     foreach (UIComponent child in ((Container)current).Children)
                     {
@@ -197,7 +198,7 @@ namespace Blade.UI
                     }
                 }
 
-                if ((current as Control) != null)
+                if (current as Control != null)
                 {
                     if (((Control)current).Content != null)
                     {
@@ -212,7 +213,7 @@ namespace Blade.UI
                         }
                     }
                 }
-                else if ((current as Container) != null)
+                else if (current as Container != null)
                 {
                     foreach (UIComponent child in ((Container)current).Children)
                     {
@@ -335,7 +336,7 @@ namespace Blade.UI
             }
 
             //Func<UIComponent, bool> selector = (p) => (p.TabIndex > lastTabOrder) && (p.IsTabStop == true);
-            bool selector(UIComponent p) => (p.TabIndex > lastTabOrder) && (p.IsTabStop.Value == true);
+            bool selector(UIComponent p) => p.TabIndex > lastTabOrder && p.IsTabStop.Value == true;
 
             IEnumerable<UIComponent> selected = SelectAny(selector);
             if (lastTabOrder > 0 && selected.Count() == 0)

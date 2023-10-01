@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Input;
 
-namespace Blade.UI.Events
+namespace Blade.MG.UI.Events
 {
     public class UIMouseDownEvent : UIEvent
     {

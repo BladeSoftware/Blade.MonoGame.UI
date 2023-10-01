@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Blade.UI.Components
+namespace Blade.MG.UI.Components
 {
     public class TextureLayout
     {
@@ -37,8 +37,8 @@ namespace Blade.UI.Components
             Rectangle srcImageRect = Texture.Bounds;
 
             //float aspect = srcImageRect.Width / (float)srcImageRect.Height;
-            float layoutScaleX = (srcImageRect.Width) / (float)(layoutBounds.Width);
-            float layoutScaleY = (srcImageRect.Height) / (float)(layoutBounds.Height);
+            float layoutScaleX = srcImageRect.Width / (float)layoutBounds.Width;
+            float layoutScaleY = srcImageRect.Height / (float)layoutBounds.Height;
 
             Rectangle dstImageRect = layoutBounds;
             Vector2 scale = Vector2.One;
@@ -46,7 +46,7 @@ namespace Blade.UI.Components
             switch (StretchType)
             {
                 case StretchType.None:
-                    dstImageRect = new Rectangle(layoutBounds.Left, layoutBounds.Top, (int)(Texture.Width), (int)(Texture.Height));
+                    dstImageRect = new Rectangle(layoutBounds.Left, layoutBounds.Top, Texture.Width, Texture.Height);
                     scale = new Vector2(1f / ImageScale.X, 1f / ImageScale.Y);
                     break;
 
@@ -81,11 +81,11 @@ namespace Blade.UI.Components
                     break;
 
                 case StretchType.TileHorizontal:
-                    dstImageRect = new Rectangle(layoutBounds.X, layoutBounds.Y, layoutBounds.Width, (int)(Texture.Height));
+                    dstImageRect = new Rectangle(layoutBounds.X, layoutBounds.Y, layoutBounds.Width, Texture.Height);
                     break;
 
                 case StretchType.TileVertical:
-                    dstImageRect = new Rectangle(layoutBounds.X, layoutBounds.Y, (int)(Texture.Width), layoutBounds.Height);
+                    dstImageRect = new Rectangle(layoutBounds.X, layoutBounds.Y, Texture.Width, layoutBounds.Height);
                     break;
 
             }

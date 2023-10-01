@@ -1,4 +1,4 @@
-﻿namespace Blade.UI.Events
+﻿namespace Blade.MG.UI.Events
 {
     public class UIMouseMoveEvent : UIEvent
     {

@@ -1,9 +1,10 @@
 ﻿using Blade.MG.Primitives;
-using Blade.UI.Components;
+using Blade.MG.UI.Components;
+using Blade.MG.UI.Renderer;
 using Microsoft.Xna.Framework;
 
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class Border : Control
     {
@@ -122,7 +123,7 @@ namespace Blade.UI.Controls
                 //alphaTestEffect.Projection = projectionMatrix;
 
                 //context.Renderer.BeginBatch(depthStencilState: Renderer.UIRenderer.stencilStateReplaceAlways, effect: alphaTestEffect, blendState: Renderer.UIRenderer.blendStateStencilOnly);
-                context.Renderer.BeginBatch(depthStencilState: Renderer.UIRenderer.stencilStateReplaceAlways, blendState: Renderer.UIRenderer.blendStateStencilOnly, transform: null);
+                context.Renderer.BeginBatch(depthStencilState: UIRenderer.stencilStateReplaceAlways, blendState: UIRenderer.blendStateStencilOnly, transform: null);
                 context.Renderer.FillRect(FinalRect, Color.White);
                 context.Renderer.EndBatch();
             }
@@ -193,7 +194,7 @@ namespace Blade.UI.Controls
 
 
             // Draw Stencil
-            context.Renderer.BeginBatch(depthStencilState: Renderer.UIRenderer.stencilStateZeroAlways, blendState: Renderer.UIRenderer.blendStateStencilOnly, transform: null);
+            context.Renderer.BeginBatch(depthStencilState: UIRenderer.stencilStateZeroAlways, blendState: UIRenderer.blendStateStencilOnly, transform: null);
             //context.Renderer.BeginBatch(depthStencilState: Renderer.UIRenderer.stencilStateZeroAlways, effect: alphaTestEffect, blendState: Renderer.UIRenderer.blendStateStencilOnly);
             //context.SpriteBatch.Begin(SpriteSortMode.Immediate, depthStencilState: stencilState1, effect: alphaTestEffect, blendState: blendState);
             //Primitives2D.FillRoundedRect(context.Game, context.SpriteBatch, finalRect, CornerRadius.Value, Color.White);

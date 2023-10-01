@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Blade.UI.Components
+namespace Blade.MG.UI.Components
 {
     public static class FloatHelper
     {
@@ -50,7 +50,7 @@ namespace Blade.UI.Components
             }
 
             // For Relative Lengths, take into account our margins
-            width -= (control.Margin.Value.Left + control.Margin.Value.Right);
+            width -= control.Margin.Value.Left + control.Margin.Value.Right;
 
             return width;
         }
@@ -66,7 +66,7 @@ namespace Blade.UI.Components
             }
 
             // For Relative Lengths, take into account our margins
-            height -= (control.Margin.Value.Top + control.Margin.Value.Bottom);
+            height -= control.Margin.Value.Top + control.Margin.Value.Bottom;
 
             return height;
         }
@@ -77,8 +77,8 @@ namespace Blade.UI.Components
 
             if (Unit == LengthUnit.Pixels) return Value;
 
-            if (Unit == LengthUnit.Percent) return (Value / 100f) * parentLength;
-            if (Unit == LengthUnit.Percent) return (Value / 100f) * parentLength;
+            if (Unit == LengthUnit.Percent) return Value / 100f * parentLength;
+            if (Unit == LengthUnit.Percent) return Value / 100f * parentLength;
 
             //if (Unit == LengthUnit.VWidth) return (Value / 100f) * UIManager.SafeLayoutRect.Width;
             //if (Unit == LengthUnit.VHeight) return (Value / 100f) * UIManager.SafeLayoutRect.Height;
@@ -141,7 +141,7 @@ namespace Blade.UI.Components
 
         public override string ToString()
         {
-            return $"{Value} {LengthUnit.GetName(Unit)}";
+            return $"{Value} {Enum.GetName(Unit)}";
         }
     }
 }

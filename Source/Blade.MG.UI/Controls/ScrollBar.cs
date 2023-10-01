@@ -1,10 +1,10 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class ScrollBar : Control
     {
@@ -129,11 +129,11 @@ namespace Blade.UI.Controls
                     context.SpriteBatch.Draw(arrowTexture, new Vector2(rect.Left + BarThickness, rect.Bottom - BarThickness), null, EndCaps, 0f, new Vector2(0, 0), new Vector2(-1f, 1f), SpriteEffects.None, 0f);
                     context.SpriteBatch.Draw(arrowTexture, new Vector2(rect.Right - BarThickness, rect.Bottom - BarThickness), null, EndCaps, 0f, new Vector2(0, 0), new Vector2(1f, 1f), SpriteEffects.None, 0f);
 
-                    int dist = (int)((rect.Width - (2 * endcapLength) - scrollGrabSize) * scrollFactor);
+                    int dist = (int)((rect.Width - 2 * endcapLength - scrollGrabSize) * scrollFactor);
                     if (dist >= 0)
                     {
                         //context.Renderer.FillRect(new Rectangle(rect.Left + dist, rect.Bottom - BarThickness, minScrollGrabSize, BarThickness), GrabHandle);
-                        context.Renderer.FillRoundedRect(new Rectangle(rect.Left + endcapLength + dist, rect.Bottom - BarThickness + barMargin, scrollGrabSize, BarThickness - barMargin * 2), ((BarThickness - 2 * barMargin) / 2f), GrabHandle);
+                        context.Renderer.FillRoundedRect(new Rectangle(rect.Left + endcapLength + dist, rect.Bottom - BarThickness + barMargin, scrollGrabSize, BarThickness - barMargin * 2), (BarThickness - 2 * barMargin) / 2f, GrabHandle);
                     }
                 }
                 else
@@ -160,11 +160,11 @@ namespace Blade.UI.Controls
                     //context.SpriteBatch.Draw(UIRenderer.FilledTriangleTexture(context.SpriteBatch), new Vector2(rect.Right - BarThickness, rect.Top), null, GrabHandle, 0f, new Vector2(0, 0), 1f, SpriteEffects.None, 0f);
                     //context.SpriteBatch.Draw(UIRenderer.FilledTriangleTexture(context.SpriteBatch), new Vector2(rect.Right - BarThickness, rect.Bottom - endcapLength), null, GrabHandle, 0f, new Vector2(0, 0), 1f, SpriteEffects.None, 0f);
 
-                    int dist = (int)((rect.Height - (2 * endcapLength) - scrollGrabSize) * scrollFactor);
+                    int dist = (int)((rect.Height - 2 * endcapLength - scrollGrabSize) * scrollFactor);
                     if (dist >= 0)
                     {
                         //context.Renderer.FillRect(new Rectangle(rect.Right - BarThickness, rect.Top + dist, BarThickness, minScrollGrabSize), GrabHandle);
-                        context.Renderer.FillRoundedRect(new Rectangle(rect.Right - BarThickness + barMargin, rect.Top + endcapLength + dist, BarThickness - barMargin * 2, scrollGrabSize), ((BarThickness - 2 * barMargin) / 2f), GrabHandle);
+                        context.Renderer.FillRoundedRect(new Rectangle(rect.Right - BarThickness + barMargin, rect.Top + endcapLength + dist, BarThickness - barMargin * 2, scrollGrabSize), (BarThickness - 2 * barMargin) / 2f, GrabHandle);
                     }
                 }
 

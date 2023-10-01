@@ -1,10 +1,10 @@
-﻿using Blade.UI.Components;
-using Blade.UI.Controls.Templates;
-using Blade.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Controls.Templates;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using System.Collections;
 
-namespace Blade.UI.Controls
+namespace Blade.MG.UI.Controls
 {
     public class TabPanel : Container
     {
@@ -278,7 +278,7 @@ namespace Blade.UI.Controls
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
-            if (this.Visible.Value != Visibility.Visible)
+            if (Visible.Value != Visibility.Visible)
             {
                 return;
             }
@@ -317,7 +317,7 @@ namespace Blade.UI.Controls
                 return false;
             }
 
-            return (tabHeader == SelectedHeader);
+            return tabHeader == SelectedHeader;
         }
 
         public void SetActiveTab(string tabId)
