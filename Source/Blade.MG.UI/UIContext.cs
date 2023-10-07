@@ -1,4 +1,5 @@
 ﻿using Blade.MG.UI.Renderer;
+using Blade.MG.UI.Services;
 using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -14,8 +15,6 @@ namespace Blade.MG.UI
         public SpriteBatch SpriteBatch { get; set; }
 
         public Texture2D Pixel { get; set; } // A 1x1 Texture with Color #FFFFFFFF (White)
-
-        public FontService FontService { get; set; }
 
         public UIRenderer Renderer { get; set; }
 

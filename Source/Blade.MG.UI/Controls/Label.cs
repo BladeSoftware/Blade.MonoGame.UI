@@ -1,5 +1,6 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls.Templates;
+using Blade.MG.UI.Services;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 
@@ -56,7 +57,7 @@ namespace Blade.MG.UI.Controls
             if ((FloatHelper.IsNaN(Width) || FloatHelper.IsNaN(Height)) && Text != null)
             {
 
-                SpriteFontBase font = context.FontService.GetFontOrDefault(FontName?.Value, FontSize?.Value);
+                SpriteFontBase font = FontService.GetFontOrDefault(FontName?.Value, FontSize?.Value);
                 Vector2 textSize = font.MeasureString(Text.ToString());
 
                 if (FloatHelper.IsNaN(Width))

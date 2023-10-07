@@ -48,6 +48,8 @@ namespace Examples
             IsMouseVisible = true;
 
             graphicsDeviceManager.ApplyChanges();
+
+            UIManager.Instance.Initialize(this);
         }
 
         /// <summary>
@@ -97,7 +99,7 @@ namespace Examples
 
             try
             {
-                InputManager.Instance.Update();
+                InputManager.Update();
                 await UIManager.Instance.UpdateAsync(gameTime).ConfigureAwait(true);
             }
             catch (Exception ex)
@@ -113,7 +115,7 @@ namespace Examples
         {
             base.Draw(gameTime);
 
-            UIManager.Instance.Draw(this.GraphicsDevice, null, gameTime);
+            UIManager.Instance.Draw(null, gameTime);
         }
 
     }

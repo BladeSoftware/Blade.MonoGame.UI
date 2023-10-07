@@ -1,5 +1,6 @@
 ﻿using Blade.MG.Primitives;
 using Blade.MG.UI.Components;
+using Blade.MG.UI.Services;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -384,7 +385,7 @@ namespace Blade.MG.UI.Renderer
 
         public void DrawString(Rectangle rectangle, string text, SpriteFontBase spriteFont, Color? color, HorizontalAlignmentType horizontalAlignment = HorizontalAlignmentType.Left, VerticalAlignmentType verticalAlignment = VerticalAlignmentType.Center, Rectangle? clippingRect = null)
         {
-            SpriteFontBase font = spriteFont ?? Context.FontService.GetFontOrDefault(null, null);
+            SpriteFontBase font = spriteFont ?? FontService.GetFontOrDefault(null, null);
             Vector2 textSize = font.MeasureString(text);
 
             float x;

@@ -4,6 +4,7 @@ using Blade.MG.UI.CompiledResources;
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
 using Blade.MG.UI.Renderer;
+using Blade.MG.UI.Services;
 using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -41,7 +42,6 @@ namespace Blade.MG.UI
                 //DefaultFont = content.Load<SpriteFont>("Fonts/Arial-12"),
                 //DefaultFont = content.Load<SpriteFont>("SpriteFonts/Default"),
                 SpriteBatch = new SpriteBatch(game.GraphicsDevice),
-                FontService = new FontService(),
                 //Theme = new UITheme()
 
                 Theme = DefaultThemes.LightTheme()
@@ -51,7 +51,7 @@ namespace Blade.MG.UI
             Context.Renderer = new UIRenderer(Context);
 
 
-            Context.FontService.RegisterFont("Default", DefaultFont.Data);
+            FontService.RegisterFont("Default", DefaultFont.Data);
             //Context.FontService.RegisterFont("Default", File.ReadAllBytes(@"Content/Fonts/Poppins-SemiBold.ttf"));
             //Context.FontService.RegisterFont("Poppins-SemiBold", File.ReadAllBytes(@"Content/Fonts/Poppins-SemiBold.ttf"));
 

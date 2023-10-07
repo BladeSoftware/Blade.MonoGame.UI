@@ -1,5 +1,6 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
+using Blade.MG.UI.Services;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 
@@ -53,7 +54,7 @@ namespace Blade.MG.UI.Controls.Templates
                     context.Renderer.FillRect(FinalContentRect, Background.Value, layoutBounds);
                 }
 
-                SpriteFontBase font = context.FontService.GetFontOrDefault(label.FontName?.Value, label.FontSize?.Value);
+                SpriteFontBase font = FontService.GetFontOrDefault(label.FontName?.Value, label.FontSize?.Value);
                 context.Renderer.DrawString(FinalContentRect, label.Text.ToString(), font, label.TextColor?.Value, HorizontalContentAlignment.Value, VerticalContentAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
 
                 //context.Renderer.DrawString(FinalContentRect, Text.ToString(), SpriteFont?.Value, TextColor?.Value, HorizontalContentAlignment.Value, VerticalContentAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));

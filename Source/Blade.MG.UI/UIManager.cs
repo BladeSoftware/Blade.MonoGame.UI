@@ -23,7 +23,7 @@ namespace Blade.MG.UI
         public int Priority;
     }
 
-    public partial class UIManager : UIManagerBase
+    public partial class UIManager : GameEntity //,UIManagerBase
     {
         public static bool RenderControlHitBoxes = false;
 
@@ -224,8 +224,18 @@ namespace Blade.MG.UI
 
         }
 
+        public override async void Update(GameTime gameTime)
+        {
+            try
+            {
+                await UpdateAsync(gameTime).ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+            }
+        }
 
-        public override async Task UpdateAsync(GameTime gameTime)
+        public async Task UpdateAsync(GameTime gameTime)
         {
             //base.Logic(gameTime);
 
@@ -271,8 +281,7 @@ namespace Blade.MG.UI
 
         }
 
-
-        public override void Draw(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, GameTime gameTime)
+        public override void Draw(SpriteBatch spriteBatch, GameTime gameTime)
         {
             //base.Render(spriteBatch, gameTime);
 
