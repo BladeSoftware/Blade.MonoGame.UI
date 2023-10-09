@@ -99,12 +99,12 @@ namespace Blade.MG.UI.Controls
                 Height = layoutBounds.Height - (HorizontalScrollBarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)
             };
 
-            base.Arrange(context, layoutBounds, parentLayoutContentBounds);
 
-            //base.Arrange(context, layoutBounds, parentLayoutBounds);
+            base.Arrange(context, layoutBounds, parentLayoutContentBounds);
 
             if (HorizontalScrollBarVisible) HorizontalScrollBar.Arrange(context, FinalRect, parentLayoutBounds);
             if (VerticalScrollBarVisible) VerticalScrollBar.Arrange(context, FinalRect, parentLayoutBounds);
+
 
             int contentWidth = FinalRect.Width - Padding.Value.Left - Padding.Value.Right;
             int contentHeight = FinalRect.Height - Padding.Value.Top - Padding.Value.Bottom;

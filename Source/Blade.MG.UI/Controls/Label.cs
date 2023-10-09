@@ -62,7 +62,7 @@ namespace Blade.MG.UI.Controls
 
                 if (FloatHelper.IsNaN(Width))
                 {
-                    desiredWidth = textSize.X;
+                    desiredWidth = textSize.X * 1.03f;  // Size Calculation seems to be off slightly, so add 3%
                 }
 
                 if (FloatHelper.IsNaN(Height))

@@ -23,23 +23,16 @@ namespace Blade.MG.UI.Controls
         {
             base.Measure(context, ref availableSize, ref parentMinMax);
 
-
             // -- Measure Children ---
             float desiredWidth = 0f;
             float desiredHeight = 0f;
 
             var desiredsize = DesiredSize;
 
-            //foreach (var child in Children)
-            foreach (var child in CollectionsMarshal.AsSpan(Children))
+            //foreach (var child in CollectionsMarshal.AsSpan(Children))
+            foreach (var child in Children)
             {
-                if (child.Visible.Value == Visibility.Collapsed)
-                {
-
-                }
-
-                //child.Measure(context, ref desiredsize, ref parentMinMax);
-                child.Measure(context, ref availableSize, ref parentMinMax);
+                //child.Measure(context, ref availableSize, ref parentMinMax);
 
                 if (Orientation == Orientation.Horizontal)
                 {
@@ -94,6 +87,10 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
+            IsWidthVirtual = Orientation == Orientation.Horizontal;
+            IsHeightVirtual = Orientation == Orientation.Vertical;
+
+
             // Arrange the layout for the inherited scroll panel and it's scrollbars
             base.Arrange(context, layoutBounds, parentLayoutBounds);
 
@@ -102,8 +99,8 @@ namespace Blade.MG.UI.Controls
             int width = 0;
             int height = 0;
 
-            //foreach (var child in Children)
-            foreach (var child in CollectionsMarshal.AsSpan(Children))
+            //foreach (var child in CollectionsMarshal.AsSpan(Children))
+            foreach (var child in Children)
             {
                 if (Orientation == Orientation.Horizontal)
                 {

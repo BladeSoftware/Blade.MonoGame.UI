@@ -7,7 +7,7 @@
     
     <PackageId>BladeSoftware.MonoGame.UI</PackageId>
     <Title>WPF Inspired MonoGame UI Library </Title>
-    <PackageVersion>1.0.1-alpha</PackageVersion>
+    <PackageVersion>1.0.2-alpha</PackageVersion>
     <Company>Blade Software</Company>
     <Description>WPF Inspired MonoGame UI Library </Description>
     <Copyright>Copyright (c) Blade Software 2023</Copyright>
@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BladeSoftware.MonoGame.Core" Version="1.0.1-alpha" />
+    <PackageReference Include="BladeSoftware.MonoGame.Core" Version="1.0.2-alpha" />
     <PackageReference Include="FontStashSharp.MonoGame" Version="1.2.8" />
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.4.33" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" ExcludeAssets="runtime" />

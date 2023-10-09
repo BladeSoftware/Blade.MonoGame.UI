@@ -79,6 +79,7 @@ namespace Examples.UI
                 Height = 50,
                 Margin = new Thickness(0, verticalMargin, 0, verticalMargin),
                 Padding = new Thickness(20, 0),
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 OnClick = (sender, uiEvents) =>
                 {
                     content.Content = new HelpPage_Panel();
@@ -91,6 +92,7 @@ namespace Examples.UI
                 Height = 50,
                 Margin = new Thickness(0, verticalMargin, 0, verticalMargin),
                 Padding = new Thickness(20, 0),
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 OnClick = (sender, uiEvents) =>
                 {
                     content.Content = new HelpPage_Button();
@@ -129,6 +131,7 @@ namespace Examples.UI
                 Height = 50,
                 Margin = new Thickness(0, verticalMargin, 0, verticalMargin),
                 Padding = new Thickness(20, 0),
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 OnClick = (sender, uiEvents) =>
                 {
                     content.Content = null;

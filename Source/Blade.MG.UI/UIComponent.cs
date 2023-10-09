@@ -100,6 +100,9 @@ namespace Blade.MG.UI
         internal float Left { get; set; }
         internal float Top { get; set; }
 
+        internal bool IsWidthVirtual { get; set; }
+        internal bool IsHeightVirtual { get; set; }
+
 
         public UIComponent()
         {
@@ -118,6 +121,9 @@ namespace Blade.MG.UI
 
             ActualWidth = 0;
             ActualHeight = 0;
+
+            IsWidthVirtual = false;
+            IsHeightVirtual = false;
         }
 
         protected virtual void InitTemplate()
@@ -305,7 +311,8 @@ namespace Blade.MG.UI
             }
 
 
-            if (HorizontalAlignment.Value == HorizontalAlignmentType.Stretch && FloatHelper.IsNaN(Width))
+            // Dont allow Stretch if the Width is virtualized i.e. We don't have a defined width
+            if (HorizontalAlignment.Value == HorizontalAlignmentType.Stretch && FloatHelper.IsNaN(Width) && !parent.IsWidthVirtual)
             {
                 Left = layoutBounds.Left;
                 ActualWidth = layoutBounds.Width;
@@ -314,7 +321,8 @@ namespace Blade.MG.UI
                 if (ActualWidth > MaxWidth.ToPixels(parentLayoutBounds.Width)) ActualWidth = MaxWidth.ToPixels(parentLayoutBounds.Width);
             }
 
-            if (VerticalAlignment.Value == VerticalAlignmentType.Stretch && FloatHelper.IsNaN(Height))
+            // Dont allow Stretch if the Height is virtualized i.e. We don't have a defined height
+            if (VerticalAlignment.Value == VerticalAlignmentType.Stretch && FloatHelper.IsNaN(Height) && !parent.IsHeightVirtual)
             {
                 Top = layoutBounds.Top;
                 ActualHeight = layoutBounds.Height;
@@ -323,39 +331,8 @@ namespace Blade.MG.UI
                 if (ActualHeight > MaxHeight.ToPixels(parentLayoutBounds.Height)) ActualHeight = MaxHeight.ToPixels(parentLayoutBounds.Height);
             }
 
-            ////--------------
 
-            //switch (Stretch)
-            //{
-            //    case StretchType.None:
-            //        break;
-
-            //    case StretchType.Fill:
-            //        ActualWidth = layoutBounds.Width - Padding.Value.Horizontal;
-            //        ActualHeight = layoutBounds.Height - Padding.Value.Vertical;
-
-            //        break;
-
-            //    case StretchType.Uniform:
-            //        int minscale = Math.Min(layoutBounds.Width - Padding.Value.Horizontal, layoutBounds.Height - Padding.Value.Vertical);
-
-            //        ActualWidth = minscale;
-            //        ActualHeight = minscale;
-
-            //        break;
-
-            //    case StretchType.UniformToFill:
-            //        int maxscale = Math.Max(layoutBounds.Width - Padding.Value.Horizontal, layoutBounds.Height - Padding.Value.Vertical);
-
-            //        ActualWidth = maxscale;
-            //        ActualHeight = maxscale;
-
-            //        break;
-
-            //}
-
-
-            ////--------------
+            //--------------
 
             if (ActualWidth != layoutBounds.Width)
             {

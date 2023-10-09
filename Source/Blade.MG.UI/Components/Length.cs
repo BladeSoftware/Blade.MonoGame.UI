@@ -1,10 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Runtime.CompilerServices;
 
 namespace Blade.MG.UI.Components
 {
     public static class FloatHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNaN(float value) => float.IsNaN(value);
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNaN(Length length) => float.IsNaN(length.Value);
     }
 

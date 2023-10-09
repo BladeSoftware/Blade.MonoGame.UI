@@ -45,7 +45,6 @@ namespace Blade.MG.UI
 
             if (Children != null)
             {
-                //foreach (var child in CollectionsMarshal.AsSpan<UIComponent>((List<UIComponent>)Children))
                 foreach (var child in Children)
                 {
                     child.Arrange(context, GetChildBoundingBox(context, child), FinalContentRect);

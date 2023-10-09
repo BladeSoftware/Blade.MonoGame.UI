@@ -53,7 +53,7 @@ namespace Blade.MG.UI
             uiTaskQueue.Enqueue(task);
         }
 
-        protected Task HandleTaskQueueAsync()
+        protected void HandleTaskQueue()
         {
             while (uiTaskQueue.TryDequeue(out var task))
             {
@@ -87,7 +87,6 @@ namespace Blade.MG.UI
                 }
             }
 
-            return Task.CompletedTask;
         }
 
         public static void Clear()
@@ -101,6 +100,8 @@ namespace Blade.MG.UI
 
             ui.Initialize(game);
             ui.LoadContent();
+
+            Instance.HandleTaskQueue();
         }
 
         public static void Add(ICollection<UIWindow> ui, Game game, int priority = 100)
@@ -112,6 +113,8 @@ namespace Blade.MG.UI
                 uiWindow.Initialize(game);
                 uiWindow.LoadContent();
             }
+
+            Instance.HandleTaskQueue();
         }
 
         public static T Find<T>() where T : UIWindow
@@ -239,7 +242,7 @@ namespace Blade.MG.UI
         {
             //base.Logic(gameTime);
 
-            await HandleTaskQueueAsync();
+            HandleTaskQueue();
 
             UIWindow eventLockedWindow = null;
             UIComponent eventLockedControl = null;

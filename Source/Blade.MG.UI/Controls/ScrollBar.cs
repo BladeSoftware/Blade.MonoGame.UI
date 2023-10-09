@@ -70,7 +70,18 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
+            bool saveWidthVirtual = Parent.IsWidthVirtual;
+            bool saveHeightVirtual = Parent.IsHeightVirtual;
+
+            // Ignore the Virtualized Flags when laying out the Scrollbars
+            Parent.IsWidthVirtual = false;
+            Parent.IsHeightVirtual = false;
+
             base.Arrange(context, layoutBounds, parentLayoutBounds);
+
+            Parent.IsWidthVirtual = saveWidthVirtual;
+            Parent.IsHeightVirtual = saveHeightVirtual;
+
         }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
