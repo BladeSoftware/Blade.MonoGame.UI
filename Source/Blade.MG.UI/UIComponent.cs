@@ -80,9 +80,10 @@ namespace Blade.MG.UI
         public Binding<Visibility> Visible { get; set; } = Visibility.Visible;
 
         public bool HitTestVisible { get; set; } = false;
+        public bool CanHover { get; set; } = true;
 
         public Binding<bool> HasFocus { get; set; } = false;
-        public Binding<bool> MouseHover = false;
+        public Binding<bool> MouseHover { get; set; } = false;
 
 
         public Transform Transform { get; set; } = new Transform();
@@ -1095,7 +1096,7 @@ namespace Blade.MG.UI
                     }
                 });
 
-                if (HitTestVisible) uiEvent.Handled = true;
+                //if (HitTestVisible) uiEvent.Handled = true;
             }
 
             //if (this.HitTestVisible && this.finalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
@@ -1189,13 +1190,12 @@ namespace Blade.MG.UI
                         if (uiEvent.ForcePropogation || component.FinalRect.Contains(uiEvent.X, uiEvent.Y))
                         {
                             await component.HandleHoverChangedAsync(uiWindow, uiEvent);
-
                             MouseHover = uiEvent.Hover;
                         }
                     }
                 });
 
-                if (!uiEvent.Handled)
+                if (!uiEvent.Handled && CanHover)
                 {
                     MouseHover = uiEvent.Hover;
                 }

@@ -4,10 +4,8 @@ using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls
 {
-    public class Button : Control
+    public class Button : TemplatedControl
     {
-        public Type TemplateType { get; set; } = typeof(ButtonTemplate); // TODO: Validate TemplateType extends UIComponent
-
         public Binding<string> Text;
 
         public Binding<string> FontName { get; set; }
@@ -20,6 +18,8 @@ namespace Blade.MG.UI.Controls
 
         public Button()
         {
+            TemplateType = typeof(ButtonTemplate);
+
             Text = null;
             HorizontalAlignment = HorizontalAlignmentType.Stretch;
             VerticalAlignment = VerticalAlignmentType.Stretch;
@@ -30,13 +30,6 @@ namespace Blade.MG.UI.Controls
             IsTabStop = true;
         }
 
-
-        protected override void InitTemplate()
-        {
-            base.InitTemplate();
-
-            Content = Activator.CreateInstance(TemplateType) as UIComponent;
-        }
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {

@@ -25,7 +25,6 @@ namespace Blade.MG.UI
             }
         }
 
-
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
             base.Measure(context, ref availableSize, ref parentMinMax);

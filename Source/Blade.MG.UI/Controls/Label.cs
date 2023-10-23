@@ -6,10 +6,8 @@ using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls
 {
-    public class Label : Control
+    public class Label : TemplatedControl
     {
-        public Type TemplateType { get; set; } = typeof(LabelTemplate); // TODO: Validate TemplateType extends UIComponent
-
         public Binding<string> Text { get; set; } = string.Empty;
         public Binding<string> FontName { get; set; } = new Binding<string>();
         public Binding<float> FontSize { get; set; } = new Binding<float>();
@@ -18,6 +16,8 @@ namespace Blade.MG.UI.Controls
 
         public Label()
         {
+            TemplateType = typeof(LabelTemplate);
+
             Text = null;
             FontName = null; // Use default font
             FontSize = null;
@@ -33,12 +33,12 @@ namespace Blade.MG.UI.Controls
             HitTestVisible = false;
         }
 
-        protected override void InitTemplate()
-        {
-            base.InitTemplate();
+        //protected override void InitTemplate()
+        //{
+        //    base.InitTemplate();
 
-            Content = Activator.CreateInstance(TemplateType) as UIComponent;
-        }
+        //    Content = Activator.CreateInstance(TemplateType) as UIComponent;
+        //}
 
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)

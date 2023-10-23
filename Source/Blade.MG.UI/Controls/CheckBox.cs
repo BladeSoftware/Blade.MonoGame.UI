@@ -5,10 +5,8 @@ using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls
 {
-    public class CheckBox : Control
+    public class CheckBox : TemplatedControl
     {
-        public Type TemplateType { get; set; } = typeof(CheckBoxTemplate); // TODO: Validate TemplateType extends UIComponent
-
         public Binding<string> Text;
 
         public Binding<string> FontName { get; set; } = new Binding<string>();
@@ -20,6 +18,8 @@ namespace Blade.MG.UI.Controls
 
         public CheckBox()
         {
+            TemplateType = typeof(CheckBoxTemplate);
+
             IsTabStop = true;
             HitTestVisible = true;
 
@@ -34,35 +34,35 @@ namespace Blade.MG.UI.Controls
 
         }
 
-        protected override void InitTemplate()
-        {
-            base.InitTemplate();
+        //protected override void InitTemplate()
+        //{
+        //    base.InitTemplate();
 
-            Content = Activator.CreateInstance(TemplateType) as UIComponent;
-        }
+        //    Content = Activator.CreateInstance(TemplateType) as UIComponent;
+        //}
 
-        public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
-        {
-            base.Measure(context, ref availableSize, ref parentMinMax);
+        //public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
+        //{
+        //    base.Measure(context, ref availableSize, ref parentMinMax);
 
-            MergeChildDesiredSize(context, ref availableSize, Content, ref parentMinMax);
-        }
+        //    MergeChildDesiredSize(context, ref availableSize, Content, ref parentMinMax);
+        //}
 
-        public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
-        {
-            base.Arrange(context, layoutBounds, parentLayoutBounds);
-        }
+        //public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
+        //{
+        //    base.Arrange(context, layoutBounds, parentLayoutBounds);
+        //}
 
-        public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
-        {
-            if (Visible.Value != Visibility.Visible)
-            {
-                return;
-            }
+        //public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
+        //{
+        //    if (Visible.Value != Visibility.Visible)
+        //    {
+        //        return;
+        //    }
 
-            base.RenderControl(context, layoutBounds, parentTransform);
+        //    base.RenderControl(context, layoutBounds, parentTransform);
 
-        }
+        //}
 
         // ---=== UI Events ===---
 

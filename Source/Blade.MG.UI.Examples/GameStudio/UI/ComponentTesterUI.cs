@@ -53,6 +53,7 @@ namespace Examples.UI
 
             var stackPanel1 = new StackPanel()
             {
+                Name = "Tester Buttons",
                 Background = Color.Green,
                 Width = 400,
                 Orientation = Orientation.Vertical,

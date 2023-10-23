@@ -1,5 +1,6 @@
 ﻿using Blade.MG.Input;
 using Blade.MG.UI;
+using Blade.MG.UI.Common;
 using Examples.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -65,6 +66,7 @@ namespace Examples
 
             UIManager.Clear();
             UIManager.Add(new ComponentTesterUI(), this);
+            UIManager.Add(new FpsUI(), this);
 
         }
 

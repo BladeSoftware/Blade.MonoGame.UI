@@ -53,8 +53,11 @@ namespace Blade.MG.UI
 
                 if (selected != null && selectedUIWindow?.hover != null && !selectedUIWindow.hover.Contains(selected))
                 {
-                    selectedUIWindow.hover.Add(selected);
                     await selectedUIWindow.RaiseHoverEnterEventAsync(selected, selectedUIWindow);
+                    if (selected.MouseHover.Value)
+                    {
+                        selectedUIWindow.hover.Add(selected);
+                    }
                 }
 
             }
@@ -186,7 +189,7 @@ namespace Blade.MG.UI
                     Y = InputManager.MouseState.Y,
                     VerticalScroll = scrollVertical,
                     HorizontalScroll = scrollHorizontal,
-                    ForcePropogation = true
+                    ForcePropogation = false
                 };
 
                 await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent); });
