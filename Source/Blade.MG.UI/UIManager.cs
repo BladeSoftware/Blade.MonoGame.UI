@@ -317,6 +317,9 @@ namespace Blade.MG.UI
                         //Primitives2D.DrawRect(sb, control.clippingRect, Color.Green);
                         Primitives2D.DrawRect(sb, control.FinalContentRect, Color.Blue);
                         Primitives2D.DrawRect(sb, control.FinalRect, Color.Red);
+
+                        //if (control.MouseHover.Value) { Primitives2D.DrawCircle(sb, control.FinalRect.Left, control.FinalRect.Top, 7, Color.Yellow); }
+                        //if (control.HasFocus.Value) { Primitives2D.FillCircle(sb, control.FinalRect.Left, control.FinalRect.Top, 5, Color.White); } 
                     }
                     sb.End();
                 }
