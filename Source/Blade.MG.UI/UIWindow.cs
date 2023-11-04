@@ -310,21 +310,6 @@ namespace Blade.MG.UI
             }
         }
 
-        internal async Task RaiseClickEventAsync(UIComponent component, UIWindow uiWindow)
-        {
-            UIComponentEvents ctrl = component as UIComponentEvents;
-            if (ctrl != null)
-            {
-                var uiEvent = new UIClickEvent { X = InputManager.MouseState.X, Y = InputManager.MouseState.Y };
-                await ctrl.HandleClickEventAsync(uiWindow, uiEvent);
-            }
-        }
-
-        internal async Task RaiseMouseMoveEventAsync(UIMouseMoveEvent uiEvent, UIWindow uiWindow)
-        {
-            await HandleMouseMoveEventAsync(uiWindow, uiEvent);
-        }
-
 
         private async Task HandleTabNext()
         {

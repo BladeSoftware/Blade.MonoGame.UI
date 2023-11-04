@@ -23,7 +23,10 @@ namespace Blade.MG.UI
             {
                 // Check if the mouse has moved off of a control it was previously hovering over
                 UIComponent component = eventLockedWindow.hover.Where(p => p == eventLockedWindow.EventLockedControl).FirstOrDefault();
-                if (component == null || !component.FinalRect.Contains(InputManager.MouseState.Position))
+                if (component == null ||
+                    component.Visible.Value != Components.Visibility.Visible ||
+                    component.ParentWindow?.Visible?.Value != Components.Visibility.Visible ||
+                    !component.FinalRect.Contains(InputManager.MouseState.Position))
                 {
                     eventLockedWindow.hover.Remove(component);
                     await eventLockedWindow.RaiseHoverLeaveEventAsync(component, eventLockedWindow);
@@ -33,7 +36,14 @@ namespace Blade.MG.UI
             else
             {
                 // Check if the mouse is hovering over a control
-                bool selector(UIComponent component, UIComponent parent) => (component.HitTestVisible && component.FinalRect.Contains(InputManager.MouseState.Position));
+                bool selector(UIComponent component, UIComponent parent) =>
+                    (
+                      component.HitTestVisible &&
+                      component.Visible.Value == Components.Visibility.Visible &&
+                      component.ParentWindow?.Visible?.Value == Components.Visibility.Visible &&
+                      component.FinalRect.Contains(InputManager.MouseState.Position)
+                    );
+
                 UIComponent selected = SelectFirst(selector, true, InputManager.MouseState.Position);
                 UIWindow selectedUIWindow = selected?.ParentWindow;
 
@@ -173,7 +183,7 @@ namespace Blade.MG.UI
                     DeltaY = InputManager.MouseState.Y - InputManager.LastMouseState.Y
                 };
 
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.RaiseMouseMoveEventAsync(uiEvent, uiWindow); });
+                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseMoveEventAsync(uiWindow, uiEvent); });
 
             }
 
@@ -196,6 +206,21 @@ namespace Blade.MG.UI
             }
 
         }
+
+        internal async Task RaiseClickEventAsync(UIWindow uiWindow, UIComponent component)
+        {
+            UIComponentEvents ctrl = component as UIComponentEvents;
+            if (ctrl != null)
+            {
+                var uiEvent = new UIClickEvent { X = InputManager.MouseState.X, Y = InputManager.MouseState.Y };
+                await ctrl.HandleClickEventAsync(uiWindow, uiEvent);
+            }
+        }
+
+        //internal async Task RaiseMouseMoveEventAsync(UIMouseMoveEvent uiEvent, UIWindow uiWindow)
+        //{
+        //    await uiWindow.HandleMouseMoveEventAsync(uiWindow, uiEvent);
+        //}
 
 
     }
