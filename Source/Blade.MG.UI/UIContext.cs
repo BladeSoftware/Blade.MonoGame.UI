@@ -1,5 +1,4 @@
 ﻿using Blade.MG.UI.Renderer;
-using Blade.MG.UI.Services;
 using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;

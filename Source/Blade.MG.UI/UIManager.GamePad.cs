@@ -1,5 +1,4 @@
 ﻿using Blade.MG.Input;
-using Blade.MG.UI;
 using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI

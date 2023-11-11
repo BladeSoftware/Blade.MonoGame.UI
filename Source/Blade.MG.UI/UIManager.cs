@@ -1,5 +1,4 @@
 ﻿using Blade.MG.Primitives;
-using Blade.MG.UI;
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
@@ -94,23 +93,23 @@ namespace Blade.MG.UI
             Instance.EnqueTask(new UITask { TaskType = UITaskType.Clear, Window = null });
         }
 
-        public static void Add(UIWindow ui, Game game, int priority = 100)
+        public static void Add(UIWindow ui, int priority = 100)
         {
             Instance.EnqueTask(new UITask { TaskType = UITaskType.Add, Window = ui, Priority = priority });
-
-            ui.Initialize(game);
+            
+            ui.Initialize(Instance.game);
             ui.LoadContent();
 
             Instance.HandleTaskQueue();
         }
 
-        public static void Add(ICollection<UIWindow> ui, Game game, int priority = 100)
+        public static void Add(ICollection<UIWindow> ui, int priority = 100)
         {
             foreach (var uiWindow in ui)
             {
                 Instance.EnqueTask(new UITask { TaskType = UITaskType.Add, Window = uiWindow, Priority = priority });
 
-                uiWindow.Initialize(game);
+                uiWindow.Initialize(Instance.game);
                 uiWindow.LoadContent();
             }
 

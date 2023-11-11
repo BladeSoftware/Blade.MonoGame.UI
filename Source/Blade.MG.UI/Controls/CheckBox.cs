@@ -1,7 +1,6 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
-using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls
 {

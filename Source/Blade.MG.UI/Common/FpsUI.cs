@@ -1,7 +1,6 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
 using Blade.MG.UI.Events;
-using Blade.MG.UI;
 using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Common
@@ -102,7 +101,7 @@ namespace Blade.MG.UI.Common
                 VerticalContentAlignment = VerticalAlignmentType.Center,
                 TextColor = new Binding<Color>(Color.White),
                 //SpriteFont = new Binding<SpriteFontBase>(fontArial8),
-                FontName = null,
+                FontName = "Default",
                 FontSize = DebugUIHeight - 4
             };
             grid1.AddChild(fps, 1, 1);
@@ -116,7 +115,7 @@ namespace Blade.MG.UI.Common
                 TextColor = new Binding<Color>(Color.White),
                 Margin = new Thickness(15, 0, 0, 0),
                 //SpriteFont = new Binding<SpriteFontBase>(fontArial8),
-                FontName = null,
+                FontName = "Default",
                 FontSize = DebugUIHeight - 4
 
             };
@@ -131,7 +130,7 @@ namespace Blade.MG.UI.Common
                 VerticalContentAlignment = VerticalAlignmentType.Center,
                 TextColor = new Binding<Color>(Color.White),
                 //SpriteFont = new Binding<SpriteFontBase>(fontArial8),
-                FontName = null,
+                FontName = "Default",
                 FontSize = DebugUIHeight - 4
             };
             grid1.AddChild(physicsfps, 4, 1);
@@ -145,7 +144,7 @@ namespace Blade.MG.UI.Common
                 TextColor = new Binding<Color>(Color.White),
                 Margin = new Thickness(15, 0, 0, 0),
                 //SpriteFont = new Binding<SpriteFontBase>(fontArial8),
-                FontName = null,
+                FontName = "Default",
                 FontSize = DebugUIHeight - 4
 
             };

@@ -24,17 +24,19 @@ namespace Blade.MG.UI.Controls
             float desiredWidth = Width.ToPixels(availableSize.Width);
             float desiredHeight = Height.ToPixels(availableSize.Height);
 
-            if ((FloatHelper.IsNaN(Width) || FloatHelper.IsNaN(Height)) && ImageTexture?.Texture != null)
-            {
+            var layoutParams = ImageTexture.GetLayoutRect(new Rectangle(0, 0, (int)availableSize.Width, (int)availableSize.Height));
+            var scale = new Vector2(layoutParams.scale.X / ImageTexture.TextureScale.X, layoutParams.scale.Y / ImageTexture.TextureScale.Y);
 
+            if (ImageTexture?.Texture != null)
+            {
                 if (FloatHelper.IsNaN(Width))
                 {
-                    desiredWidth = ImageTexture.Texture.Width;
+                    desiredWidth = ImageTexture.Texture.Width * scale.X;
                 }
 
                 if (FloatHelper.IsNaN(Height))
                 {
-                    desiredHeight = ImageTexture.Texture.Height;
+                    desiredHeight = ImageTexture.Texture.Height * scale.Y;
                 }
             }
 
@@ -54,7 +56,7 @@ namespace Blade.MG.UI.Controls
 
             ClampDesiredSize(availableSize, parentMinMax);
 
-            //base.Measure(context, availableSize, ref parentMinMax);
+            //base.Measure(context, ref availableSize, ref parentMinMax);
         }
 
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)

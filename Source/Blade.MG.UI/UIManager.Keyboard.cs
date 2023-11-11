@@ -1,6 +1,5 @@
 ﻿using Blade.MG.Input;
 using Blade.MG.Input.Keyboards;
-using Blade.MG.UI;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;

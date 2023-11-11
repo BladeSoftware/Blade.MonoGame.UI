@@ -1,6 +1,5 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Theming;
-using Blade.MG.UI;
 using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI

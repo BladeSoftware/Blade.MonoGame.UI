@@ -1,5 +1,8 @@
-﻿using Blade.MG.UI.Components;
+﻿using Blade.MG.Input;
+using Blade.MG.Primitives;
+using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Blade.MG.UI.Controls
 {
@@ -91,14 +94,12 @@ namespace Blade.MG.UI.Controls
         public int GetColumnSpan(UIComponent element)
         {
             int column;
-            if (ColumnSpanProperty.TryGetValue(element, out column))
+            if (!ColumnSpanProperty.TryGetValue(element, out column))
             {
-                return column;
+                column = 1;
             }
-            else
-            {
-                return 1;
-            }
+
+            return (column < 1) ? 1 : column;
         }
 
         public void SetColumnSpan(UIComponent element, int value)
@@ -116,14 +117,12 @@ namespace Blade.MG.UI.Controls
         public int GetRowSpan(UIComponent element)
         {
             int row;
-            if (RowSpanProperty.TryGetValue(element, out row))
+            if (!RowSpanProperty.TryGetValue(element, out row))
             {
-                return row;
+                row = 1;
             }
-            else
-            {
-                return 1;
-            }
+
+            return (row < 1) ? 1 : row;
         }
 
         public void SetRowSpan(UIComponent element, int value)
@@ -138,32 +137,8 @@ namespace Blade.MG.UI.Controls
             }
         }
 
-        public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
+        private void ClampMaxMin()
         {
-            parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
-
-            // If we have no Rows or Columns then add a default Row/Column set to Auto
-            columnMeasurer = ColumnDefinitions.Count > 0 ? new GridMeasurer(ColumnDefinitions) : new GridMeasurer(defaultColumns);
-            rowMeasurer = RowDefinitions.Count > 0 ? new GridMeasurer(RowDefinitions) : new GridMeasurer(defaultRows);
-
-
-            // Calc Child Sizes
-            foreach (var child in Children)
-            {
-                Layout gridParentMinMax = parentMinMax;
-                child.Measure(context, ref availableSize, ref gridParentMinMax);
-
-                //child.Measure(context, ref availableSize, ref parentMinMax);
-
-                int col = GetColumn(child);
-                int colSpan = GetColumnSpan(child);
-                int row = GetRow(child);
-                int rowSpan = GetRowSpan(child);
-
-                columnMeasurer.MeasureChild(child, child.DesiredSize.Width + child.Margin.Value.Horizontal, col, colSpan);
-                rowMeasurer.MeasureChild(child, child.DesiredSize.Height + child.Margin.Value.Vertical, row, rowSpan);
-            }
-
             foreach (var col in columnMeasurer.Measurables)
             {
                 if (!float.IsNaN(col.MaxSize))
@@ -225,6 +200,56 @@ namespace Blade.MG.UI.Controls
                     }
                 }
             }
+
+        }
+
+        public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
+        {
+            parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
+
+            // If we have no Rows or Columns then add a default Row/Column set to Auto
+            columnMeasurer = ColumnDefinitions.Count > 0 ? new GridMeasurer(ColumnDefinitions) : new GridMeasurer(defaultColumns);
+            rowMeasurer = RowDefinitions.Count > 0 ? new GridMeasurer(RowDefinitions) : new GridMeasurer(defaultRows);
+
+
+            // Calc Child Sizes
+            int maxColSpan = 0;
+            int maxRowSpan = 0;
+            foreach (var child in Children)
+            {
+                Layout gridParentMinMax = parentMinMax;
+                child.Measure(context, ref availableSize, ref gridParentMinMax);
+
+                int colSpan = GetColumnSpan(child);
+                int rowSpan = GetRowSpan(child);
+
+                maxColSpan = Math.Max(colSpan, maxColSpan);
+                maxRowSpan = Math.Max(rowSpan, maxRowSpan);
+            }
+
+            for (int i = 1; i <= maxColSpan; i++)
+            {
+                foreach (var child in Children.Where(p=> GetColumnSpan(p) == i))
+                {
+                    int col = GetColumn(child);
+                    int colSpan = i; // GetColumnSpan(child);
+
+                    columnMeasurer.MeasureChild(child, child.DesiredSize.Width + child.Margin.Value.Horizontal, col, colSpan);
+                }
+            }
+
+            for (int i = 1; i <= maxRowSpan; i++)
+            {
+                foreach (var child in Children.Where(p => GetRowSpan(p) == i))
+                {
+                    int row = GetRow(child);
+                    int rowSpan = i; // GetRowSpan(child);
+
+                    rowMeasurer.MeasureChild(child, child.DesiredSize.Height + child.Margin.Value.Vertical, row, rowSpan);
+                }
+            }
+
+            ClampMaxMin();
 
             float usedWidth = 0f;
             foreach (var col in columnMeasurer.Measurables)
@@ -311,7 +336,7 @@ namespace Blade.MG.UI.Controls
             }
 
 
-            // Divide the remaining space between the Start columns
+            // Divide the remaining space between the Star columns/rows
             columnMeasurer.MeasureStar(Math.Max(layoutBounds.Width - usedWidth, 0));
             rowMeasurer.MeasureStar(Math.Max(layoutBounds.Height - usedHeight, 0));
 
@@ -426,6 +451,51 @@ namespace Blade.MG.UI.Controls
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
             base.RenderControl(context, layoutBounds, parentTransform);
+
+            // For debugging, highlight the row and column under the mouse
+            if (UIManager.RenderControlHitBoxes)
+            {
+                using (SpriteBatch sb = new SpriteBatch(context.GraphicsDevice))
+                {
+                    sb.Begin();
+
+                    float left = FinalContentRect.Left;
+                    float top = FinalContentRect.Top;
+
+                    Color color = new Color(0.1f, 0.1f, 0.1f, 0.25f);
+
+                    foreach (var col in columnMeasurer.Measurables)
+                    {
+                        Rectangle colRect = new Rectangle((int)left, (int)top, (int)col.CalcSize, FinalContentRect.Height);
+
+                        if (colRect.Contains(InputManager.MouseState.Position))
+                        {
+                            Primitives2D.FillRect(sb, colRect, color);
+                        }
+
+                        left += col.CalcSize;
+                    }
+
+
+                    left = FinalContentRect.Left;
+                    top = FinalContentRect.Top;
+
+                    foreach (var row in rowMeasurer.Measurables)
+                    {
+                        Rectangle rowRect = new Rectangle((int)left, (int)top, FinalContentRect.Width, (int)row.CalcSize);
+
+                        if (rowRect.Contains(InputManager.MouseState.Position))
+                        {
+                            Primitives2D.FillRect(sb, rowRect, color);
+                        }
+
+                        top += row.CalcSize;
+                    }
+
+                    sb.End();
+                }
+            }
+
         }
 
         public void AddChild(UIComponent item, int column, int row, object dataContext = null)

@@ -18,9 +18,9 @@ namespace Blade.MG.UI.Services
         /// </summary>
         /// <param name="fontName"></param>
         /// <param name="fontFile"></param>
-        public static void RegisterFont(string fontName, string fontFile)
+        public static void RegisterFont(string fontName, string fontFile, bool makeDefaultFont = false)
         {
-            RegisterFont(fontName, File.ReadAllBytes(fontFile));
+            RegisterFont(fontName, File.ReadAllBytes(fontFile), makeDefaultFont);
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Blade.MG.UI.Services
         /// </summary>
         /// <param name="fontName"></param>
         /// <param name="fontFile"></param>
-        public static void RegisterFont(string fontName, byte[] fontFile)
+        public static void RegisterFont(string fontName, byte[] fontFile, bool makeDefaultFont = false)
         {
             if (!Fonts.TryGetValue(fontName, out FontSystem fontSystem))
             {
@@ -38,6 +38,11 @@ namespace Blade.MG.UI.Services
             }
 
             fontSystem.AddFont(fontFile);
+
+            if (makeDefaultFont)
+            {
+                DefaultFontName = fontName;
+            }
         }
 
         public static SpriteFontBase GetFont(string fontName, float size)

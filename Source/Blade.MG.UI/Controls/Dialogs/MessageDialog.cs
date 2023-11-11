@@ -25,7 +25,7 @@ namespace Blade.MG.UI.Controls.Dialogs
                 Width = 150
             });
 
-            await messageDialog.ShowAsync(game);
+            await messageDialog.ShowAsync();
 
             return messageDialog.Result;
         }
@@ -52,7 +52,7 @@ namespace Blade.MG.UI.Controls.Dialogs
                 Width = 150
             });
 
-            await messageDialog.ShowAsync(game);
+            await messageDialog.ShowAsync();
 
             return messageDialog.Result;
         }

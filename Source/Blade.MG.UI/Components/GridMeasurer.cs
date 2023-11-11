@@ -38,78 +38,114 @@
                 return;
             }
 
-            // If Span is Auto then Equally divide the span by the child length
-            if (IsSpanAuto(origin, span))
-            {
-                float existingSize = 0;
-                for (int i = origin; i < origin + span; i++)
-                {
-                    if (!float.IsNaN(Measurables[i].CalcSize))
-                    {
-                        existingSize += Measurables[i].CalcSize;
-                    }
-                }
-
-                desiredSize -= existingSize;
-                if (desiredSize >= 0)
-                {
-                    float delta = desiredSize / span;
-                    for (int i = origin; i < origin + span; i++)
-                    {
-                        if (float.IsNaN(Measurables[i].CalcSize))
-                        {
-                            Measurables[i].CalcSize = delta;
-                        }
-                        else
-                        {
-                            Measurables[i].CalcSize += delta;
-                        }
-                    }
-                }
-
-                return;
-            }
-
             // Handle Mixed Column types
-            // Auto columns = 0
-            // Absolute Columns remain
-            // Extra space divided amongst Star columns 
-            // Min Size = Child Size
-            float minSize = desiredSize;
+            //float minSize = desiredSize;
             float absoluteSize = 0;
+            float existingSize = 0;
             bool hasStarColumns = false;
             int numAbsoluteColumns = 0;
+            int numAutoColumns = 0;
 
             for (int i = origin; i < origin + span; i++)
             {
+                var measurable = Measurables[i];
+                float size = FloatHelper.ValueOrZero(measurable.CalcSize);
+
+                bool isMaxSize = false;
+
+                // Clamp size to Min/Max
+                if (!FloatHelper.IsNaN(measurable.MinSize) && (size < measurable.MinSize))
+                {
+                    size = measurable.MinSize;
+                    measurable.CalcSize = size;
+                }
+
+                if (!FloatHelper.IsNaN(measurable.MaxSize) && (size > measurable.MaxSize))
+                {
+                    size = measurable.MaxSize;
+                    measurable.CalcSize = size;
+                    isMaxSize = true;
+                }
+
+
                 if (Measurables[i].IsAbsolute)
                 {
-                    absoluteSize += Measurables[i].CalcSize;
+                    absoluteSize += size; // Measurables[i].CalcSize;
+                    existingSize += size; // Measurables[i].CalcSize;
                     numAbsoluteColumns++;
                 }
                 else if (Measurables[i].IsAuto)
                 {
-                    Measurables[i].CalcSize = 0;
+                    existingSize += size;
+
+                    if (!isMaxSize)
+                    {
+                        numAutoColumns++;
+                    }
                 }
                 else if (Measurables[i].IsStar)
                 {
+                    existingSize += size; // ??
                     hasStarColumns = true;
                 }
             }
 
-            // minSize - absoluteSize > 0 then divvy equally amongst absolute columns (provided there aren't any star columns)
-            float remainingSize = desiredSize - absoluteSize;
-            if (!hasStarColumns && remainingSize > 0)
-            {
-                float delta = remainingSize / numAbsoluteColumns;
 
-                for (int i = origin; i < origin + span; i++)
+            // minSize - absoluteSize > 0 then divvy equally amongst auto columns
+            float remainingSize = desiredSize - existingSize;
+            bool allocated = false;
+            //if (!hasStarColumns && remainingSize > 0)
+            if (remainingSize > 0)
+            {
+                do
                 {
-                    if (Measurables[i].IsAbsolute)
+                    float delta = remainingSize / numAutoColumns;
+
+                    numAutoColumns = 0;
+                    for (int i = origin; i < origin + span; i++)
                     {
-                        Measurables[i].CalcSize += delta;
+                        var measurable = Measurables[i];
+                        float size = delta;
+
+                        if (measurable.IsAuto)
+                        {
+                            if (FloatHelper.IsNaN(Measurables[i].CalcSize))
+                            {
+                                if (!FloatHelper.IsNaN(measurable.MaxSize) && (size > measurable.MaxSize))
+                                {
+                                    size = measurable.MaxSize;
+                                }
+                                else
+                                {
+                                    numAutoColumns++;
+                                }
+
+                                Measurables[i].CalcSize = size;
+                            }
+                            else
+                            {
+                                if (!FloatHelper.IsNaN(measurable.MaxSize) && (Measurables[i].CalcSize + size > measurable.MaxSize))
+                                {
+                                    size = Math.Max(measurable.MaxSize - Measurables[i].CalcSize, 0f);
+                                }
+                                else
+                                {
+                                    numAutoColumns++;
+                                }
+
+                                Measurables[i].CalcSize += size;
+                            }
+
+                            remainingSize -= size;
+                        }
+
+                        if (size > 0)
+                        {
+                            allocated = true;
+                        }
                     }
-                }
+
+                } while (remainingSize > 0 && allocated && numAutoColumns > 0);
             }
 
         }

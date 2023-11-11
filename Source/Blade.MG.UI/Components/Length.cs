@@ -7,9 +7,13 @@ namespace Blade.MG.UI.Components
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNaN(float value) => float.IsNaN(value);
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNaN(Length length) => float.IsNaN(length.Value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float ValueOrZero(float value) => float.IsNaN(value) ? 0f : value;
+
     }
 
     public enum LengthUnit

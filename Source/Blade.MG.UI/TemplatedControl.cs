@@ -1,11 +1,4 @@
-﻿using Blade.MG.UI.Controls.Templates;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Blade.MG.UI
+﻿namespace Blade.MG.UI
 {
     public class TemplatedControl : Control
     {

@@ -1,5 +1,4 @@
-﻿using Blade.MG.UI;
-using Microsoft.VisualStudio.Threading;
+﻿using Microsoft.VisualStudio.Threading;
 using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls
@@ -10,9 +9,9 @@ namespace Blade.MG.UI.Controls
         //private ManualResetEventSlim manualResetEventSlim = new ManualResetEventSlim(false);
 
 
-        public void Show(Game game)
+        public void Show()
         {
-            UIManager.Add(this, game);
+            UIManager.Add(this);
         }
 
         //public async Task ShowAsync(Game game)
@@ -24,11 +23,11 @@ namespace Blade.MG.UI.Controls
         //    manualResetEventSlim.Wait();
         //}
 
-        public async Task ShowAsync(Game game)
+        public async Task ShowAsync()
         {
             asyncManualResetEvent.Reset();
 
-            UIManager.Add(this, game);
+            UIManager.Add(this);
 
             //await Task.Run(async () =>
             //{
