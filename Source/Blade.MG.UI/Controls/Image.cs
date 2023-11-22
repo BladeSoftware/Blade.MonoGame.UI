@@ -1,5 +1,6 @@
 ﻿using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Blade.MG.UI.Controls
 {
@@ -24,19 +25,35 @@ namespace Blade.MG.UI.Controls
             float desiredWidth = Width.ToPixels(availableSize.Width);
             float desiredHeight = Height.ToPixels(availableSize.Height);
 
-            var layoutParams = ImageTexture.GetLayoutRect(new Rectangle(0, 0, (int)availableSize.Width, (int)availableSize.Height));
-            var scale = new Vector2(layoutParams.scale.X / ImageTexture.TextureScale.X, layoutParams.scale.Y / ImageTexture.TextureScale.Y);
+            desiredWidth = FloatHelper.IsNaN(desiredWidth) ? (int)availableSize.Width : (int)desiredWidth;
+            desiredHeight = FloatHelper.IsNaN(desiredHeight) ? (int)availableSize.Height : (int)desiredHeight;
+
+            float maxWidth = MaxWidth.ToPixels(availableSize.Width);
+            float maxHeight = MaxHeight.ToPixels(availableSize.Height);
+            float minWidth = MinWidth.ToPixels(availableSize.Width);
+            float minHeight = MinHeight.ToPixels(availableSize.Height);
+
+            if (!float.IsNaN(minWidth) && desiredWidth < minWidth) desiredWidth = minWidth;
+            if (!float.IsNaN(minHeight) && desiredHeight < minHeight) desiredHeight = minHeight;
+            if (!float.IsNaN(maxWidth) && desiredWidth > maxWidth) desiredWidth = maxWidth;
+            if (!float.IsNaN(maxHeight) && desiredHeight > maxHeight) desiredHeight = maxHeight;
+
+
+            var layoutParams = ImageTexture.GetLayoutRect(new Rectangle(0, 0, (int)desiredWidth, (int)desiredHeight));
+            //var scale = new Vector2(layoutParams.scale.X / ImageTexture.TextureScale.X, layoutParams.scale.Y / ImageTexture.TextureScale.Y);
 
             if (ImageTexture?.Texture != null)
             {
                 if (FloatHelper.IsNaN(Width))
                 {
-                    desiredWidth = ImageTexture.Texture.Width * scale.X;
+                    //desiredWidth = ImageTexture.Texture.Width * layoutParams.scale.X;
+                    desiredWidth = layoutParams.dstRect.Width;
                 }
 
                 if (FloatHelper.IsNaN(Height))
                 {
-                    desiredHeight = ImageTexture.Texture.Height * scale.Y;
+                    //desiredHeight = ImageTexture.Texture.Height * layoutParams.scale.Y;
+                    desiredHeight = layoutParams.dstRect.Height;
                 }
             }
 
@@ -172,7 +189,9 @@ namespace Blade.MG.UI.Controls
             if (ImageTexture?.Texture != null)
             {
                 var layoutParams = ImageTexture.GetLayoutRect(FinalContentRect);
-                var scale = new Vector2(layoutParams.scale.X / ImageTexture.TextureScale.X, layoutParams.scale.Y / ImageTexture.TextureScale.Y);
+                //var scale = new Vector2(layoutParams.scale.X / ImageTexture.TextureScale.X, layoutParams.scale.Y / ImageTexture.TextureScale.Y);
+                var scale = new Vector2(ImageTexture.TextureScale.X / layoutParams.scale.X, ImageTexture.TextureScale.Y / layoutParams.scale.Y);
+
                 context.Renderer.DrawTexture(layoutParams.dstRect, ImageTexture, scale, renderBounds);
             }
             //else if (Color != Color.Transparent)
@@ -190,5 +209,16 @@ namespace Blade.MG.UI.Controls
 
 
         }
+
+        public override void Dispose()
+        {
+            if (ImageTexture?.Texture is RenderTarget2D)
+            {
+                ImageTexture?.Texture?.Dispose();
+            }
+
+            base.Dispose();
+        }
+
     }
 }

@@ -298,10 +298,10 @@ namespace Blade.MG.UI.Controls
             // Draw the dividing line between the tab headers and tab body
             try
             {
-                context.Renderer.BeginBatch(transform: parentTransform);
+                using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
 
                 Rectangle dividerRect = new Rectangle(tabsStackPanel.FinalRect.Left, tabsStackPanel.FinalRect.Bottom - 2, tabsStackPanel.FinalRect.Width, 2);
-                context.Renderer.FillRect(dividerRect, DividerColor, layoutBounds);
+                context.Renderer.FillRect(spriteBatch, dividerRect, DividerColor, layoutBounds);
             }
             finally
             {

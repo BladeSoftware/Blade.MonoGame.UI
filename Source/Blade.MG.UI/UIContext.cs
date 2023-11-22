@@ -9,9 +9,9 @@ namespace Blade.MG.UI
     public class UIContext
     {
         public Game Game { get; set; }
-        public ContentManager Content { get; init; }
+        //public ContentManager Content { get; init; }
         public GraphicsDevice GraphicsDevice => Game?.GraphicsDevice;
-        public SpriteBatch SpriteBatch { get; set; }
+        //public SpriteBatch SpriteBatch { get; set; }
 
         public Texture2D Pixel { get; set; } // A 1x1 Texture with Color #FFFFFFFF (White)
 

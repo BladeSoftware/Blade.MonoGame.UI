@@ -11,7 +11,7 @@ namespace Blade.MG.UI
     // Implement custom serialiser for Colours / binding etc ? https://weblogs.asp.net/pwelter34/444961   :  https://stackoverflow.com/questions/29624215/using-c-sharp-xml-serializer-to-produce-custom-xml-format
 
     [KnownType("GetKnownTypes")]
-    public abstract class UIComponent
+    public abstract class UIComponent : IDisposable
     {
         private static IEnumerable<Type> knownTypes = null;
 
@@ -1241,10 +1241,14 @@ namespace Blade.MG.UI
         //    //            member4 = "This value was set after deserialization.";
         //}
 
+        public virtual void Dispose()
+        {
+        }
 
         public override string ToString()
         {
             return $"Name={Name} : " + base.ToString();
         }
+
     }
 }

@@ -184,10 +184,10 @@ namespace Blade.MG.UI.Controls
             {
                 try
                 {
-                    context.Renderer.BeginBatch(transform: parentTransform);
+                    using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
 
                     // context.Renderer.FillRect(new Rectangle(finalRect.Left, finalRect.Bottom - HorizontalScrollBar.BarThickness, finalRect.Width, HorizontalScrollBar.BarThickness), HorizontalScrollBar.Background);
-                    context.Renderer.FillRect(new Rectangle(FinalRect.Right - VerticalScrollBar.BarThickness, FinalRect.Bottom - HorizontalScrollBar.BarThickness, VerticalScrollBar.BarThickness, HorizontalScrollBar.BarThickness), HorizontalScrollBar.Background.Value);
+                    context.Renderer.FillRect(spriteBatch, new Rectangle(FinalRect.Right - VerticalScrollBar.BarThickness, FinalRect.Bottom - HorizontalScrollBar.BarThickness, VerticalScrollBar.BarThickness, HorizontalScrollBar.BarThickness), HorizontalScrollBar.Background.Value);
 
                 }
                 finally

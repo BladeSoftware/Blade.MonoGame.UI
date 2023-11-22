@@ -69,6 +69,17 @@ namespace Blade.MG.UI
             }
         }
 
+        public override void Dispose()
+        {
+            foreach (var child in Children)
+            {
+                child.Dispose();
+            }
+
+            base.Dispose();
+        }
+
+
         //[OnSerializing()]
         //internal void OnSerializingMethod(StreamingContext context)
         //{

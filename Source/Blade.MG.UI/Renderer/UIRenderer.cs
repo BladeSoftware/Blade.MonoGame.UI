@@ -18,8 +18,9 @@ namespace Blade.MG.UI.Renderer
         }
 
         protected UIContext Context { get; set; }
-        public GraphicsDevice GraphicsDevice => Context?.Game?.GraphicsDevice;
-        private SpriteBatch spriteBatch { get; set; }
+        //public GraphicsDevice GraphicsDevice => Context?.Game?.GraphicsDevice;
+        public GraphicsDevice GraphicsDevice { get; set; }
+        //private SpriteBatch spriteBatch { get; set; }
 
         public RasterizerState rasterizerState { get; private set; }
 
@@ -32,7 +33,8 @@ namespace Blade.MG.UI.Renderer
         public UIRenderer(UIContext context)
         {
             Context = context;
-            spriteBatch = context.SpriteBatch;
+            GraphicsDevice = Context?.GraphicsDevice;
+            //spriteBatch = context.SpriteBatch;
 
             rasterizerState = new RasterizerState
             {
@@ -118,7 +120,7 @@ namespace Blade.MG.UI.Renderer
         private Stack<State> renderState = new Stack<State>();
         private Stack<DepthStencilState> depthStencil = new Stack<DepthStencilState>();
 
-        private Rectangle ViewportBounds => spriteBatch.GraphicsDevice.Viewport.Bounds;
+        private Rectangle ViewportBounds => GraphicsDevice.Viewport.Bounds;
         //private Rectangle ViewportBounds => Context.Game.GraphicsDevice.Viewport.Bounds;
 
 
@@ -137,7 +139,7 @@ namespace Blade.MG.UI.Renderer
             DepthBufferEnable = false
         };
 
-        public void BeginBatch(Transform? transform, SpriteSortMode spriteSortMode = SpriteSortMode.Immediate, DepthStencilState depthStencilState = null, Effect effect = null, BlendState blendState = null)
+        public SpriteBatch BeginBatch(Transform? transform, SpriteSortMode spriteSortMode = SpriteSortMode.Immediate, DepthStencilState depthStencilState = null, Effect effect = null, BlendState blendState = null)
         {
             PushState();
 
@@ -149,13 +151,15 @@ namespace Blade.MG.UI.Renderer
 
             Effect currentEffect = effect;
 
+            SpriteBatch spriteBatch = new SpriteBatch(GraphicsDevice);
             spriteBatch.Begin(spriteSortMode, currentBlendState, SamplerState.LinearClamp, currentDepthStencilState, rasterizerState, currentEffect, transform?.GetMatrix());
 
+            return spriteBatch;
         }
 
         public void EndBatch()
         {
-            spriteBatch.End();
+            //spriteBatch.End();
 
             PopState();
 
@@ -168,7 +172,7 @@ namespace Blade.MG.UI.Renderer
         {
             var state = new State
             {
-                ClipRect = spriteBatch.GraphicsDevice.ScissorRectangle,
+                ClipRect = GraphicsDevice.ScissorRectangle,
                 //DepthStencilState = currentDepthStencilState,
                 //BlendState = currentBlendState,
                 //Effect = currentEffect
@@ -186,14 +190,14 @@ namespace Blade.MG.UI.Renderer
         {
             var state = renderState.Pop();
 
-            spriteBatch.GraphicsDevice.ScissorRectangle = state.ClipRect;
+            GraphicsDevice.ScissorRectangle = state.ClipRect;
 
             //currentDepthStencilState = state.DepthStencilState;
         }
 
         public void ClearStencilBuffer()
         {
-            BeginBatch(depthStencilState: stencilStateReplaceAlways, effect: null, blendState: blendStateStencilOnly, transform: null);
+            using var spriteBatch = BeginBatch(depthStencilState: stencilStateReplaceAlways, effect: null, blendState: blendStateStencilOnly, transform: null);
             //Primitives2D.FillRect(Context.Game, spriteBatch, ViewportBounds, Color.White);
             Primitives2D.FillRect(spriteBatch, ViewportBounds, Color.White);
             EndBatch();
@@ -206,15 +210,15 @@ namespace Blade.MG.UI.Renderer
 
             if (clippedRect == Rectangle.Empty)
             {
-                spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(-1, -1, 1, 1);
+                GraphicsDevice.ScissorRectangle = new Rectangle(-1, -1, 1, 1);
             }
             else
             {
-                spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(clippedRect.Left, clippedRect.Top, clippedRect.Width, clippedRect.Height);
+                GraphicsDevice.ScissorRectangle = new Rectangle(clippedRect.Left, clippedRect.Top, clippedRect.Width, clippedRect.Height);
             }
         }
 
-        public void FillRect(Rectangle rectangle, Color color, Rectangle? clippingRect = null)
+        public void FillRect(SpriteBatch spriteBatch, Rectangle rectangle, Color color, Rectangle? clippingRect = null)
         {
             if (clippingRect != null)
             {
@@ -224,7 +228,7 @@ namespace Blade.MG.UI.Renderer
             spriteBatch.Draw(Context.Pixel, rectangle, color);
         }
 
-        public void DrawRect(Rectangle rectangle, Color color, Rectangle? clippingRect = null)
+        public void DrawRect(SpriteBatch spriteBatch, Rectangle rectangle, Color color, Rectangle? clippingRect = null)
         {
             if (clippingRect != null)
             {
@@ -298,19 +302,19 @@ namespace Blade.MG.UI.Renderer
         //    }
         //}
 
-        public void FillRect(Rectangle rectangle, Texture2D texture2D, Color color, Rectangle? clippingRect = null)
-        {
-            if (clippingRect != null)
-            {
-                ClipToRect(clippingRect.Value);
-            }
+        //public void FillRect(Rectangle rectangle, Texture2D texture2D, Color color, Rectangle? clippingRect = null)
+        //{
+        //    if (clippingRect != null)
+        //    {
+        //        ClipToRect(clippingRect.Value);
+        //    }
 
-            spriteBatch.Draw(texture2D ?? Context.Pixel, rectangle, color);  // TODO: Implement Scaling Options ? Uniform / UniformToFit / Repeat? etc.
-        }
+        //    spriteBatch.Draw(texture2D ?? Context.Pixel, rectangle, color);  // TODO: Implement Scaling Options ? Uniform / UniformToFit / Repeat? etc.
+        //}
 
         public void DrawTexture(Rectangle rectangle, TextureLayout textureLayout, Vector2 scale, Rectangle? clippingRect = null)
         {
-            var viewport = spriteBatch.GraphicsDevice.Viewport;
+            var viewport = GraphicsDevice.Viewport;
 
             Matrix projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1);
 
@@ -364,26 +368,27 @@ namespace Blade.MG.UI.Renderer
             int backgroundScaleY = (int)(scaleY * textureLayout.Texture.Height * scale.Y);
 
             // Draw background image
-            Context.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointWrap, null, Context.Renderer.rasterizerState, basicEffect);
-            Context.SpriteBatch.Draw(textureLayout.Texture, rectangle, new Rectangle(0, 0, backgroundScaleX, backgroundScaleY), Color.White);
-            Context.SpriteBatch.End();
+            using var spriteBatch = new SpriteBatch(GraphicsDevice);
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.AnisotropicWrap, null, Context.Renderer.rasterizerState, basicEffect);
+            spriteBatch.Draw(textureLayout.Texture, rectangle, new Rectangle(0, 0, backgroundScaleX, backgroundScaleY), Color.White);
+            spriteBatch.End();
 
             Context.Renderer.PopState();
 
         }
 
-        public void DrawRoundedRect(Rectangle rectangle, float cornerRadius, Color borderColor, float borderThickness)
+        public void DrawRoundedRect(SpriteBatch spriteBatch, Rectangle rectangle, float cornerRadius, Color borderColor, float borderThickness)
         {
             Primitives2D.DrawRoundedRect(spriteBatch, rectangle, cornerRadius, borderColor, borderThickness, true);
         }
 
-        public void FillRoundedRect(Rectangle rectangle, float cornerRadius, Color color)
+        public void FillRoundedRect(SpriteBatch spriteBatch, Rectangle rectangle, float cornerRadius, Color color)
         {
             Primitives2D.FillRoundedRect(spriteBatch, rectangle, cornerRadius, color);
         }
 
 
-        public void DrawString(Rectangle rectangle, string text, SpriteFontBase spriteFont, Color? color, HorizontalAlignmentType horizontalAlignment = HorizontalAlignmentType.Left, VerticalAlignmentType verticalAlignment = VerticalAlignmentType.Center, Rectangle? clippingRect = null)
+        public void DrawString(SpriteBatch spriteBatch, Rectangle rectangle, string text, SpriteFontBase spriteFont, Color? color, HorizontalAlignmentType horizontalAlignment = HorizontalAlignmentType.Left, VerticalAlignmentType verticalAlignment = VerticalAlignmentType.Center, Rectangle? clippingRect = null)
         {
             SpriteFontBase font = spriteFont ?? FontService.GetFontOrDefault(null, null);
             Vector2 textSize = font.MeasureString(text);

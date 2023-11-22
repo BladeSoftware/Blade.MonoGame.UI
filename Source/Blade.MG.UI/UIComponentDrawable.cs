@@ -29,9 +29,9 @@ namespace Blade.MG.UI
             {
                 try
                 {
-                    context.Renderer.BeginBatch(transform: parentTransform);
+                    using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
                     //context.Renderer.FillRect(FinalContentRect, Background.Value, layoutBounds);
-                    context.Renderer.FillRect(FinalRect, Background.Value, layoutBounds);
+                    context.Renderer.FillRect(spriteBatch, FinalRect, Background.Value, layoutBounds);
                 }
                 finally
                 {

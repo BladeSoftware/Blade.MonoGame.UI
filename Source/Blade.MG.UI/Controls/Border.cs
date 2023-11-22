@@ -63,13 +63,13 @@ namespace Blade.MG.UI.Controls
 
                 try
                 {
-                    context.Renderer.BeginBatch(transform: parentTransform);
+                    using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
                     context.Renderer.ClipToRect(layoutBounds);
 
                     //Rectangle shadowRect = finalRect with { X = finalRect.X - Elevation.Value, Y = finalRect.Y - Elevation.Value, Width = finalRect.Width + 3 * Elevation.Value, Height = finalRect.Height + 3 * Elevation.Value };
                     //Rectangle shadowRect = finalRect with { X = finalRect.X + Elevation.Value, Y = finalRect.Y + Elevation.Value, Width = finalRect.Width + Elevation.Value, Height = finalRect.Height + Elevation.Value };
                     Rectangle shadowRect = FinalRect with { X = FinalRect.X + Elevation.Value, Y = FinalRect.Y + Elevation.Value, Width = FinalRect.Width, Height = FinalRect.Height };
-                    context.Renderer.FillRoundedRect(shadowRect, 8, new Color(Color.LightGray, 0.35f));
+                    context.Renderer.FillRoundedRect(spriteBatch, shadowRect, 8, new Color(Color.LightGray, 0.35f));
 
                     //context.Renderer.DrawRoundedRect(finalRect, CornerRadius.Value, BorderColor.Value, BorderThickness.Value);
                     //context.Renderer.FillRect(shadowRect, new Color(Color.LightBlue, 0.8f));
@@ -123,8 +123,8 @@ namespace Blade.MG.UI.Controls
                 //alphaTestEffect.Projection = projectionMatrix;
 
                 //context.Renderer.BeginBatch(depthStencilState: Renderer.UIRenderer.stencilStateReplaceAlways, effect: alphaTestEffect, blendState: Renderer.UIRenderer.blendStateStencilOnly);
-                context.Renderer.BeginBatch(depthStencilState: UIRenderer.stencilStateReplaceAlways, blendState: UIRenderer.blendStateStencilOnly, transform: null);
-                context.Renderer.FillRect(FinalRect, Color.White);
+                using var spriteBatch = context.Renderer.BeginBatch(depthStencilState: UIRenderer.stencilStateReplaceAlways, blendState: UIRenderer.blendStateStencilOnly, transform: null);
+                context.Renderer.FillRect(spriteBatch, FinalRect, Color.White);
                 context.Renderer.EndBatch();
             }
 
@@ -134,11 +134,11 @@ namespace Blade.MG.UI.Controls
             {
                 try
                 {
-                    context.Renderer.BeginBatch(transform: parentTransform);
+                    using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
                     //context.Renderer.ClipToRect(layoutBounds with { Width = layoutBounds.Width - 1, Height = layoutBounds.Height - 1 });
                     context.Renderer.ClipToRect(layoutBounds);
 
-                    context.Renderer.DrawRoundedRect(FinalRect, CornerRadius.Value, BorderColor.Value, BorderThickness.Value);
+                    context.Renderer.DrawRoundedRect(spriteBatch, FinalRect, CornerRadius.Value, BorderColor.Value, BorderThickness.Value);
                 }
                 finally
                 {
@@ -194,13 +194,13 @@ namespace Blade.MG.UI.Controls
 
 
             // Draw Stencil
-            context.Renderer.BeginBatch(depthStencilState: UIRenderer.stencilStateZeroAlways, blendState: UIRenderer.blendStateStencilOnly, transform: null);
+            using var spriteBatch = context.Renderer.BeginBatch(depthStencilState: UIRenderer.stencilStateZeroAlways, blendState: UIRenderer.blendStateStencilOnly, transform: null);
             //context.Renderer.BeginBatch(depthStencilState: Renderer.UIRenderer.stencilStateZeroAlways, effect: alphaTestEffect, blendState: Renderer.UIRenderer.blendStateStencilOnly);
             //context.SpriteBatch.Begin(SpriteSortMode.Immediate, depthStencilState: stencilState1, effect: alphaTestEffect, blendState: blendState);
             //Primitives2D.FillRoundedRect(context.Game, context.SpriteBatch, finalRect, CornerRadius.Value, Color.White);
 
             //Primitives2D.FillRoundedRectCornersInverted(context.Game, context.SpriteBatch, finalRect, CornerRadius.Value, Color.White);
-            Primitives2D.FillRoundedRectCornersInverted(context.SpriteBatch, rectangle, CornerRadius.Value, Color.White);
+            Primitives2D.FillRoundedRectCornersInverted(spriteBatch, rectangle, CornerRadius.Value, Color.White);
 
             //context.SpriteBatch.End();
             context.Renderer.EndBatch();

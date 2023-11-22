@@ -133,11 +133,11 @@ namespace Blade.MG.UI.Controls.Templates
 
             try
             {
-                context.Renderer.BeginBatch(transform: parentTransform);
+                using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
                 context.Renderer.ClipToRect(layoutBounds);
 
-                context.Renderer.FillRoundedRect(boxRect, boxRect.Width / 4, Color.LightGray);
-                context.Renderer.DrawRoundedRect(boxRect, boxRect.Width / 4, Color.Black, 2f);
+                context.Renderer.FillRoundedRect(spriteBatch, boxRect, boxRect.Width / 4, Color.LightGray);
+                context.Renderer.DrawRoundedRect(spriteBatch, boxRect, boxRect.Width / 4, Color.Black, 2f);
 
                 if (checkbox.IsChecked?.Value == null)
                 {
@@ -145,14 +145,14 @@ namespace Blade.MG.UI.Controls.Templates
                     var insideRect = boxRect;
                     insideRect.Inflate(-3f, -3f);
 
-                    context.Renderer.FillRoundedRect(insideRect, 4, new Color(Color.Black, 1f));
+                    context.Renderer.FillRoundedRect(spriteBatch, insideRect, 4, new Color(Color.Black, 1f));
                 }
                 else if (checkbox.IsChecked?.Value == true)
                 {
                     // Checked
                     if (img != null)
                     {
-                        context.SpriteBatch.Draw(img, boxRect, Color.Red);
+                        spriteBatch.Draw(img, boxRect, Color.Red);
                     }
                 }
 

@@ -46,16 +46,16 @@ namespace Blade.MG.UI.Controls.Templates
 
             try
             {
-                context.Renderer.BeginBatch(transform: parentTransform); // Transform.Combine(parentTransform, Transform)
+                using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform); // Transform.Combine(parentTransform, Transform)
 
                 if (Background.Value != Color.Transparent)
                 {
                     ////context.Renderer.FillRect(FinalRect, Background.Value, layoutBounds);
-                    context.Renderer.FillRect(FinalContentRect, Background.Value, layoutBounds);
+                    context.Renderer.FillRect(spriteBatch, FinalContentRect, Background.Value, layoutBounds);
                 }
 
                 SpriteFontBase font = FontService.GetFontOrDefault(label.FontName?.Value, label.FontSize?.Value);
-                context.Renderer.DrawString(FinalContentRect, label.Text.ToString(), font, label.TextColor?.Value, HorizontalContentAlignment.Value, VerticalContentAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
+                context.Renderer.DrawString(spriteBatch, FinalContentRect, label.Text.ToString(), font, label.TextColor?.Value, HorizontalContentAlignment.Value, VerticalContentAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
 
                 //context.Renderer.DrawString(FinalContentRect, Text.ToString(), SpriteFont?.Value, TextColor?.Value, HorizontalContentAlignment.Value, VerticalContentAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
             }

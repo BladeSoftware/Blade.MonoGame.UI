@@ -31,17 +31,17 @@ namespace Blade.MG.UI
 
         public virtual void Initialize(Game game)
         {
-            ContentManager content = new ContentManager(game.Services, "Content");
+            //ContentManager content = new ContentManager(game.Services, "Content");
 
             Context = new UIContext
             {
                 Game = game,
-                Content = content,
+                //Content = content,
                 //Pixel = content.Load<Texture2D>("UI/pixel"),
                 Pixel = Primitives2D.PixelTexture(game.GraphicsDevice),
                 //DefaultFont = content.Load<SpriteFont>("Fonts/Arial-12"),
                 //DefaultFont = content.Load<SpriteFont>("SpriteFonts/Default"),
-                SpriteBatch = new SpriteBatch(game.GraphicsDevice),
+                //SpriteBatch = new SpriteBatch(game.GraphicsDevice),
                 //Theme = new UITheme()
 
                 Theme = DefaultThemes.LightTheme()
@@ -342,9 +342,14 @@ namespace Blade.MG.UI
             await RaiseFocusChangedEventAsync(control, this);
         }
 
-        public virtual void Dispose()
+        public override void Dispose()
         {
+            hover.Clear();
 
+            //Context?.SpriteBatch?.Dispose();
+            Context = null;
+
+            base.Dispose();
         }
 
     }

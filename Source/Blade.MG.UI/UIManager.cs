@@ -409,5 +409,19 @@ namespace Blade.MG.UI
         //}
         //}
 
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            // Image controls need to dispose of their Texture2D images
+            // Possibly other controls as well
+
+            foreach (var window in uiWindows)
+            {
+                window.Value.Dispose();
+            }
+
+        }
+
     }
 }
