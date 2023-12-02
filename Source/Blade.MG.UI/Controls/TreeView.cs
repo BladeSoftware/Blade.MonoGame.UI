@@ -52,6 +52,8 @@ namespace Blade.MG.UI.Controls
         {
             base.InitTemplate();
 
+            Orientation = Orientation.Vertical;
+
             HitTestVisible = true;
         }
 
@@ -135,7 +137,12 @@ namespace Blade.MG.UI.Controls
             float desiredHeight = 0;
 
             swArrange = Stopwatch.StartNew();
-            ArrangeTree(context, layoutBounds, ref desiredWidth, ref desiredHeight);
+
+            int verticalScrollBarWidth = VerticalScrollBarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;
+            int horizontalScrollBarHeight = HorizontalScrollBarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0;
+            var treeLayoutBounds = parentLayoutBounds with { Width = layoutBounds.Width - verticalScrollBarWidth, Height = layoutBounds.Height - horizontalScrollBarHeight };
+            ArrangeTree(context, treeLayoutBounds, ref desiredWidth, ref desiredHeight);
+            //ArrangeTree(context, layoutBounds, ref desiredWidth, ref desiredHeight);
             swArrange.Stop();
 
             var nodesDesiredSize = new Size(desiredWidth, desiredHeight);

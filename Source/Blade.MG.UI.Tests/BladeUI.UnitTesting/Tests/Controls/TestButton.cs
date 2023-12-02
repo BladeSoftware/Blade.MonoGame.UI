@@ -39,7 +39,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
 
             ui.AddChild(button);
 
-            uiManager.AddUI(ui, FakeGame.Instance);
+            uiManager.AddUI(ui);
 
             // Do UI Layout
             await uiManager.PerformLayout();

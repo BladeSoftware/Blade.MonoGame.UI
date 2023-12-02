@@ -25,7 +25,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
             FakeUIManager uiManager = new FakeUIManager();
 
             var ui = new EmptyUI();
-            uiManager.AddUI(ui, FakeGame.Instance);
+            uiManager.AddUI(ui);
 
             // Do UI Layout
             await uiManager.PerformLayout();
@@ -55,7 +55,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
             var ui = new EmptyUI();
             ui.Margin = new Thickness(marginLeft, marginTop, marginRight, marginBottom);
             ui.Padding = new Thickness(paddingLeft, paddingTop, paddingRight, paddingBottom);
-            uiManager.AddUI(ui, FakeGame.Instance);
+            uiManager.AddUI(ui);
 
             // Do UI Layout
             await uiManager.PerformLayout();
@@ -107,7 +107,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
 
             ui.AddChild(panel);
 
-            uiManager.AddUI(ui, FakeGame.Instance);
+            uiManager.AddUI(ui);
 
             // Do UI Layout
             await uiManager.PerformLayout();

@@ -312,44 +312,66 @@ namespace Blade.MG.UI.Renderer
         //    spriteBatch.Draw(texture2D ?? Context.Pixel, rectangle, color);  // TODO: Implement Scaling Options ? Uniform / UniformToFit / Repeat? etc.
         //}
 
-        public void DrawTexture(Rectangle rectangle, TextureLayout textureLayout, Vector2 scale, Rectangle? clippingRect = null)
+        public void DrawTexture(Texture2D texture, Rectangle rectangle, TextureLayout textureLayout, Vector2 scale, Rectangle? clippingRect = null)
         {
             var viewport = GraphicsDevice.Viewport;
 
             Matrix projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1);
 
             Matrix view = Matrix.Identity;
-            if (clippingRect != null)
-            {
-                float translateX;
-                float translateY;
+            //if (clippingRect != null)
+            //{
+            //    float translateX = 0f;
+            //    float translateY = 0f;
 
-                switch (textureLayout.HorizontalAlignment)
-                {
-                    case HorizontalAlignmentType.Left: translateX = 0f; break;
-                    case HorizontalAlignmentType.Center: translateX = (clippingRect.Value.Width - rectangle.Width) / 2f; break;
-                    case HorizontalAlignmentType.Right: translateX = clippingRect.Value.Width - rectangle.Width; break;
-                    default: translateX = (clippingRect.Value.Width - rectangle.Width) / 2f; break;
+            //    float imgOffsetX = rectangle.Left - clippingRect.Value.Left;
+            //    float imgOffsetY = rectangle.Top - clippingRect.Value.Top;
 
-                }
 
-                switch (textureLayout.VerticalAlignment)
-                {
-                    case VerticalAlignmentType.Top: translateY = 0f; break;
-                    case VerticalAlignmentType.Center: translateY = (clippingRect.Value.Height - rectangle.Height) / 2f; break;
-                    case VerticalAlignmentType.Bottom: translateY = clippingRect.Value.Height - rectangle.Height; break;
-                    default: translateY = (clippingRect.Value.Height - rectangle.Height) / 2f; break;
-                }
+            //    //if (imgOffsetX >= 0)
+            //    //{
+            //    switch (textureLayout.HorizontalAlignment)
+            //    {
+            //        case HorizontalAlignmentType.Left: translateX = 0f; break;
+            //        case HorizontalAlignmentType.Center: translateX = (clippingRect.Value.Width - rectangle.Width) / 2f; break;
+            //        case HorizontalAlignmentType.Right: translateX = clippingRect.Value.Width - rectangle.Width; break;
+            //        default: translateX = (clippingRect.Value.Width - rectangle.Width) / 2f; break;
 
-                view = Matrix.CreateTranslation(translateX, translateY, 0);
-            }
+            //    }
+            //    //}
+            //    //else
+            //    //{
+            //    //    // Doesn't work if we have scrollbars because the scroll position conflicts with the translateX
+            //    //    // i.e. We need to adjust the scrollbars to center / align the image rather then use the translation
+            //    //    // except that:
+            //    //    //   - We don't know we're inside a control with scrollbars. Can maybe check isWidthVirtual? but that still doesn't give a reference to the scrollbars 
+            //    //    //   - if we adjust the scrollbars on every frame, then the user can't move them as we'll keep resetting the position :(
+            //    //}
+
+            //    //if (imgOffsetY >= 0)
+            //    //{
+            //    switch (textureLayout.VerticalAlignment)
+            //    {
+            //        case VerticalAlignmentType.Top: translateY = 0f; break;
+            //        case VerticalAlignmentType.Center: translateY = (clippingRect.Value.Height - rectangle.Height) / 2f; break;
+            //        case VerticalAlignmentType.Bottom: translateY = clippingRect.Value.Height - rectangle.Height; break;
+            //        default: translateY = (clippingRect.Value.Height - rectangle.Height) / 2f; break;
+            //    }
+            //    //}
+            //    //else
+            //    //{
+            //    //    // Same issue as HorizontalAlignment above
+            //    //}
+
+            //    view = Matrix.CreateTranslation(translateX, translateY, 0);
+            //}
 
 
             using BasicEffect basicEffect = new BasicEffect(GraphicsDevice);
             basicEffect.World = Matrix.Identity;
             basicEffect.View = view;  // Matrix.Identity
             basicEffect.Projection = projection;
-            basicEffect.Texture = textureLayout.Texture;
+            basicEffect.Texture = texture;
             basicEffect.TextureEnabled = true;
             basicEffect.DiffuseColor = textureLayout.Tint.ToVector3();
             basicEffect.Alpha = textureLayout.Tint.A / 255f;
@@ -361,16 +383,16 @@ namespace Blade.MG.UI.Renderer
                 Context.Renderer.ClipToRect(clippingRect.Value);
             }
 
-            float scaleX = rectangle.Width / (float)textureLayout.Texture.Width;
-            float scaleY = rectangle.Height / (float)textureLayout.Texture.Height;
+            float scaleX = rectangle.Width / (float)texture.Width;
+            float scaleY = rectangle.Height / (float)texture.Height;
 
-            int backgroundScaleX = (int)(scaleX * textureLayout.Texture.Width * scale.X);
-            int backgroundScaleY = (int)(scaleY * textureLayout.Texture.Height * scale.Y);
+            int backgroundScaleX = (int)(scaleX * texture.Width * scale.X);
+            int backgroundScaleY = (int)(scaleY * texture.Height * scale.Y);
 
             // Draw background image
             using var spriteBatch = new SpriteBatch(GraphicsDevice);
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.AnisotropicWrap, null, Context.Renderer.rasterizerState, basicEffect);
-            spriteBatch.Draw(textureLayout.Texture, rectangle, new Rectangle(0, 0, backgroundScaleX, backgroundScaleY), Color.White);
+            spriteBatch.Draw(texture, rectangle, new Rectangle(0, 0, backgroundScaleX, backgroundScaleY), Color.White);
             spriteBatch.End();
 
             Context.Renderer.PopState();

@@ -42,7 +42,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
 
             ui.AddChild(scrollPanel);
 
-            uiManager.AddUI(ui, FakeGame.Instance);
+            uiManager.AddUI(ui);
 
             // Do UI Layout
             uiManager.PerformLayout();

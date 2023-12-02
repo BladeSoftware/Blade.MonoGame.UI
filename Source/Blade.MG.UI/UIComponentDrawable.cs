@@ -1,6 +1,7 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Blade.MG.UI
 {
@@ -10,10 +11,10 @@ namespace Blade.MG.UI
 
         public Binding<Color> Background { get; set; } = Color.Transparent;
 
-        //[field: NonSerialized]
-        //public Texture2D BackgroundTexture { get; set; }
+        [field: NonSerialized]
+        public Texture2D BackgroundTexture { get; set; }
 
-        public TextureLayout BackgroundTexture { get; set; }
+        public TextureLayout BackgroundLayout { get; set; }
 
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
@@ -30,7 +31,7 @@ namespace Blade.MG.UI
                 try
                 {
                     using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
-                    //context.Renderer.FillRect(FinalContentRect, Background.Value, layoutBounds);
+                    //context.Renderer.FillRect(spriteBatch, layoutBounds, Background.Value, layoutBounds);
                     context.Renderer.FillRect(spriteBatch, FinalRect, Background.Value, layoutBounds);
                 }
                 finally
@@ -39,11 +40,13 @@ namespace Blade.MG.UI
                 }
             }
 
-            if (BackgroundTexture?.Texture != null)
+            if (BackgroundTexture != null)
             {
-                var layoutParams = BackgroundTexture.GetLayoutRect(FinalContentRect);
-                var scale = new Vector2(layoutParams.scale.X / BackgroundTexture.TextureScale.X, layoutParams.scale.Y / BackgroundTexture.TextureScale.Y);
-                context.Renderer.DrawTexture(layoutParams.dstRect, BackgroundTexture, scale, FinalContentRect);
+                //var layoutParams = BackgroundLayout.GetLayoutRect(BackgroundTexture, FinalContentRect);
+                var layoutParams = BackgroundLayout.GetLayoutRect(BackgroundTexture, FinalRect);
+                var scale = new Vector2(layoutParams.Scale.X / BackgroundLayout.TextureScale.X, layoutParams.Scale.Y / BackgroundLayout.TextureScale.Y);
+                context.Renderer.DrawTexture(BackgroundTexture, layoutParams.LayoutRect, BackgroundLayout, scale, layoutBounds);
+                //context.Renderer.DrawTexture(BackgroundTexture, layoutParams.LayoutRect, BackgroundLayout, scale, FinalContentRect);
             }
         }
 

@@ -20,6 +20,24 @@ namespace Blade.MG.UI.Controls
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
+            // if (string.Equals(Name, "AnimationCellStackPanel")) { }
+            //IsWidthVirtual = Orientation == Orientation.Horizontal;
+            //IsHeightVirtual = Orientation == Orientation.Vertical;
+
+            //foreach (var child in Children)
+            //{
+            //    // Don't allow Center Alignment types in a stack panel
+            //    if (Orientation == Orientation.Horizontal && child.HorizontalAlignment.Value == HorizontalAlignmentType.Center)
+            //    {
+            //        child.HorizontalAlignment = HorizontalAlignmentType.Left;
+            //    }
+
+            //    if (Orientation == Orientation.Vertical && child.VerticalAlignment.Value == VerticalAlignmentType.Center)
+            //    {
+            //        child.VerticalAlignment = VerticalAlignmentType.Top;
+            //    }
+            //}
+
             base.Measure(context, ref availableSize, ref parentMinMax);
 
             // -- Measure Children ---
@@ -31,6 +49,17 @@ namespace Blade.MG.UI.Controls
             //foreach (var child in CollectionsMarshal.AsSpan(Children))
             foreach (var child in Children)
             {
+                // Don't allow Center Alignment types in a stack panel
+                //if (Orientation == Orientation.Horizontal && child.HorizontalAlignment.Value == HorizontalAlignmentType.Center)
+                //{
+                //    child.HorizontalAlignment = HorizontalAlignmentType.Left;
+                //}
+
+                //if (Orientation == Orientation.Vertical && child.VerticalAlignment.Value == VerticalAlignmentType.Center)
+                //{
+                //    child.VerticalAlignment = VerticalAlignmentType.Top;
+                //}
+
                 //child.Measure(context, ref availableSize, ref parentMinMax);
 
                 if (Orientation == Orientation.Horizontal)
@@ -86,52 +115,58 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            IsWidthVirtual = Orientation == Orientation.Horizontal;
-            IsHeightVirtual = Orientation == Orientation.Vertical;
+            //IsWidthVirtual = Orientation == Orientation.Horizontal;
+            //IsHeightVirtual = Orientation == Orientation.Vertical;
 
+            //if (string.Equals(Name, "AnimationCellStackPanel")) { }
+            if (string.Equals(Name, "A4")) { }
 
             // Arrange the layout for the inherited scroll panel and it's scrollbars
             base.Arrange(context, layoutBounds, parentLayoutBounds);
 
 
-            // Measure the total child control layout width and height
-            int width = 0;
-            int height = 0;
+            //// Measure the total child control layout width and height
+            //int width = 0;
+            //int height = 0;
 
-            //foreach (var child in CollectionsMarshal.AsSpan(Children))
-            foreach (var child in Children)
-            {
-                if (Orientation == Orientation.Horizontal)
-                {
-                    if (child.Visible.Value != Visibility.Collapsed)
-                    {
-                        int cw = child.FinalRect.Width + child.Margin.Value.Left + child.Margin.Value.Right;
-                        width += cw;
-                    }
-                }
-                else
-                {
-                    if (child.Visible.Value != Visibility.Collapsed)
-                    {
-                        int ch = child.FinalRect.Height + child.Margin.Value.Top + child.Margin.Value.Bottom;
-                        height += ch;
-                    }
-                }
+            ////foreach (var child in CollectionsMarshal.AsSpan(Children))
+            //foreach (var child in Children)
+            //{
+            //    if (Orientation == Orientation.Horizontal)
+            //    {
+            //        if (child.Visible.Value != Visibility.Collapsed)
+            //        {
+            //            int cw = child.FinalRect.Width + child.Margin.Value.Left + child.Margin.Value.Right;
+            //            width += cw;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if (child.Visible.Value != Visibility.Collapsed)
+            //        {
+            //            int ch = child.FinalRect.Height + child.Margin.Value.Top + child.Margin.Value.Bottom;
+            //            height += ch;
+            //        }
+            //    }
 
-            }
+            //}
 
 
+            //int verticalScrollBarWidth = VerticalScrollBarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;
+            //int horizontalScrollBarHeight = HorizontalScrollBarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0;
 
-            // --=== Re-calculate the Scrollbar Max Values ===--
-            if (Orientation == Orientation.Horizontal)
-            {
-                HorizontalScrollBar.MaxValue = width - FinalContentRect.Width;
-            }
+            //// --=== Re-calculate the Scrollbar Max Values ===--
+            //if (Orientation == Orientation.Horizontal)
+            //{
+            //    int w = width - FinalContentRect.Width;
+            //    HorizontalScrollBar.MaxValue = w < -verticalScrollBarWidth ? w : (w + verticalScrollBarWidth);
+            //}
 
-            if (Orientation == Orientation.Vertical)
-            {
-                VerticalScrollBar.MaxValue = height - FinalContentRect.Height;
-            }
+            //if (Orientation == Orientation.Vertical)
+            //{
+            //    int h = height - FinalContentRect.Height;
+            //    VerticalScrollBar.MaxValue = h < -horizontalScrollBarHeight ? h : (h + horizontalScrollBarHeight);
+            //}
 
         }
 
@@ -142,7 +177,14 @@ namespace Blade.MG.UI.Controls
         /// <returns></returns>
         public override Rectangle GetChildBoundingBox(UIContext context, UIComponent child)
         {
+
             var rect = base.GetChildBoundingBox(context, child);
+
+            //if (string.Equals(Name, "AnimationCellStackPanel"))
+            //{
+            //    rect = rect with { X = 240, Width = 0, Height = 0 };
+            //}
+
 
             // Adjust the child control layout to stack them
             int left = 0;
@@ -154,7 +196,6 @@ namespace Blade.MG.UI.Controls
                 if (childCtrl == child)
                 {
                     // Only arrange the current child as we would already have called arranged on the previous children in the list
-                    //var childLayoutBounds = rect with { X = rect.X + left, Y = rect.Y + top, Width = rect.Width - left, Height = rect.Height - top };
                     var childLayoutBounds = rect with { X = rect.X + left, Y = rect.Y + top };
                     childCtrl.Arrange(context, childLayoutBounds, rect);
                     //childCtrl.Arrange(context, rect, rect);
@@ -236,6 +277,8 @@ namespace Blade.MG.UI.Controls
             {
                 return;
             }
+
+            if (string.Equals(Name, "AnimationCellStackPanel")) { }
 
             base.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
         }

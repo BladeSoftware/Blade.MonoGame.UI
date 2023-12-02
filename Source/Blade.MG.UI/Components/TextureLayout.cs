@@ -6,8 +6,8 @@ namespace Blade.MG.UI.Components
 {
     public class TextureLayout
     {
-        [field: NonSerialized]
-        public Texture2D Texture { get; set; }
+        //[field: NonSerialized]
+        //public Texture2D Texture { get; set; }
 
         public StretchType StretchType { get; set; } = StretchType.None;
         //public StretchDirection StretchDirection { get; set; } = StretchDirection.Both;
@@ -35,14 +35,15 @@ namespace Blade.MG.UI.Components
 
         }
 
-        public (Rectangle dstRect, Vector2 scale) GetLayoutRect(Rectangle layoutBounds)
+        //(Rectangle dstRect, Vector2 scale)
+        public ImageLayoutResult GetLayoutRect(Texture2D texture, Rectangle layoutBounds)
         {
-            if (Texture == null)
+            if (texture == null)
             {
-                return (Rectangle.Empty, Vector2.Zero);
+                return ImageLayoutResult.Empty; //(Rectangle.Empty, Vector2.Zero);
             }
 
-            Rectangle srcImageRect = Texture.Bounds;
+            Rectangle srcImageRect = texture.Bounds;
 
             //float aspect = srcImageRect.Width / (float)srcImageRect.Height;
             float widthRatio = srcImageRect.Width / (float)layoutBounds.Width;
@@ -58,7 +59,7 @@ namespace Blade.MG.UI.Components
             switch (StretchType)
             {
                 case StretchType.None:
-                    dstImageRect = new Rectangle(layoutBounds.Left, layoutBounds.Top, (int)(Texture.Width * ImageScale.X), (int)(Texture.Height * ImageScale.Y));
+                    dstImageRect = new Rectangle(layoutBounds.Left, layoutBounds.Top, (int)(texture.Width * ImageScale.X), (int)(texture.Height * ImageScale.Y));
                     //scale = new Vector2(1f / ImageScale.X, 1f / ImageScale.Y);
                     scale = ImageScale;
                     break;
@@ -134,7 +135,7 @@ namespace Blade.MG.UI.Components
                     minFactor = 1f / minFactor;
                     scale = new Vector2(minFactor, minFactor);
 
-                    dstImageRect = layoutBounds with { Width = (int)(Texture.Width * minFactor), Height = (int)(Texture.Height * minFactor) };
+                    dstImageRect = layoutBounds with { Width = (int)(texture.Width * minFactor), Height = (int)(texture.Height * minFactor) };
                     break;
 
                 case StretchType.UniformToFill:
@@ -180,7 +181,7 @@ namespace Blade.MG.UI.Components
                     maxFactor = 1f / maxFactor;
                     scale = new Vector2(maxFactor, maxFactor);
 
-                    dstImageRect = layoutBounds with { Width = (int)(Texture.Width * maxFactor), Height = (int)(Texture.Height * maxFactor) };
+                    dstImageRect = layoutBounds with { Width = (int)(texture.Width * maxFactor), Height = (int)(texture.Height * maxFactor) };
                     break;
 
 
@@ -190,18 +191,69 @@ namespace Blade.MG.UI.Components
                     break;
 
                 case StretchType.TileHorizontal:
-                    dstImageRect = new Rectangle(layoutBounds.X, layoutBounds.Y, layoutBounds.Width, (int)(Texture.Height * ImageScale.Y));
+                    dstImageRect = new Rectangle(layoutBounds.X, layoutBounds.Y, layoutBounds.Width, (int)(texture.Height * ImageScale.Y));
                     //scale = new Vector2(1f / layoutScaleX, 1f);
                     break;
 
                 case StretchType.TileVertical:
-                    dstImageRect = new Rectangle(layoutBounds.X, layoutBounds.Y, (int)(Texture.Width * ImageScale.X), layoutBounds.Height);
+                    dstImageRect = new Rectangle(layoutBounds.X, layoutBounds.Y, (int)(texture.Width * ImageScale.X), layoutBounds.Height);
                     //scale = new Vector2(1f, 1f / layoutScaleY);
                     break;
 
             }
 
-            return (dstImageRect, scale);
+            //--------------------------
+            if (layoutBounds != null)
+            {
+                float translateX = 0f;
+                float translateY = 0f;
+
+                float imgOffsetX = dstImageRect.Left - layoutBounds.Left;
+                float imgOffsetY = dstImageRect.Top - layoutBounds.Top;
+
+
+                //if (imgOffsetX >= 0)
+                //{
+                switch (this.HorizontalAlignment)
+                {
+                    case HorizontalAlignmentType.Left: translateX = 0f; break;
+                    case HorizontalAlignmentType.Center: translateX = (layoutBounds.Width - dstImageRect.Width) / 2f; break;
+                    case HorizontalAlignmentType.Right: translateX = layoutBounds.Width - dstImageRect.Width; break;
+                    default: translateX = (layoutBounds.Width - dstImageRect.Width) / 2f; break;
+
+                }
+                //}
+                //else
+                //{
+                //    // Doesn't work if we have scrollbars because the scroll position conflicts with the translateX
+                //    // i.e. We need to adjust the scrollbars to center / align the image rather then use the translation
+                //    // except that:
+                //    //   - We don't know we're inside a control with scrollbars. Can maybe check isWidthVirtual? but that still doesn't give a reference to the scrollbars 
+                //    //   - if we adjust the scrollbars on every frame, then the user can't move them as we'll keep resetting the position :(
+                //}
+
+                //if (imgOffsetY >= 0)
+                //{
+                switch (this.VerticalAlignment)
+                {
+                    case VerticalAlignmentType.Top: translateY = 0f; break;
+                    case VerticalAlignmentType.Center: translateY = (layoutBounds.Height - dstImageRect.Height) / 2f; break;
+                    case VerticalAlignmentType.Bottom: translateY = layoutBounds.Height - dstImageRect.Height; break;
+                    default: translateY = (layoutBounds.Height - dstImageRect.Height) / 2f; break;
+                }
+                //}
+                //else
+                //{
+                //    // Same issue as HorizontalAlignment above
+                //}
+
+                //view = Matrix.CreateTranslation(translateX, translateY, 0);
+                dstImageRect = dstImageRect with { X = dstImageRect.Left + (int)translateX, Y = dstImageRect.Top + (int)translateY };
+            }
+
+            //--------------------------
+
+            return new ImageLayoutResult(dstImageRect, scale);
         }
     }
 }

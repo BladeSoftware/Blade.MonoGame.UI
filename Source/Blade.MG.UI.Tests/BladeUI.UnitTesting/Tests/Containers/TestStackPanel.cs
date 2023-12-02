@@ -38,7 +38,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
 
             ui.AddChild(stackPanel);
 
-            uiManager.AddUI(ui, FakeGame.Instance);
+            uiManager.AddUI(ui);
 
             // Do UI Layout
             uiManager.PerformLayout();
@@ -123,7 +123,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
             stackPanel.AddChild(panelChild3);
 
 
-            uiManager.AddUI(ui, FakeGame.Instance);
+            uiManager.AddUI(ui);
 
             // Do UI Layout
             uiManager.PerformLayout();

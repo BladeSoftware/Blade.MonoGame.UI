@@ -1,4 +1,5 @@
-﻿using Blade.MG.UI.Components;
+﻿using Blade.MG.Primitives;
+using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -6,7 +7,12 @@ namespace Blade.MG.UI.Controls
 {
     public class Image : UIComponentDrawable
     {
-        public TextureLayout ImageTexture { get; set; }
+        [field: NonSerialized]
+        public Texture2D ImageTexture { get; set; }
+
+        public TextureLayout ImageLayout { get; set; }
+
+        private ImageLayoutResult ImageLayoutResult { get; set; }
 
         public Image()
         {
@@ -25,8 +31,8 @@ namespace Blade.MG.UI.Controls
             float desiredWidth = Width.ToPixels(availableSize.Width);
             float desiredHeight = Height.ToPixels(availableSize.Height);
 
-            desiredWidth = FloatHelper.IsNaN(desiredWidth) ? (int)availableSize.Width : (int)desiredWidth;
-            desiredHeight = FloatHelper.IsNaN(desiredHeight) ? (int)availableSize.Height : (int)desiredHeight;
+            desiredWidth = FloatHelper.IsNaN(desiredWidth) ? availableSize.Width : desiredWidth;
+            desiredHeight = FloatHelper.IsNaN(desiredHeight) ? availableSize.Height : desiredHeight;
 
             float maxWidth = MaxWidth.ToPixels(availableSize.Width);
             float maxHeight = MaxHeight.ToPixels(availableSize.Height);
@@ -38,22 +44,23 @@ namespace Blade.MG.UI.Controls
             if (!float.IsNaN(maxWidth) && desiredWidth > maxWidth) desiredWidth = maxWidth;
             if (!float.IsNaN(maxHeight) && desiredHeight > maxHeight) desiredHeight = maxHeight;
 
+            int layoutWidth = float.IsNaN(desiredWidth) ? ImageTexture?.Width ?? 0 : (int)desiredWidth;
+            int layoutHeight = float.IsNaN(desiredHeight) ? ImageTexture?.Height ?? 0 : (int)desiredHeight;
 
-            var layoutParams = ImageTexture.GetLayoutRect(new Rectangle(0, 0, (int)desiredWidth, (int)desiredHeight));
-            //var scale = new Vector2(layoutParams.scale.X / ImageTexture.TextureScale.X, layoutParams.scale.Y / ImageTexture.TextureScale.Y);
+            var layoutRect = new Rectangle(0, 0, layoutWidth, layoutHeight);
 
-            if (ImageTexture?.Texture != null)
+            var layoutParams = ImageLayout.GetLayoutRect(ImageTexture, layoutRect);
+
+            if (ImageTexture != null)
             {
                 if (FloatHelper.IsNaN(Width))
                 {
-                    //desiredWidth = ImageTexture.Texture.Width * layoutParams.scale.X;
-                    desiredWidth = layoutParams.dstRect.Width;
+                    desiredWidth = layoutParams.LayoutRect.Width;
                 }
 
                 if (FloatHelper.IsNaN(Height))
                 {
-                    //desiredHeight = ImageTexture.Texture.Height * layoutParams.scale.Y;
-                    desiredHeight = layoutParams.dstRect.Height;
+                    desiredHeight = layoutParams.LayoutRect.Height;
                 }
             }
 
@@ -71,108 +78,53 @@ namespace Blade.MG.UI.Controls
 
             DesiredSize = new Size(desiredWidth, desiredHeight);
 
-            ClampDesiredSize(availableSize, parentMinMax);
 
-            //base.Measure(context, ref availableSize, ref parentMinMax);
+            // We can't Center / Stretch align for some controls, e.g. StackPanel
+            // TODO: Need a more generic way to handle this rather then detecting StackPanel
+            //     : e.g. Parent.ChildrenCanArangeHorizontally / Vertically.... 
+            if (Parent is StackPanel)
+            {
+                var parentStackPanel = Parent as StackPanel;
+                if (parentStackPanel.Orientation == Orientation.Horizontal)
+                {
+                    // Horizontal Alignment
+                    ImageLayout.HorizontalAlignment = Parent.HorizontalContentAlignment.Value;
+                }
+                else
+                {
+                    // Vertical Aligment
+                    ImageLayout.VerticalAlignment = Parent.VerticalContentAlignment.Value;
+                }
+            }
+
+
+            //ClampDesiredSize(availableSize, parentMinMax);
+
+            //parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
+            //base.Measure(context, ref availableSize, ref parentMinMax);=
         }
+
 
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
+            if (string.Equals(Name, "ZYX")) { }
             base.Arrange(context, layoutBounds, parentLayoutBounds);
 
-            //Rectangle imageRect = FinalContentRect;
+            //var tmpDesiredSize = DesiredSize;
 
-            //if (ImageTexture.Texture == null)
-            //{
-            //    return;
-            //}
+            ImageLayoutResult = ImageLayout.GetLayoutRect(ImageTexture, FinalContentRect);
 
-            ////float aspect = ImageTexture.Width / (float)ImageTexture.Height;
-            //float scaleX = ImageTexture.Texture.Width / (float)layoutBounds.Width; //(float)finalContentRect.Width;
-            //float scaleY = ImageTexture.Texture.Height / (float)layoutBounds.Height; //(float)finalContentRect.Height;
+            // Override the Measured DesiredSize with the final actual dimensions
+            //DesiredSize = new Size(ImageLayoutResult.LayoutRect.Width, ImageLayoutResult.LayoutRect.Height);
 
-            //switch (ImageScaling)
-            //{
-            //    case StretchType.None:
-            //        imageRect = new Rectangle(FinalContentRect.Left, FinalContentRect.Top, ImageTexture.Texture.Width, ImageTexture.Texture.Height);
-            //        break;
+            //base.Arrange(context, ImageLayoutResult.LayoutRect, layoutBounds);
 
-            //    case StretchType.Fill:
-            //        imageRect = FinalRect; //finalContentRect;
-            //        break;
+            //ImageLayoutResult = ImageLayout.GetLayoutRect(ImageTexture, FinalContentRect);
 
-            //    case StretchType.Uniform:
-            //        float maxFactor = scaleX > scaleY ? scaleX : scaleY;
+            //if (ImageTexture != null) { }
 
-            //        if (maxFactor < 1f)
-            //        {
-            //            maxFactor = 1f / maxFactor;
-            //        }
-
-            //        imageRect = FinalContentRect with { Width = (int)(ImageTexture.Texture.Width * maxFactor), Height = (int)(ImageTexture.Texture.Height * maxFactor) };
-
-
-            //        //imageRect = new Rectangle(finalContentRect.Left, finalContentRect.Top, ImageTexture.Width, ImageTexture.Height); 
-            //        break;
-
-            //    case StretchType.UniformToFill:
-            //        float minFactor = scaleX < scaleY ? scaleX : scaleY;
-
-            //        if (minFactor < 1f)
-            //        {
-            //            minFactor = 1f / minFactor;
-            //        }
-
-            //        imageRect = FinalContentRect with { Width = (int)(ImageTexture.Texture.Width * minFactor), Height = (int)(ImageTexture.Texture.Height * minFactor) };
-            //        break;
-
-            //}
-
-
-            //if (imageRect.Width != FinalContentRect.Width)
-            //{
-            //    //switch (HorizontalAlignment.Value)
-            //    //{
-            //    //    case HorizontalAlignmentType.Left: Left = finalContentRect.Left; break;
-            //    //    case HorizontalAlignmentType.Right: Left = finalContentRect.Left + finalContentRect.Width - imageRect.Width; break;
-            //    //    case HorizontalAlignmentType.Center: Left = finalContentRect.Left + (finalContentRect.Width - imageRect.Width) / 2; break;
-            //    //}
-
-            //    switch (HorizontalAlignment.Value)
-            //    {
-            //        //case HorizontalAlignmentType.Left: break;
-            //        case HorizontalAlignmentType.Right: FinalContentRect.X = FinalContentRect.Left + FinalContentRect.Width - imageRect.Width; break;
-            //        case HorizontalAlignmentType.Center: FinalContentRect.X = FinalContentRect.Left + (FinalContentRect.Width - imageRect.Width) / 2; break;
-            //    }
-
-            //    Left = FinalContentRect.Left;
-
-            //    FinalContentRect.Width = imageRect.Width;
-            //}
-
-            //if (imageRect.Height != FinalContentRect.Height)
-            //{
-            //    //switch (VerticalAlignment.Value)
-            //    //{
-            //    //    case VerticalAlignmentType.Top: Top = finalContentRect.Top; break;
-            //    //    case VerticalAlignmentType.Bottom: Top = finalContentRect.Top + finalContentRect.Height - imageRect.Height; break;
-            //    //    case VerticalAlignmentType.Center: Top = finalContentRect.Top + (finalContentRect.Height - imageRect.Height) / 2; break;
-            //    //}
-
-            //    switch (VerticalAlignment.Value)
-            //    {
-            //        //case VerticalAlignmentType.Top: break;
-            //        case VerticalAlignmentType.Bottom: FinalContentRect.Y = FinalContentRect.Top + FinalContentRect.Height - imageRect.Height; break;
-            //        case VerticalAlignmentType.Center: FinalContentRect.Y = FinalContentRect.Top + (FinalContentRect.Height - imageRect.Height) / 2; break;
-            //    }
-
-            //    Top = FinalContentRect.Top;
-
-            //    FinalContentRect.Height = imageRect.Height;
-            //}
-
-            ////finalContentRect = Rectangle.Intersect(finalContentRect, imageRect);
-
+            //DesiredSize = tmpDesiredSize;
+            //base.Arrange(context, ImageLayoutResult.LayoutRect, parentLayoutBounds);
         }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
@@ -182,39 +134,32 @@ namespace Blade.MG.UI.Controls
                 return;
             }
 
+            if (string.Equals(Name, "ZYX")) { }
+
             var renderBounds = Rectangle.Intersect(layoutBounds, FinalContentRect);
-            base.RenderControl(context, renderBounds, parentTransform);
+            //base.RenderControl(context, renderBounds, parentTransform);
 
+            //            FinalRect = layoutBounds;
+            base.RenderControl(context, layoutBounds, parentTransform);
 
-            if (ImageTexture?.Texture != null)
+            if (ImageTexture != null)
             {
-                var layoutParams = ImageTexture.GetLayoutRect(FinalContentRect);
-                //var scale = new Vector2(layoutParams.scale.X / ImageTexture.TextureScale.X, layoutParams.scale.Y / ImageTexture.TextureScale.Y);
-                var scale = new Vector2(ImageTexture.TextureScale.X / layoutParams.scale.X, ImageTexture.TextureScale.Y / layoutParams.scale.Y);
+                // ImageLayoutResult = ImageLayout.GetLayoutRect(ImageTexture, FinalContentRect);
+                var scale = new Vector2(ImageLayout.TextureScale.X / ImageLayoutResult.Scale.X, ImageLayout.TextureScale.Y / ImageLayoutResult.Scale.Y);
 
-                context.Renderer.DrawTexture(layoutParams.dstRect, ImageTexture, scale, renderBounds);
+                //context.Renderer.DrawTexture(ImageTexture, ImageLayoutResult.LayoutRect, ImageLayout, scale, FinalContentRect);
+                context.Renderer.DrawTexture(ImageTexture, ImageLayoutResult.LayoutRect, ImageLayout, scale, layoutBounds);
+
+                //using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+                //Primitives2D.DrawRect(spriteBatch, ImageLayoutResult.LayoutRect, Color.HotPink, 3);
             }
-            //else if (Color != Color.Transparent)
-            //{
-            //    try
-            //    {
-            //        context.Renderer.BeginBatch(transform: parentTransform);
-            //        context.Renderer.FillRect(FinalContentRect, Color, layoutBounds);
-            //    }
-            //    finally
-            //    {
-            //        context.Renderer.EndBatch();
-            //    }
-            //}
-
-
         }
 
         public override void Dispose()
         {
-            if (ImageTexture?.Texture is RenderTarget2D)
+            if (ImageTexture is RenderTarget2D)
             {
-                ImageTexture?.Texture?.Dispose();
+                ImageTexture?.Dispose();
             }
 
             base.Dispose();

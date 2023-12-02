@@ -69,7 +69,22 @@ namespace Blade.MG.UI.Controls
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
-            base.Measure(context, ref availableSize, ref parentMinMax);
+            //base.Measure(context, ref availableSize, ref parentMinMax);
+
+            //if (string.Equals(Name, "ProjectExplorerTree")) { }
+            //if (string.Equals(Name, "AnimationCellStackPanel")) { }
+
+            IsWidthVirtual = true;
+            IsHeightVirtual = true;
+
+            var contentAvailableSize = availableSize with
+            {
+                Width = availableSize.Width - (VerticalScrollBarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0),
+                Height = availableSize.Height - (HorizontalScrollBarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)
+            };
+
+            base.Measure(context, ref contentAvailableSize, ref parentMinMax);
+
 
             HorizontalScrollBar.Measure(context, ref availableSize, ref parentMinMax);
             VerticalScrollBar.Measure(context, ref availableSize, ref parentMinMax);
@@ -92,25 +107,22 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            // Reduce the parent layout area by the size of the scroll bars
-            var parentLayoutContentBounds = parentLayoutBounds with
-            {
-                Width = layoutBounds.Width - (VerticalScrollBarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0),
-                Height = layoutBounds.Height - (HorizontalScrollBarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)
-            };
+            //if (string.Equals(Name, "ProjectExplorerTree")) { }
+            if (string.Equals(Name, "AnimationCellStackPanel")) { }
 
+            base.Arrange(context, layoutBounds, parentLayoutBounds);
 
-            base.Arrange(context, layoutBounds, parentLayoutContentBounds);
+            int verticalScrollBarWidth = VerticalScrollBarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;
+            int horizontalScrollBarHeight = HorizontalScrollBarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0;
+
+            // base.Arrange(context, layoutBounds, contentLayoutBounds);
 
             if (HorizontalScrollBarVisible) HorizontalScrollBar.Arrange(context, FinalRect, parentLayoutBounds);
             if (VerticalScrollBarVisible) VerticalScrollBar.Arrange(context, FinalRect, parentLayoutBounds);
 
 
-            int contentWidth = FinalRect.Width - Padding.Value.Left - Padding.Value.Right;
-            int contentHeight = FinalRect.Height - Padding.Value.Top - Padding.Value.Bottom;
-
-            if (VerticalScrollBarVisible) contentWidth -= (int)VerticalScrollBar.Width.ToPixels();
-            if (HorizontalScrollBarVisible) contentHeight -= (int)HorizontalScrollBar.Height.ToPixels();
+            int contentWidth = FinalRect.Width - Padding.Value.Horizontal - verticalScrollBarWidth;
+            int contentHeight = FinalRect.Height - Padding.Value.Vertical - horizontalScrollBarHeight;
 
             if (contentWidth < 0)
             {
@@ -126,20 +138,43 @@ namespace Blade.MG.UI.Controls
 
             // --=== Re-calculate the Scrollbar Max Values ===--
             // Find the largest size required by the child controls
-            Rectangle childBounds = Children.FirstOrDefault()?.FinalRect ?? Rectangle.Empty;
+            //Rectangle childBounds = Children.FirstOrDefault()?.FinalRect ?? Rectangle.Empty;
+            Rectangle childBounds = Rectangle.Empty;
+            //Rectangle childBounds = Children.FirstOrDefault()?.FinalContentRect ?? Rectangle.Empty;
 
             //foreach (var child in Children)
             foreach (var child in CollectionsMarshal.AsSpan(Children))
             {
-                childBounds = Rectangle.Union(childBounds, child.FinalRect);
+                var childFinalRect = child.FinalRect with
+                {
+                    X = child.FinalRect.X - child.Margin.Value.Left,
+                    Y = child.FinalRect.Y - child.Margin.Value.Top,
+                    Width = child.FinalRect.Width + child.Margin.Value.Horizontal,
+                    Height = child.FinalRect.Height + child.Margin.Value.Vertical
+                };
+
+                //var childFinalRect = child.FinalRect;
+
+                if (childBounds == Rectangle.Empty)
+                {
+                    childBounds = childFinalRect;
+                }
+                else
+                {
+                    childBounds = Rectangle.Union(childBounds, childFinalRect);
+                    //childBounds = Rectangle.Union(childBounds, child.FinalRect);
+                }
             }
 
             // Substract the available parent area, as we don't need to scroll if everything fits in the available space
-            int w = childBounds.Width - FinalContentRect.Width;
-            int h = childBounds.Height - FinalContentRect.Height;
+            int w = childBounds.Width - FinalContentRect.Width;// + verticalScrollBarWidth;
+            int h = childBounds.Height - FinalContentRect.Height;// + horizontalScrollBarHeight;
 
             HorizontalScrollBar.MaxValue = w;
             VerticalScrollBar.MaxValue = h;
+
+            //HorizontalScrollBar.MaxValue = w < -verticalScrollBarWidth ? w : (w + verticalScrollBarWidth);
+            //VerticalScrollBar.MaxValue = h < -horizontalScrollBarHeight ? h : (h + horizontalScrollBarHeight);
 
         }
 

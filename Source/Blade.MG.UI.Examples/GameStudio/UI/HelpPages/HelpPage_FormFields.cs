@@ -111,8 +111,6 @@ namespace Examples.UI.HelpPages
                         //Height = 35,
                         HorizontalAlignment = HorizontalAlignmentType.Left,
                         VerticalAlignment = VerticalAlignmentType.Center,
-                        Stretch = StretchType.Fill,
-                        //StretchDirection = StretchDirectionType.Both,
                         Margin = new Thickness(0),
                         Padding = new Thickness(4)
                     }

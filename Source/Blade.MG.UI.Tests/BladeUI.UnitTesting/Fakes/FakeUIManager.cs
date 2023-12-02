@@ -11,21 +11,20 @@ namespace BladeUI.UnitTesting.Fakes
         private static GameTime oneFrameGameTime = new GameTime(oneFrameTimeSpan, oneFrameTimeSpan);
 
 
-
         public FakeUIManager()
         {
             UIManager.Instance = this;
+            UIManager.Instance.Initialize(FakeGame.Instance);
         }
-
 
         public async Task PerformLayout()
         {
             await UpdateAsync(oneFrameGameTime).ConfigureAwait(true);
         }
 
-        public void AddUI(UIWindow ui, Game game)
+        public void AddUI(UIWindow ui)
         {
-            Add(ui, game);
+            Add(ui);
         }
 
         public void ClearUI()

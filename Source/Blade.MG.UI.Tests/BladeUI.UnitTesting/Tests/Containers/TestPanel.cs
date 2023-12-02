@@ -29,6 +29,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
         public void TestPanel_NoChildren()
         {
             var uiManager = new FakeUIManager();
+            //FakeGame.Instance
 
             var ui = new EmptyUI();
 
@@ -40,7 +41,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
 
             ui.AddChild(panel);
 
-            uiManager.AddUI(ui, FakeGame.Instance);
+            uiManager.AddUI(ui);
 
             // Do UI Layout
             uiManager.PerformLayout();
@@ -81,7 +82,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
 
             ui.AddChild(panel);
 
-            uiManager.AddUI(ui, FakeGame.Instance);
+            uiManager.AddUI(ui);
 
             // Do UI Layout
             uiManager.PerformLayout();
@@ -136,7 +137,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
             panel.AddChild(panel2);
 
 
-            uiManager.AddUI(ui, FakeGame.Instance);
+            uiManager.AddUI(ui);
 
             // Do UI Layout
             uiManager.PerformLayout();

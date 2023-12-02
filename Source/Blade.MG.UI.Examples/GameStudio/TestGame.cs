@@ -30,7 +30,6 @@ namespace Examples
         /// </summary>
         protected override void Initialize()
         {
-            base.Initialize();
 
             // --- Set to Full Screen Mode
             graphicsDeviceManager.IsFullScreen = false;
@@ -51,6 +50,9 @@ namespace Examples
             graphicsDeviceManager.ApplyChanges();
 
             UIManager.Instance.Initialize(this);
+
+
+            base.Initialize();
         }
 
         /// <summary>
@@ -65,8 +67,8 @@ namespace Examples
             //layerUI.AddEntity(UIManager.Instance);
 
             UIManager.Clear();
-            UIManager.Add(new ComponentTesterUI(), this);
-            UIManager.Add(new FpsUI(), this);
+            UIManager.Add(new ComponentTesterUI());
+            UIManager.Add(new FpsUI());
 
         }
 

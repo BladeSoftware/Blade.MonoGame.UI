@@ -2,8 +2,11 @@
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Security.Authentication.ExtendedProtection;
 
 namespace Blade.MG.UI
 {
@@ -18,6 +21,7 @@ namespace Blade.MG.UI
         private UIWindow parentWindow;
         public UIWindow ParentWindow { get { return parentWindow; } private set { SetParentWindow(value); } }
         protected ContentManager ContentManager => ParentWindow?.ContentManager;
+        protected GraphicsDevice GraphicsDevice => ParentWindow?.Context?.GraphicsDevice;
 
         protected UIContext Context => ParentWindow?.Context;
 
@@ -70,8 +74,8 @@ namespace Blade.MG.UI
         public Binding<HorizontalAlignmentType> HorizontalContentAlignment { get; set; }
         public Binding<VerticalAlignmentType> VerticalContentAlignment { get; set; }
 
-        public StretchType Stretch { get; set; }
-        public StretchDirection StretchDirection { get; set; }
+        //public StretchType Stretch { get; set; }
+        //public StretchDirection StretchDirection { get; set; }
 
         public int TabIndex { get; set; } = ++LastTabOrder;
 
@@ -172,11 +176,13 @@ namespace Blade.MG.UI
 
         public virtual void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
-            MeasureInternal(context, ref availableSize, ref parentMinMax);
+            MeasureSelf(context, ref availableSize, ref parentMinMax);
         }
 
-        protected void MeasureInternal(UIContext context, ref Size availableSize, ref Layout parentMinMax)
+        protected void MeasureSelf(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
+            //if (string.Equals(Name, "ProjectExplorerTree")) { }
+
             parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
 
             float desiredWidth = float.NaN;
@@ -220,6 +226,7 @@ namespace Blade.MG.UI
 
         public void ArrangeSelf(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
+
             if (Visible.Value == Visibility.Collapsed)
             {
                 ActualWidth = 0;
@@ -267,7 +274,6 @@ namespace Blade.MG.UI
 
             if (!FloatHelper.IsNaN(Width))
             {
-                //ActualWidth = Width.ToPixels(parentLayoutBounds.Width);
                 ActualWidth = Width.ToPixelsWidth(this, parentLayoutBounds);
             }
             else if (!float.IsNaN(desiredWidth) && desiredWidth < ActualWidth)
@@ -313,7 +319,7 @@ namespace Blade.MG.UI
 
 
             // Dont allow Stretch if the Width is virtualized i.e. We don't have a defined width
-            if (HorizontalAlignment.Value == HorizontalAlignmentType.Stretch && FloatHelper.IsNaN(Width) && !parent.IsWidthVirtual)
+            if (HorizontalAlignment.Value == HorizontalAlignmentType.Stretch && FloatHelper.IsNaN(Width) && (!parent.IsWidthVirtual || ActualWidth < layoutBounds.Width))
             {
                 Left = layoutBounds.Left;
                 ActualWidth = layoutBounds.Width;
@@ -323,7 +329,7 @@ namespace Blade.MG.UI
             }
 
             // Dont allow Stretch if the Height is virtualized i.e. We don't have a defined height
-            if (VerticalAlignment.Value == VerticalAlignmentType.Stretch && FloatHelper.IsNaN(Height) && !parent.IsHeightVirtual)
+            if (VerticalAlignment.Value == VerticalAlignmentType.Stretch && FloatHelper.IsNaN(Height) && (!parent.IsHeightVirtual || ActualHeight < layoutBounds.Height))
             {
                 Top = layoutBounds.Top;
                 ActualHeight = layoutBounds.Height;
@@ -388,145 +394,6 @@ namespace Blade.MG.UI
             //clippingRect = Rectangle.Intersect(parent.finalRect, finalRect);
         }
 
-        //public void ArrangeInternal(UIContext context, Rectangle layoutBounds, Rectangle? parentLayoutBounds)
-        //{
-        //    layoutBounds = new Rectangle(layoutBounds.Left + Margin.Value.Left, layoutBounds.Top + Margin.Value.Top, layoutBounds.Width - Margin.Value.Left - Margin.Value.Right, layoutBounds.Height - Margin.Value.Top - Margin.Value.Bottom);
-
-        //    Left = layoutBounds.Left;
-        //    Top = layoutBounds.Top;
-        //    ActualWidth = layoutBounds.Width;
-        //    ActualHeight = layoutBounds.Height;
-
-
-        //    float desiredWidth = DesiredSize.Width - Margin.Value.Left - Margin.Value.Right;
-        //    float desiredHeight = DesiredSize.Height - Margin.Value.Top - Margin.Value.Bottom;
-
-        //    if (float.IsNaN(ActualWidth))
-        //    {
-        //        ActualWidth = desiredWidth;
-        //    }
-
-        //    if (float.IsNaN(ActualHeight))
-        //    {
-        //        ActualHeight = desiredHeight;
-        //    }
-
-        //    if (!FloatHelper.IsNaN(Width))
-        //    {
-        //        ActualWidth = Width.ToPixels(layoutBounds.Width);
-        //    }
-        //    else if (!float.IsNaN(desiredWidth) && desiredWidth < ActualWidth)
-        //    {
-        //        if (HorizontalAlignment.Value != HorizontalAlignmentType.Stretch)
-        //        {
-        //            ActualWidth = desiredWidth;
-        //        }
-        //    }
-
-        //    if (!FloatHelper.IsNaN(MaxWidth) && ActualWidth > MaxWidth.ToPixels(layoutBounds.Width))
-        //    {
-        //        ActualWidth = MaxWidth.ToPixels(layoutBounds.Width);
-        //    }
-
-        //    if (!FloatHelper.IsNaN(MinWidth) && ActualWidth < MinWidth.ToPixels(layoutBounds.Width))
-        //    {
-        //        ActualWidth = MinWidth.ToPixels(layoutBounds.Width);
-        //    }
-
-
-        //    if (!FloatHelper.IsNaN(Height))
-        //    {
-        //        ActualHeight = Height.ToPixels(layoutBounds.Height);
-        //    }
-        //    else if (!float.IsNaN(desiredHeight) && desiredHeight < ActualHeight)
-        //    {
-        //        if (VerticalAlignment.Value != VerticalAlignmentType.Stretch)
-        //        {
-        //            ActualHeight = desiredHeight;
-        //        }
-        //    }
-
-        //    if (!FloatHelper.IsNaN(MaxHeight) && ActualHeight > MaxHeight.ToPixels(layoutBounds.Height))
-        //    {
-        //        ActualHeight = MaxHeight.ToPixels(layoutBounds.Height);
-        //    }
-
-        //    if (!FloatHelper.IsNaN(MinHeight) && ActualHeight < MinHeight.ToPixels(layoutBounds.Height))
-        //    {
-        //        ActualHeight = MinHeight.ToPixels(layoutBounds.Height);
-        //    }
-
-
-        //    if (HorizontalAlignment.Value == HorizontalAlignmentType.Stretch && FloatHelper.IsNaN(Width))
-        //    {
-        //        Left = layoutBounds.Left;
-        //        ActualWidth = layoutBounds.Width;
-
-        //        if (ActualWidth < MinWidth.ToPixels(layoutBounds.Width)) ActualWidth = MinWidth.ToPixels(layoutBounds.Width);
-        //        if (ActualWidth > MaxWidth.ToPixels(layoutBounds.Width)) ActualWidth = MaxWidth.ToPixels(layoutBounds.Width);
-        //    }
-
-        //    if (VerticalAlignment.Value == VerticalAlignmentType.Stretch && FloatHelper.IsNaN(Height))
-        //    {
-        //        Top = layoutBounds.Top;
-        //        ActualHeight = layoutBounds.Height;
-
-        //        if (ActualHeight < MinHeight.ToPixels(layoutBounds.Height)) ActualHeight = MinHeight.ToPixels(layoutBounds.Height);
-        //        if (ActualHeight > MaxHeight.ToPixels(layoutBounds.Height)) ActualHeight = MaxHeight.ToPixels(layoutBounds.Height);
-        //    }
-
-        //    if (ActualWidth != layoutBounds.Width)
-        //    {
-        //        switch (HorizontalAlignment.Value)
-        //        {
-        //            case HorizontalAlignmentType.Left: Left = layoutBounds.Left; break;
-        //            case HorizontalAlignmentType.Right: Left = layoutBounds.Left + layoutBounds.Width - ActualWidth; break;
-        //            case HorizontalAlignmentType.Center: Left = layoutBounds.Left + (layoutBounds.Width - ActualWidth) / 2; break;
-        //            case HorizontalAlignmentType.Stretch: Left = layoutBounds.Left + (layoutBounds.Width - ActualWidth) / 2; break;  // Handle Stretch like Center if we have a Width Constraint
-        //                //case HorizontalAlignmentType.Stretch: Left = finalRect.Left; ActualWidth = finalRect.Width; break;
-        //        }
-        //    }
-
-        //    if (ActualHeight != layoutBounds.Height)
-        //    {
-        //        switch (VerticalAlignment.Value)
-        //        {
-        //            case VerticalAlignmentType.Top: Top = layoutBounds.Top; break;
-        //            case VerticalAlignmentType.Bottom: Top = layoutBounds.Top + layoutBounds.Height - ActualHeight; break;
-        //            case VerticalAlignmentType.Center: Top = layoutBounds.Top + (layoutBounds.Height - ActualHeight) / 2; break;
-        //            case VerticalAlignmentType.Stretch: Top = layoutBounds.Top + (layoutBounds.Height - ActualHeight) / 2; break; // Handle Stretch like Center if we have a Height Constraint
-        //                //case VerticalAlignmentType.Stretch: Top = finalRect.Top; ActualHeight = finalRect.Height; break;
-        //        }
-
-        //    }
-
-        //    finalRect = new Rectangle((int)Left, (int)Top, (int)ActualWidth, (int)ActualHeight);
-
-        //    // Add padding to get content area
-        //    int left = finalRect.Left + Padding.Value.Left;
-        //    int top = finalRect.Top + Padding.Value.Top;
-        //    int right = finalRect.Right - Padding.Value.Right;
-        //    int bottom = finalRect.Bottom - Padding.Value.Bottom;
-
-        //    if (left < finalRect.Left) left = finalRect.Left;
-        //    if (left > finalRect.Right) left = finalRect.Right;
-        //    if (right < finalRect.Left) right = finalRect.Left;
-        //    if (right > finalRect.Right) right = finalRect.Right;
-        //    if (top < finalRect.Top) top = finalRect.Top;
-        //    if (top > finalRect.Bottom) top = finalRect.Bottom;
-        //    if (bottom < finalRect.Top) bottom = finalRect.Top;
-        //    if (bottom > finalRect.Bottom) bottom = finalRect.Bottom;
-
-        //    int width = right - left;// + 1;
-        //    int height = bottom - top;// + 1;
-
-        //    if (width < 0) width = 0;
-        //    if (height < 0) height = 0;
-
-        //    finalContentRect = new Rectangle(left, top, width, height);
-
-        //    //clippingRect = Rectangle.Intersect(parent.finalRect, finalRect);
-        //}
 
         public virtual Rectangle GetChildBoundingBox(UIContext context, UIComponent child)
         {
@@ -717,7 +584,15 @@ namespace Blade.MG.UI
                     return;
                 }
 
+                //if (IsWidthVirtual || IsHeightVirtual)
+                //{
+                //    var virtualAvailableSize = new Size(IsWidthVirtual ? float.NaN : availableSize.Width, IsHeightVirtual ? float.NaN : availableSize.Height);
+                //    child.Measure(context, ref virtualAvailableSize, ref parentMinMax);
+                //}
+                //else
+                //{
                 child.Measure(context, ref availableSize, ref parentMinMax);
+                //}
 
                 if (!float.IsNaN(child.DesiredSize.Width))
                 {
