@@ -1,4 +1,5 @@
-﻿using Blade.MG.UI.Events;
+﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls.Templates
@@ -47,7 +48,9 @@ namespace Blade.MG.UI.Controls.Templates
                 FontSize = textBox.FontSize // Use the Button Font
             };
 
-            // Use the Parent Button's ContentAlignment values for the lable text placement
+            // Use the Parent Button's ContentAlignment values for the label text placement
+            label1.HorizontalAlignment = HorizontalContentAlignment;
+            label1.VerticalAlignment = VerticalContentAlignment;
             label1.HorizontalContentAlignment = HorizontalContentAlignment;
             label1.VerticalContentAlignment = VerticalContentAlignment;
 
@@ -55,6 +58,58 @@ namespace Blade.MG.UI.Controls.Templates
             Content = label1;
 
         }
+
+        public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
+        {
+            base.Measure(context, ref availableSize, ref parentMinMax);
+        }
+
+        public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
+        {
+            base.Arrange(context, layoutBounds, parentLayoutBounds);
+        }
+
+        public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
+        {
+            base.RenderControl(context, layoutBounds, parentTransform);
+
+            var textBox = ParentAs<TextBox>();
+
+            try
+            {
+                using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+                context.Renderer.ClipToRect(layoutBounds);
+
+                //Rectangle boxRect = textBox.FinalContentRect;
+                Rectangle boxRect = label1.FinalContentRect;
+
+                //context.Renderer.FillRoundedRect(spriteBatch, boxRect, boxRect.Width / 4, Color.LightGray);
+                context.Renderer.DrawRoundedRect(spriteBatch, boxRect, 0, Color.Black, 2f);
+
+                //if (checkbox.IsChecked?.Value == null)
+                //{
+                //    // Indeterminate
+                //    var insideRect = boxRect;
+                //    insideRect.Inflate(-3f, -3f);
+
+                //    context.Renderer.FillRoundedRect(spriteBatch, insideRect, 4, new Color(Color.Black, 1f));
+                //}
+                //else if (checkbox.IsChecked?.Value == true)
+                //{
+                //    // Checked
+                //    if (img != null)
+                //    {
+                //        spriteBatch.Draw(img, boxRect, Color.Red);
+                //    }
+                //}
+            }
+            finally
+            {
+                context.Renderer.EndBatch();
+            }
+
+        }
+
 
         // ---=== Handle State Changes ===---
 

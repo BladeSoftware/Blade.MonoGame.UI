@@ -2,11 +2,15 @@
 using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls
 {
     public class MenuItem : Control
     {
+        [JsonIgnore]
+        [XmlIgnore]
         public Type MenuItemTemplate { get; set; }
 
         public MenuItem()

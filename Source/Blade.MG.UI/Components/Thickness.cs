@@ -1,16 +1,19 @@
-﻿namespace Blade.MG.UI.Components
+﻿using System.Text.Json.Serialization;
+using System.Xml.Serialization;
+
+namespace Blade.MG.UI.Components
 {
     public struct Thickness
     {
-        public static Thickness Zero = new Thickness(0);
+        [JsonIgnore][XmlIgnore] public static Thickness Zero = new Thickness(0);
 
         public int Left;
         public int Right;
         public int Top;
         public int Bottom;
 
-        public int Horizontal => Left + Right;
-        public int Vertical => Top + Bottom;
+        [JsonIgnore][XmlIgnore] public int Horizontal => Left + Right;
+        [JsonIgnore][XmlIgnore] public int Vertical => Top + Bottom;
 
         public Thickness(int uniformLength)
         {

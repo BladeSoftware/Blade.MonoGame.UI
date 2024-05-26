@@ -1,5 +1,7 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
@@ -9,29 +11,30 @@ namespace Blade.MG.UI
     public abstract class UIComponentEvents : UIComponent
     {
         // ---=== UI Events ===---
-        public Action<object, UIClickEvent> OnClick;
-        public Func<object, UIClickEvent, Task> OnClickAsync;
+        [JsonIgnore][XmlIgnore] public Action<object, UIClickEvent> OnClick;
 
-        public Action<object, UIClickEvent> OnDoubleClick;
-        public Func<object, UIClickEvent, Task> OnDoubleClickAsync;
+        [JsonIgnore][XmlIgnore] public Func<object, UIClickEvent, Task> OnClickAsync;
 
-        public Action<object, UIClickEvent> OnRightClick;
-        public Func<object, UIClickEvent, Task> OnRightClickAsync;
+        [JsonIgnore][XmlIgnore] public Action<object, UIClickEvent> OnDoubleClick;
+        [JsonIgnore][XmlIgnore] public Func<object, UIClickEvent, Task> OnDoubleClickAsync;
 
-        public Action<object, UIMouseDownEvent> OnMouseDown;
-        public Func<object, UIMouseDownEvent, Task> OnMouseDownAsync;
+        [JsonIgnore][XmlIgnore] public Action<object, UIClickEvent> OnRightClick;
+        [JsonIgnore][XmlIgnore] public Func<object, UIClickEvent, Task> OnRightClickAsync;
 
-        public Action<object, UIMouseUpEvent> OnMouseUp;
-        public Func<object, UIMouseUpEvent, Task> OnMouseUpAsync;
+        [JsonIgnore][XmlIgnore] public Action<object, UIMouseDownEvent> OnMouseDown;
+        [JsonIgnore][XmlIgnore] public Func<object, UIMouseDownEvent, Task> OnMouseDownAsync;
 
-        public Action<object, UIMouseWheelScrollEvent> OnMouseWheelScroll;
-        public Func<object, UIMouseWheelScrollEvent, Task> OnMouseWheelScrollAsync;
+        [JsonIgnore][XmlIgnore] public Action<object, UIMouseUpEvent> OnMouseUp;
+        [JsonIgnore][XmlIgnore] public Func<object, UIMouseUpEvent, Task> OnMouseUpAsync;
 
-        public Action<object, UIFocusChangedEvent> OnFocusChanged;  // (eventSource, event)
-        public Func<object, UIFocusChangedEvent, Task> OnFocusChangedAsync;  // (eventSource, event)
+        [JsonIgnore][XmlIgnore] public Action<object, UIMouseWheelScrollEvent> OnMouseWheelScroll;
+        [JsonIgnore][XmlIgnore] public Func<object, UIMouseWheelScrollEvent, Task> OnMouseWheelScrollAsync;
 
-        public Action<UIHoverChangedEvent> OnHoverChanged;
-        public Func<UIHoverChangedEvent, Task> OnHoverChangedAsync;
+        [JsonIgnore][XmlIgnore] public Action<object, UIFocusChangedEvent> OnFocusChanged;  // (eventSource, event)
+        [JsonIgnore][XmlIgnore] public Func<object, UIFocusChangedEvent, Task> OnFocusChangedAsync;  // (eventSource, event)
+
+        [JsonIgnore][XmlIgnore] public Action<UIHoverChangedEvent> OnHoverChanged;
+        [JsonIgnore][XmlIgnore] public Func<UIHoverChangedEvent, Task> OnHoverChangedAsync;
 
 
         public override async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)

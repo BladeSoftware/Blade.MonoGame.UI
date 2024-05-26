@@ -3,6 +3,8 @@ using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls
 {
@@ -12,6 +14,8 @@ namespace Blade.MG.UI.Controls
 
         //public Orientation Orientation = Orientation.Vertical;
 
+        [JsonIgnore]
+        [XmlIgnore]
         public Type ItemTemplateType { get; set; } = typeof(ListViewItemTemplate);
 
         private UIComponent TempNodeTemplate = null;

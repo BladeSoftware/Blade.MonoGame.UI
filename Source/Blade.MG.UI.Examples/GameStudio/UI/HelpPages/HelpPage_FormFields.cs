@@ -1,6 +1,7 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
 using Examples.UI.Components;
+using Microsoft.Xna.Framework;
 
 namespace Examples.UI.HelpPages
 {
@@ -54,15 +55,17 @@ namespace Examples.UI.HelpPages
             alignTopGrid.AddChild(
                 new Section()
                 {
-                    Content = new Button()
+                    Content = new TextBox()
                     {
                         Name = "TEST",
-                        Text = "This is a Button",
+                        Text = "This is a Text Box",
                         //TextColor = Color.Black,
                         Width = "75%",
                         Height = "40%",
+                        Background = Color.Orange,
                         HorizontalAlignment = HorizontalAlignmentType.Left,
-                        VerticalAlignment = VerticalAlignmentType.Top
+                        VerticalAlignment = VerticalAlignmentType.Top,
+                        VerticalContentAlignment = VerticalAlignmentType.Center,
                     }
                 },
                 0, 0);

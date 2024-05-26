@@ -2,18 +2,25 @@
 using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
     public abstract class UIComponentDrawable : UIComponentEvents
     {
+        [JsonIgnore]
+        [XmlIgnore]
         public UITheme Theme => ParentWindow?.Context?.Theme ?? (this as UIWindow)?.Context?.Theme ?? UIManager.DefaultTheme;
 
         public Binding<Color> Background { get; set; } = Color.Transparent;
 
-        [field: NonSerialized]
+        [JsonIgnore]
+        [XmlIgnore]
         public Texture2D BackgroundTexture { get; set; }
 
+        [JsonIgnore]
+        [XmlIgnore]
         public TextureLayout BackgroundLayout { get; set; }
 
 

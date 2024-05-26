@@ -107,9 +107,6 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            //if (string.Equals(Name, "ProjectExplorerTree")) { }
-            if (string.Equals(Name, "AnimationCellStackPanel")) { }
-
             base.Arrange(context, layoutBounds, parentLayoutBounds);
 
             int verticalScrollBarWidth = VerticalScrollBarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;

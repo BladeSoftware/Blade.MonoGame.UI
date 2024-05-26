@@ -1,6 +1,9 @@
-﻿using System.Reflection;
+﻿using System.Data;
+using System.Reflection;
+using System.Reflection.PortableExecutable;
 using System.Runtime.Serialization;
 using System.Xml;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
@@ -42,13 +45,36 @@ namespace Blade.MG.UI
 
             knownTypes = knownTypes ?? new List<Type>();
 
+            //---------------------------------------------------------------
+            /*
+            XmlSerializer ser = new XmlSerializer(obj.GetType());
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            using (TextWriter writer = new StreamWriter(memoryStream))
+            {
+                ser.Serialize(writer, obj);
+                writer.Close();
+
+                memoryStream.Position = 0;
+
+
+                using (StreamReader reader = new StreamReader(memoryStream))
+                {
+                    return reader.ReadToEnd();
+                }
+
+            }
+            */
+
+            //---------------------------------------------------------------
+
             knownTypes.AddRange(GetKnownTypes(Assembly.GetCallingAssembly()));
 
             using (MemoryStream memoryStream = new MemoryStream())
             using (StreamReader reader = new StreamReader(memoryStream))
             {
                 DataContractSerializer serializer = new DataContractSerializer(obj.GetType(), knownTypes);
-                var settings = new XmlWriterSettings { Indent = true };
+                var settings = new XmlWriterSettings { Indent = true, };
 
                 if (prettyPrintXml)
                 {
@@ -75,6 +101,7 @@ namespace Blade.MG.UI
                 memoryStream.Position = 0;
                 return reader.ReadToEnd();
             }
+
         }
 
         public static T Deserialize<T>(string rawXml)

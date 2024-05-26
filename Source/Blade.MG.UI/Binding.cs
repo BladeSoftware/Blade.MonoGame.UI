@@ -1,10 +1,16 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
 
     public interface IBinding
     {
+        [JsonIgnore]
+        [XmlIgnore]
         Type BaseType { get; }
         void FromString(string value);
     }
@@ -16,7 +22,7 @@ namespace Blade.MG.UI
     /// if (Text.BaseType == typeof(int)) { ((Binding<int>)Text).Value = 30; }
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    //[JsonConverter(typeof(JsonBindingConverter))]
+    [JsonConverter(typeof(JsonBindingConverter))]
     public class Binding<T> : IBinding //, IXmlSerializable  //where T : struct
     {
         protected Func<T> Getter;
@@ -282,22 +288,80 @@ namespace Blade.MG.UI
         }
     }
 
-    //public class JsonBindingConverter : JsonConverter
-    //{
-    //    public override bool CanConvert(Type objectType)
-    //    {
-    //        return true;
-    //    }
 
-    //    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-    //    {
-    //        return new object();
-    //    }
+    // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/converters-how-to?pivots=dotnet-8-0
+    public class JsonBindingConverter : JsonConverterFactory
+    {
+        //public override bool CanConvert(Type objectType)
+        //{
+        //    return true;
+        //}
 
-    //    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-    //    {
-    //        writer.WriteValue(value.ToString());
-    //    }
-    //}
+        //public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        //{
+        //    return new object();
+        //}
+
+        //public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        //{
+        //    writer.WriteValue(value.ToString());
+        //}
+        public override bool CanConvert(Type typeToConvert)
+        {
+            return true;
+        }
+
+        public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+        {
+            Type[] typeArguments = typeToConvert.GetGenericArguments();
+            Type keyType = typeArguments[0];
+            //Type valueType = typeArguments[1];
+
+            // Return a converter for the wrapped type
+            //return options.GetConverter(keyType);
+
+            //JsonSerializer.Serialize(keyType);
+
+            JsonConverter converter = (JsonConverter)Activator.CreateInstance(
+                typeof(BindingConverterInner<>).MakeGenericType([keyType]),
+                BindingFlags.Instance | BindingFlags.Public,
+                binder: null,
+                args: [options],
+                culture: null)!;
+
+
+            //JsonConverter converter = (JsonConverter)Activator.CreateInstance(
+            //    typeof(DictionaryEnumConverterInner<,>).MakeGenericType([keyType, valueType]),
+            //    BindingFlags.Instance | BindingFlags.Public,
+            //    binder: null,
+            //    args: [options],
+            //    culture: null)!;
+
+            return converter;
+        }
+
+
+        private class BindingConverterInner<TKey> : JsonConverter<Binding<TKey>>
+        {
+            private readonly JsonConverter<TKey> _valueConverter;
+
+            public BindingConverterInner(JsonSerializerOptions options)
+            {
+                // For performance, use the existing converter.
+                _valueConverter = (JsonConverter<TKey>)options.GetConverter(typeof(TKey));
+            }
+
+            public override Binding<TKey> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(Utf8JsonWriter writer, Binding<TKey> value, JsonSerializerOptions options)
+            {
+                _valueConverter.Write(writer, value.Value, options);
+            }
+        }
+
+    }
 
 }

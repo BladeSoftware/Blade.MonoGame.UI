@@ -20,7 +20,7 @@ namespace Blade.MG.UI.Controls
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
-            // if (string.Equals(Name, "AnimationCellStackPanel")) { }
+            //if (string.Equals(Name, "QBC")) { }
             //IsWidthVirtual = Orientation == Orientation.Horizontal;
             //IsHeightVirtual = Orientation == Orientation.Vertical;
 
@@ -118,11 +118,13 @@ namespace Blade.MG.UI.Controls
             //IsWidthVirtual = Orientation == Orientation.Horizontal;
             //IsHeightVirtual = Orientation == Orientation.Vertical;
 
-            //if (string.Equals(Name, "AnimationCellStackPanel")) { }
-            if (string.Equals(Name, "A4")) { }
+            // if (string.Equals(Name, "QBC")) { }
+
+            // if (string.Equals(Name, "ProjectExplorerStackPanel")) { }
 
             // Arrange the layout for the inherited scroll panel and it's scrollbars
-            base.Arrange(context, layoutBounds, parentLayoutBounds);
+            //base.Arrange(context, layoutBounds, parentLayoutBounds);
+            base.Arrange(context, layoutBounds, layoutBounds);
 
 
             //// Measure the total child control layout width and height
@@ -196,7 +198,15 @@ namespace Blade.MG.UI.Controls
                 if (childCtrl == child)
                 {
                     // Only arrange the current child as we would already have called arranged on the previous children in the list
-                    var childLayoutBounds = rect with { X = rect.X + left, Y = rect.Y + top };
+                    //var childLayoutBounds = rect with { X = rect.X + left, Y = rect.Y + top};
+                    var childLayoutBounds = rect with
+                    {
+                        X = rect.X + left,
+                        Y = rect.Y + top,
+                        Width = Orientation == Orientation.Horizontal ? (int)child.DesiredSize.Width : rect.Width,
+                        Height = Orientation == Orientation.Vertical ? (int)child.DesiredSize.Height : rect.Height
+                    };
+
                     childCtrl.Arrange(context, childLayoutBounds, rect);
                     //childCtrl.Arrange(context, rect, rect);
 
@@ -278,7 +288,7 @@ namespace Blade.MG.UI.Controls
                 return;
             }
 
-            if (string.Equals(Name, "AnimationCellStackPanel")) { }
+            //if (string.Equals(Name, "AnimationCellStackPanel")) { }
 
             base.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
         }

@@ -4,6 +4,8 @@ using Blade.MG.UI.Services;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Renderer
 {
@@ -17,17 +19,34 @@ namespace Blade.MG.UI.Renderer
             //public Effect Effect;
         }
 
+        [JsonIgnore]
+        [XmlIgnore]
         protected UIContext Context { get; set; }
         //public GraphicsDevice GraphicsDevice => Context?.Game?.GraphicsDevice;
+
+        [JsonIgnore]
+        [XmlIgnore]
         public GraphicsDevice GraphicsDevice { get; set; }
         //private SpriteBatch spriteBatch { get; set; }
 
+        [JsonIgnore]
+        [XmlIgnore]
         public RasterizerState rasterizerState { get; private set; }
 
+        [JsonIgnore]
+        [XmlIgnore]
         public static DepthStencilState stencilStateReplaceAlways; // Always replace stencil pixels, no depth test
+        
+        [JsonIgnore]
+        [XmlIgnore]
         public static DepthStencilState stencilStateZeroAlways; // Use to clear stencil pixels
+        
+        [JsonIgnore]
+        [XmlIgnore]
         public static DepthStencilState stencilStateKeepLessEqual;
 
+        [JsonIgnore]
+        [XmlIgnore]
         public static BlendState blendStateStencilOnly; // Blend State to only write to Depth Buffer and not Back Buffer
 
         public UIRenderer(UIContext context)
@@ -47,6 +66,9 @@ namespace Blade.MG.UI.Renderer
             InitStates(context);
         }
 
+
+        [JsonIgnore]
+        [XmlIgnore]
         private static Texture2D filledTriangleTexture = null;
         public static Texture2D FilledTriangleTexture(SpriteBatch spriteBatch)
         {

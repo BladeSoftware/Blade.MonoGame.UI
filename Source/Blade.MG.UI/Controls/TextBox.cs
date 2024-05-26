@@ -6,11 +6,10 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Blade.MG.UI.Controls
 {
-    public class TextBox : Control
+    public class TextBox : TemplatedControl
     {
         private Binding<string> text;
 
-        //[DataMember]
         public Binding<string> Text
         {
             get { return text; }
@@ -20,25 +19,26 @@ namespace Blade.MG.UI.Controls
             }
         }
 
-        //[DataMember]
         public Binding<string> FontName { get; set; } = new Binding<string>();
 
-        //[DataMember]
         public Binding<float> FontSize { get; set; } = new Binding<float>();
 
-        //[DataMember]
         public bool WordWrap { get; set; }
 
-        //[DataMember]
         public bool MultiLine { get; set; }
 
-        //[DataMember]
         public int MaxLength { get; set; }
 
         //private int cursorTextIndex;
 
+        public int CursorPosition { get; set; }
+        public int SelectionStart { get; set; }
+        public int SelectionLength { get; set; }
+
         public TextBox()
         {
+            TemplateType = typeof(TextBoxTemplate);
+
             IsTabStop = true;
             HitTestVisible = true;
 
@@ -50,6 +50,10 @@ namespace Blade.MG.UI.Controls
             WordWrap = false;
             MultiLine = false;
             MaxLength = 250;
+
+            CursorPosition = 0;
+            SelectionStart = 0;
+            SelectionLength = 0;
 
             HorizontalContentAlignment = HorizontalAlignmentType.Left;
             VerticalContentAlignment = VerticalAlignmentType.Center;

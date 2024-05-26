@@ -1,5 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Blade.MG.UI.Components
 {
@@ -16,6 +19,7 @@ namespace Blade.MG.UI.Components
 
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter<LengthUnit>))]
     public enum LengthUnit
     {
         Pixels,   // Value specified in Pixels
@@ -30,10 +34,11 @@ namespace Blade.MG.UI.Components
         VMax
     }
 
+    [JsonConverter(typeof(JsonLengthConverter))]
     public record struct Length
     {
-        public float Value;
-        public LengthUnit Unit;
+        public float Value { get; set; }
+        public LengthUnit Unit { get; set; }
 
         public Length()
         {
@@ -152,4 +157,19 @@ namespace Blade.MG.UI.Components
             return $"{Value} {Enum.GetName(Unit)}";
         }
     }
+
+    internal class JsonLengthConverter : JsonConverter<Length>
+    {
+        public override Length Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Write(Utf8JsonWriter writer, Length value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue($"{value.Value} {value.Unit}");
+        }
+    }
+
+
 }

@@ -4,6 +4,8 @@ using Blade.MG.UI.Events;
 using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls
 {
@@ -11,6 +13,9 @@ namespace Blade.MG.UI.Controls
     public class TreeView : StackPanel
     {
         private static int frameID = 0;
+
+        [JsonIgnore]
+        [XmlIgnore]
         public Type ItemTemplateType { get; set; } = typeof(TreeNodeTemplate);
 
 
@@ -59,6 +64,9 @@ namespace Blade.MG.UI.Controls
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
+
+            if (string.Equals(Name, "ProjectExplorerTree")) { }
+
             base.Measure(context, ref availableSize, ref parentMinMax);
 
 
@@ -67,7 +75,7 @@ namespace Blade.MG.UI.Controls
             float desiredHeight = 0f;
 
 
-            //MeasureTree(context, availableSize, ref parentMinMax, ref desiredWidth, ref desiredHeight);
+            MeasureTree(context, availableSize, ref parentMinMax, ref desiredWidth, ref desiredHeight);
 
 
             // -- Merge Child Desired Size with this Stack Panel's Desired Size --
@@ -88,6 +96,52 @@ namespace Blade.MG.UI.Controls
             ClampDesiredSize(availableSize, parentMinMax);
         }
 
+        private void MeasureTree(UIContext context, Size availableSize, ref Layout parentMinMax, ref float desiredWidth, ref float desiredHeight)
+        {
+            // Arrange the Tree Nodes
+            if (RootNode == null)
+            {
+                return;
+            }
+
+            MeasureNode(context, ref availableSize, ref parentMinMax, RootNode, false, true, 0, ref desiredWidth, ref desiredHeight);
+        }
+
+        private void MeasureNode(UIContext context, ref Size availableSize, ref Layout parentMinMax, ITreeNode node, bool collapsed, bool isRoot, int depth, ref float desiredWidth, ref float desiredHeight)
+        {
+            if (node == null)
+            {
+                return;
+            }
+
+            if (isRoot && !ShowRootNode)
+            {
+                depth = -1;
+                goto SkipNode;
+            }
+
+            var nodeTemplate = GetNodeTemplate(node, out bool isExistingNode);
+
+            nodeTemplate.FrameID = frameID;
+
+            MeasureOneNode(context, ref availableSize, ref parentMinMax, ref collapsed, ref desiredWidth, ref desiredHeight, nodeTemplate);
+
+            desiredHeight += (int)nodeTemplate.DesiredSize.Height;
+
+            collapsed = collapsed || !node.IsExpanded;
+
+        SkipNode:
+
+            if (node.Children != null)
+            {
+                //foreach (var childNode in CollectionsMarshal.AsSpan<ITreeNode>((List<ITreeNode>)node.Nodes))
+                foreach (var childNode in node.Children)
+                {
+                    MeasureNode(context, ref availableSize, ref parentMinMax, childNode, collapsed, false, depth + 1, ref desiredWidth, ref desiredHeight);
+                }
+            }
+
+        }
 
         private void MeasureOneNode(UIContext context, ref Size availableSize, ref Layout parentMinMax, ref bool collapsed, ref float desiredWidth, ref float desiredHeight, UIComponent nodeTemplate)
         {
@@ -129,7 +183,6 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            // Arrange the layout for the inherited scroll panel and it's scrollbars
             //base.Arrange(context, layoutBounds);
             //RemoveAllChildren();
 

@@ -3,10 +3,8 @@ using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI
 {
-    //    [Serializable()]
     public class Container : UIComponentDrawable
     {
-        //      [DataMember]
         public List<UIComponent> Children { get; private set; } = new List<UIComponent>();
 
         public Container()
@@ -79,29 +77,5 @@ namespace Blade.MG.UI
             base.Dispose();
         }
 
-
-        //[OnSerializing()]
-        //internal void OnSerializingMethod(StreamingContext context)
-        //{
-        //    //            member2 = "This value went into the data file during serialization.";
-        //}
-
-        //[OnSerialized()]
-        //internal void OnSerializedMethod(StreamingContext context)
-        //{
-        //    //            member2 = "This value was reset after serialization.";
-        //}
-
-        //[OnDeserializing()]
-        //internal void OnDeserializingMethod(StreamingContext context)
-        //{
-        //    //            member3 = "This value was set during deserialization";
-        //}
-
-        //[OnDeserialized()]
-        //internal void OnDeserializedMethod(StreamingContext context)
-        //{
-        //    //            member4 = "This value was set after deserialization.";
-        //}
     }
 }

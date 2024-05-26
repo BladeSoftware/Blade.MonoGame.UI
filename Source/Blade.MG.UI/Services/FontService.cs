@@ -1,4 +1,6 @@
 ﻿using FontStashSharp;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Services
 {
@@ -10,6 +12,8 @@ namespace Blade.MG.UI.Services
         public static string DefaultFontName { get; set; } = "Default";
         public static float DefaultFontSize { get; set; } = 18;
 
+        [JsonIgnore]
+        [XmlIgnore]
         private static Dictionary<string, FontSystem> Fonts = new Dictionary<string, FontSystem>(StringComparer.InvariantCultureIgnoreCase);
 
         /// <summary>
@@ -60,7 +64,7 @@ namespace Blade.MG.UI.Services
             fontName = string.IsNullOrWhiteSpace(fontName) ? DefaultFontName : fontName;
             size = size == null || size <= 0 ? DefaultFontSize : size;
 
-            return GetFont(fontName, size.Value);
+            return GetFont(fontName, size.Value) ?? GetFont(DefaultFontName, size.Value);
         }
 
     }

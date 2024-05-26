@@ -6,9 +6,6 @@ namespace Blade.MG.UI.Components
 {
     public class TextureLayout
     {
-        //[field: NonSerialized]
-        //public Texture2D Texture { get; set; }
-
         public StretchType StretchType { get; set; } = StretchType.None;
         //public StretchDirection StretchDirection { get; set; } = StretchDirection.Both;
 

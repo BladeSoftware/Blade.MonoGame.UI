@@ -1,7 +1,12 @@
-﻿namespace Blade.MG.UI
+﻿using System.Text.Json.Serialization;
+using System.Xml.Serialization;
+
+namespace Blade.MG.UI
 {
     public class TemplatedControl : Control
     {
+        [JsonIgnore]
+        [XmlIgnore]
         public Type TemplateType { get; set; } // = typeof(ButtonTemplate); // TODO: Validate TemplateType extends UIComponent
 
         public TemplatedControl()

@@ -1,5 +1,9 @@
-﻿namespace Blade.MG.UI.Components
+﻿using System.Text.Json.Serialization;
+
+namespace Blade.MG.UI.Components
 {
+
+    [JsonConverter(typeof(JsonStringEnumConverter<StretchDirection>))]
     public enum StretchDirection
     {
         /// <summary>Scale Both Horizontally and Vertically, Increase in Size or Decrease in Size</summary>

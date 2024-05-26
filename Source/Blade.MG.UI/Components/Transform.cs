@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Components
 {
@@ -12,6 +14,8 @@ namespace Blade.MG.UI.Components
 
     public struct Transform
     {
+        [JsonIgnore]
+        [XmlIgnore]
         public Matrix ParentMatrix { get; set; } = Matrix.Identity;
 
         public Vector3 CenterPoint { get; set; } = Vector3.Zero;

@@ -9,23 +9,43 @@ using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
     public partial class UIWindow : Container, IDisposable  // , IGameEntity
     {
+        [JsonIgnore]
+        [XmlIgnore]
         public Game Game => Context.Game;
 
+        [JsonIgnore]
+        [XmlIgnore]
         public new UIContext Context { get; private set; }
 
+        [JsonIgnore]
+        [XmlIgnore]
         internal UIComponent focusedComponent = null;
+
+        [JsonIgnore]
+        [XmlIgnore]
         internal List<UIComponent> hover = new List<UIComponent>();
 
+        [JsonIgnore]
+        [XmlIgnore]
         internal bool AreEventsLockedToControl { get; set; } = false;
+
+        [JsonIgnore]
+        [XmlIgnore]
         internal UIComponent EventLockedControl { get; set; }
 
+        [JsonIgnore]
+        [XmlIgnore]
         public new ContentManager ContentManager => Game?.Content;
 
+        [JsonIgnore]
+        [XmlIgnore]
         public Viewport Viewport => Game.GraphicsDevice.Viewport;
 
 

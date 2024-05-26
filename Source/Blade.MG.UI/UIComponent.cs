@@ -7,28 +7,48 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Security.Authentication.ExtendedProtection;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
-    // Implement DataContractResolver: https://docs.microsoft.com/en-us/dotnet/framework/wcf/samples/datacontractserializer-datacontractresolver-netdatacontractserializer
-    // Implement custom serialiser for Colours / binding etc ? https://weblogs.asp.net/pwelter34/444961   :  https://stackoverflow.com/questions/29624215/using-c-sharp-xml-serializer-to-produce-custom-xml-format
 
-    [KnownType("GetKnownTypes")]
+    //[KnownType("GetKnownTypes")]
     public abstract class UIComponent : IDisposable
     {
-        private static IEnumerable<Type> knownTypes = null;
+        // private static IEnumerable<Type> knownTypes = null;
 
+        [JsonIgnore]
+        [XmlIgnore]
         private UIWindow parentWindow;
+
+        [JsonIgnore]
+        [XmlIgnore]
         public UIWindow ParentWindow { get { return parentWindow; } private set { SetParentWindow(value); } }
+
+        [JsonIgnore]
+        [XmlIgnore]
         protected ContentManager ContentManager => ParentWindow?.ContentManager;
+
+        [JsonIgnore]
+        [XmlIgnore]
         protected GraphicsDevice GraphicsDevice => ParentWindow?.Context?.GraphicsDevice;
 
+        [JsonIgnore]
+        [XmlIgnore]
         protected UIContext Context => ParentWindow?.Context;
 
+        [JsonIgnore]
+        [XmlIgnore]
         protected ICollection<UIComponent> privateControls = new List<UIComponent>();
 
         private object dataContext;
+
+        [JsonIgnore]
+        [XmlIgnore]
         public object DataContext { get { return dataContext ?? parent?.DataContext; } set { dataContext = value; } }
+        
+        
         public int FrameID;
 
         private UIComponent parent;
@@ -253,6 +273,14 @@ namespace Blade.MG.UI
             //ActualWidth = layoutBounds.Width;
             //ActualHeight = layoutBounds.Height;
 
+            //bool isWidthVirtual = Parent.IsWidthVirtual;
+            //bool isHeightVirtual = Parent.IsHeightVirtual;
+
+            //if (Parent is TemplatedControl)
+            //{
+            //    isWidthVirtual = Parent.Parent.IsWidthVirtual;
+            //    isHeightVirtual = Parent.Parent.IsHeightVirtual;
+            //}
 
             float desiredWidth = DesiredSize.Width - Margin.Value.Horizontal;
             float desiredHeight = DesiredSize.Height - Margin.Value.Vertical;
@@ -324,8 +352,6 @@ namespace Blade.MG.UI
                 Left = layoutBounds.Left;
                 ActualWidth = layoutBounds.Width;
 
-                if (ActualWidth < MinWidth.ToPixels(parentLayoutBounds.Width)) ActualWidth = MinWidth.ToPixels(parentLayoutBounds.Width);
-                if (ActualWidth > MaxWidth.ToPixels(parentLayoutBounds.Width)) ActualWidth = MaxWidth.ToPixels(parentLayoutBounds.Width);
             }
 
             // Dont allow Stretch if the Height is virtualized i.e. We don't have a defined height
@@ -334,10 +360,13 @@ namespace Blade.MG.UI
                 Top = layoutBounds.Top;
                 ActualHeight = layoutBounds.Height;
 
-                if (ActualHeight < MinHeight.ToPixels(parentLayoutBounds.Height)) ActualHeight = MinHeight.ToPixels(parentLayoutBounds.Height);
-                if (ActualHeight > MaxHeight.ToPixels(parentLayoutBounds.Height)) ActualHeight = MaxHeight.ToPixels(parentLayoutBounds.Height);
             }
 
+
+            if (ActualWidth < MinWidth.ToPixels(parentLayoutBounds.Width)) ActualWidth = MinWidth.ToPixels(parentLayoutBounds.Width);
+            if (ActualWidth > MaxWidth.ToPixels(parentLayoutBounds.Width)) ActualWidth = MaxWidth.ToPixels(parentLayoutBounds.Width);
+            if (ActualHeight < MinHeight.ToPixels(parentLayoutBounds.Height)) ActualHeight = MinHeight.ToPixels(parentLayoutBounds.Height);
+            if (ActualHeight > MaxHeight.ToPixels(parentLayoutBounds.Height)) ActualHeight = MaxHeight.ToPixels(parentLayoutBounds.Height);
 
             //--------------
 
@@ -1080,16 +1109,23 @@ namespace Blade.MG.UI
 
 
 
-        // --- Test Serialising / Deserialising ---
-        private static IEnumerable<Type> GetKnownTypes()
-        {
-            if (knownTypes == null)
-                knownTypes = Assembly.GetExecutingAssembly()
-                                        .GetTypes()
-                                        .Where(t => typeof(UIComponent).IsAssignableFrom(t))
-                                        .ToList();
-            return knownTypes;
-        }
+        //// --- Test Serialising / Deserialising ---
+        //private static IEnumerable<Type> GetKnownTypes(Assembly assembly)
+        //{
+
+        //    if (assembly == null) assembly = Assembly.GetExecutingAssembly();
+
+        //    knownTypes = assembly.GetTypes()
+        //                         .Where(t => typeof(UIComponent).IsAssignableFrom(t))
+        //                         .ToList();
+
+        //    //if (knownTypes == null)
+        //    //    knownTypes = Assembly.GetExecutingAssembly()
+        //    //                            .GetTypes()
+        //    //                            .Where(t => typeof(UIComponent).IsAssignableFrom(t))
+        //    //                            .ToList();
+        //    return knownTypes;
+        //}
 
 
         //[OnSerializing()]

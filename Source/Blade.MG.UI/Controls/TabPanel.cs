@@ -3,6 +3,8 @@ using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using System.Collections;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls
 {
@@ -29,6 +31,8 @@ namespace Blade.MG.UI.Controls
         public UIComponent SelectedPage { get; set; } = null;
         public UIComponent SelectedHeader { get; set; } = null;
 
+        [JsonIgnore]
+        [XmlIgnore]
         public Type TabHeaderTemplateType { get; set; } = typeof(TabHeaderTemplate);
 
         public Color DividerColor { get; set; } = Color.Orange;

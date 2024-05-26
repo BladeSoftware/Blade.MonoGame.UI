@@ -3,6 +3,8 @@ using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls
 {
@@ -10,6 +12,9 @@ namespace Blade.MG.UI.Controls
     public class ExpansionPanel : StackPanel
     {
         private static int frameID = 0;
+
+        [JsonIgnore]
+        [XmlIgnore]
         public Type ItemTemplateType { get; set; } = typeof(TreeNodeTemplate);
 
 
