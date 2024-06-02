@@ -49,7 +49,7 @@ namespace Blade.MG.UI.Controls
 
         public ScrollPanel()
         {
-            HitTestVisible = false;
+            IsHitTestVisible = false;
         }
 
         protected override void InitTemplate()

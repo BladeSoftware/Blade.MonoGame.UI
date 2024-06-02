@@ -97,8 +97,8 @@ namespace Blade.MG.UI.Common
             var fps = new Label
             {
                 Text = new Binding<string>(() => "Render FPS"),
-                HorizontalContentAlignment = HorizontalAlignmentType.Right,
-                VerticalContentAlignment = VerticalAlignmentType.Center,
+                //HorizontalContentAlignment = HorizontalAlignmentType.Right,
+                //VerticalContentAlignment = VerticalAlignmentType.Center,
                 TextColor = new Binding<Color>(Color.White),
                 //SpriteFont = new Binding<SpriteFontBase>(fontArial8),
                 FontName = "Default",
@@ -110,8 +110,8 @@ namespace Blade.MG.UI.Common
             {
                 //Text = new Binding<string, float, FloatToStringBindingConverter>(() => GameState.ScreenRedawRate, (value) => { }),
                 Text = new Binding<string, float, FloatToStringBindingConverter>(() => ScreenRedawRate, (value) => { }),
-                HorizontalContentAlignment = HorizontalAlignmentType.Left,
-                VerticalContentAlignment = VerticalAlignmentType.Center,
+                //HorizontalContentAlignment = HorizontalAlignmentType.Left,
+                //VerticalContentAlignment = VerticalAlignmentType.Center,
                 TextColor = new Binding<Color>(Color.White),
                 Margin = new Thickness(15, 0, 0, 0),
                 //SpriteFont = new Binding<SpriteFontBase>(fontArial8),
@@ -126,8 +126,8 @@ namespace Blade.MG.UI.Common
             var physicsfps = new Label
             {
                 Text = new Binding<string>(() => "Physics FPS"),
-                HorizontalContentAlignment = HorizontalAlignmentType.Right,
-                VerticalContentAlignment = VerticalAlignmentType.Center,
+                //HorizontalContentAlignment = HorizontalAlignmentType.Right,
+                //VerticalContentAlignment = VerticalAlignmentType.Center,
                 TextColor = new Binding<Color>(Color.White),
                 //SpriteFont = new Binding<SpriteFontBase>(fontArial8),
                 FontName = "Default",
@@ -139,8 +139,8 @@ namespace Blade.MG.UI.Common
             {
                 //Text = new Binding<string, float, FloatToStringBindingConverter>(() => GameState.ScreenRedawRate, (value) => { }),
                 Text = new Binding<string, float, FloatToStringBindingConverter>(() => PhysicsRate, (value) => { }),
-                HorizontalContentAlignment = HorizontalAlignmentType.Left,
-                VerticalContentAlignment = VerticalAlignmentType.Center,
+                //HorizontalContentAlignment = HorizontalAlignmentType.Left,
+                //VerticalContentAlignment = VerticalAlignmentType.Center,
                 TextColor = new Binding<Color>(Color.White),
                 Margin = new Thickness(15, 0, 0, 0),
                 //SpriteFont = new Binding<SpriteFontBase>(fontArial8),

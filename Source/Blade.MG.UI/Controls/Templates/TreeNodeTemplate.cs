@@ -34,15 +34,15 @@ namespace Blade.MG.UI.Controls.Templates
         {
             base.InitTemplate();
 
-            HitTestVisible = true;
+            IsHitTestVisible = true;
 
             //button = Parent as Button;
             ITreeNode treeNode = (ITreeNode)DataContext;
 
             HorizontalAlignment = HorizontalAlignmentType.Stretch; //Parent.HorizontalAlignment;
             VerticalAlignment = VerticalAlignmentType.Stretch; //Parent.VerticalAlignment;
-            HorizontalContentAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment;
-            VerticalContentAlignment = VerticalAlignmentType.Center; //Parent.VerticalContentAlignment;
+            //HorizontalContentAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment;
+            //VerticalContentAlignment = VerticalAlignmentType.Center; //Parent.VerticalContentAlignment;
 
             //button1 = new Button()
             //{
@@ -92,8 +92,8 @@ namespace Blade.MG.UI.Controls.Templates
                 Margin = new Thickness(4, 0, 0, 0),
                 HorizontalAlignment = HorizontalAlignmentType.Left,
                 VerticalAlignment = VerticalAlignmentType.Center,
-                HorizontalContentAlignment = HorizontalContentAlignment,
-                VerticalContentAlignment = VerticalContentAlignment,
+                //HorizontalContentAlignment = HorizontalContentAlignment,
+                //VerticalContentAlignment = VerticalContentAlignment,
 
                 //SpriteFont = button.SpriteFont // Use the Button Font
             };
@@ -106,7 +106,7 @@ namespace Blade.MG.UI.Controls.Templates
             StackPanel stackPanel = new StackPanel()
             {
                 Orientation = Orientation.Horizontal,
-                HorizontalContentAlignment = HorizontalAlignmentType.Left
+                //HorizontalContentAlignment = HorizontalAlignmentType.Left
             };
 
             //stackPanel.AddChild(button1, this);

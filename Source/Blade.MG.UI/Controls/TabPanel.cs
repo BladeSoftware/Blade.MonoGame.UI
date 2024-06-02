@@ -43,7 +43,7 @@ namespace Blade.MG.UI.Controls
 
         public TabPanel()
         {
-            HitTestVisible = true;
+            IsHitTestVisible = true;
         }
 
         protected override void InitTemplate()
@@ -55,7 +55,7 @@ namespace Blade.MG.UI.Controls
             tabsStackPanel = new StackPanel
             {
                 //MinHeight = 20,
-                HitTestVisible = true,
+                IsHitTestVisible = true,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Top,
                 HorizontalScrollBarVisible = false,
@@ -67,7 +67,7 @@ namespace Blade.MG.UI.Controls
 
             contentPanel = new Panel
             {
-                HitTestVisible = true
+                IsHitTestVisible = true
                 //Margin = new Thickness(0, 10, 0, 0)
             };
 

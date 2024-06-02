@@ -38,7 +38,7 @@ namespace Blade.MG.UI
                 // Check if the mouse is hovering over a control
                 bool selector(UIComponent component, UIComponent parent) =>
                     (
-                      component.HitTestVisible &&
+                      component.IsHitTestVisible &&
                       component.Visible.Value == Components.Visibility.Visible &&
                       component.ParentWindow?.Visible?.Value == Components.Visibility.Visible &&
                       component.FinalRect.Contains(InputManager.MouseState.Position)

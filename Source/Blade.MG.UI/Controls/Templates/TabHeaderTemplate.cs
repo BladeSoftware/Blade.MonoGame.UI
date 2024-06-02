@@ -19,15 +19,15 @@ namespace Blade.MG.UI.Controls.Templates
 
             string item = DataContext?.ToString() ?? "null";
 
-            HitTestVisible = true;
+            IsHitTestVisible = true;
 
             Margin = new Thickness(1, 1, 3, 2);
             Background = Theme.SecondaryContainer;
 
             HorizontalAlignment = HorizontalAlignmentType.Left;
             VerticalAlignment = VerticalAlignmentType.Top;
-            HorizontalContentAlignment = HorizontalAlignmentType.Left;
-            VerticalContentAlignment = VerticalAlignmentType.Center;
+            //HorizontalContentAlignment = HorizontalAlignmentType.Left;
+            //VerticalContentAlignment = VerticalAlignmentType.Center;
 
             label1 = new Label()
             {
@@ -56,7 +56,7 @@ namespace Blade.MG.UI.Controls.Templates
                 HorizontalAlignment = HorizontalAlignmentType.Left,
                 VerticalAlignment = VerticalAlignmentType.Top,
 
-                HitTestVisible = true,
+                IsHitTestVisible = true,
                 Name = "CloseTab1",
 
                 OnHoverChanged = (args) =>
@@ -92,7 +92,7 @@ namespace Blade.MG.UI.Controls.Templates
 
             var container = new StackPanel()
             {
-                HitTestVisible = false,
+                IsHitTestVisible = false,
                 HorizontalScrollBarVisible = false,
                 VerticalScrollBarVisible = false
             };

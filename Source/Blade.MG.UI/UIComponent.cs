@@ -91,19 +91,16 @@ namespace Blade.MG.UI
 
         public Binding<HorizontalAlignmentType> HorizontalAlignment { get; set; }
         public Binding<VerticalAlignmentType> VerticalAlignment { get; set; }
-        public Binding<HorizontalAlignmentType> HorizontalContentAlignment { get; set; }
-        public Binding<VerticalAlignmentType> VerticalContentAlignment { get; set; }
-
-        //public StretchType Stretch { get; set; }
-        //public StretchDirection StretchDirection { get; set; }
+        //public Binding<HorizontalAlignmentType> HorizontalContentAlignment { get; set; }
+        //public Binding<VerticalAlignmentType> VerticalContentAlignment { get; set; }
 
         public int TabIndex { get; set; } = ++LastTabOrder;
 
         public Binding<bool> IsTabStop { get; set; } = false;
-        public Binding<bool> Enabled { get; set; } = true;
+        public Binding<bool> IsEnabled { get; set; } = true;
         public Binding<Visibility> Visible { get; set; } = Visibility.Visible;
 
-        public bool HitTestVisible { get; set; } = false;
+        public bool IsHitTestVisible { get; set; } = false;
         public bool CanHover { get; set; } = true;
 
         public Binding<bool> HasFocus { get; set; } = false;
@@ -141,8 +138,8 @@ namespace Blade.MG.UI
             HorizontalAlignment = HorizontalAlignmentType.Stretch;
             VerticalAlignment = VerticalAlignmentType.Stretch;
 
-            HorizontalContentAlignment = HorizontalAlignmentType.Stretch;
-            VerticalContentAlignment = VerticalAlignmentType.Stretch;
+            //HorizontalContentAlignment = HorizontalAlignmentType.Stretch;
+            //VerticalContentAlignment = VerticalAlignmentType.Stretch;
 
             ActualWidth = 0;
             ActualHeight = 0;

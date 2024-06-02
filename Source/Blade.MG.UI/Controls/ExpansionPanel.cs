@@ -32,7 +32,7 @@ namespace Blade.MG.UI.Controls
 
         public ExpansionPanel()
         {
-            HitTestVisible = true;
+            IsHitTestVisible = true;
         }
 
         protected override void InitTemplate()

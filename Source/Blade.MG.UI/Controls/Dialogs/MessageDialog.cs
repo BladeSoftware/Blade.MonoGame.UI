@@ -76,7 +76,7 @@ namespace Blade.MG.UI.Controls.Dialogs
                 //Margin = new Thickness(0, 15, 0, 0),
                 //Padding = new Thickness(0, 0, 0, 0),
 
-                HitTestVisible = true  // Prevent events from propagating to windows behind this one
+                IsHitTestVisible = true  // Prevent events from propagating to windows behind this one
 
             };
 

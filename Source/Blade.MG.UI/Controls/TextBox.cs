@@ -19,6 +19,9 @@ namespace Blade.MG.UI.Controls
             }
         }
 
+        public Binding<HorizontalAlignmentType> HorizontalTextAlignment;
+        public Binding<VerticalAlignmentType> VerticalTextAlignment;
+
         public Binding<string> FontName { get; set; } = new Binding<string>();
 
         public Binding<float> FontSize { get; set; } = new Binding<float>();
@@ -35,12 +38,22 @@ namespace Blade.MG.UI.Controls
         public int SelectionStart { get; set; }
         public int SelectionLength { get; set; }
 
+        public Variant Variant { get; set; }
+        public string Label { get; set; }
+        public string HelperText { get; set; }
+        public bool Underline { get; set; } // Underline the text
+        public bool ShrinkLabel { get; set; } // Label stays Shrunk and doesn't fill the textbox if the text is empty
+
+
         public TextBox()
         {
             TemplateType = typeof(TextBoxTemplate);
 
+            HorizontalTextAlignment = HorizontalAlignmentType.Left;
+            VerticalTextAlignment = VerticalAlignmentType.Bottom;
+
             IsTabStop = true;
-            HitTestVisible = true;
+            IsHitTestVisible = true;
 
             FontName = null; // Use default
             FontSize = null; // Use default
@@ -55,9 +68,15 @@ namespace Blade.MG.UI.Controls
             SelectionStart = 0;
             SelectionLength = 0;
 
-            HorizontalContentAlignment = HorizontalAlignmentType.Left;
-            VerticalContentAlignment = VerticalAlignmentType.Center;
-            //cursorTextIndex = 0;
+            Variant = Variant.Standard;
+            Label = null;
+            HelperText = null;
+
+            //MinHeight = 30;
+
+            Underline = true;
+            ShrinkLabel = false;
+
         }
 
         protected override void InitTemplate()

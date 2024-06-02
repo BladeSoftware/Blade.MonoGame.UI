@@ -10,7 +10,7 @@ namespace Blade.MG.UI.Controls
 
         public StackPanel()
         {
-            HitTestVisible = false;
+            IsHitTestVisible = false;
         }
 
         protected override void InitTemplate()

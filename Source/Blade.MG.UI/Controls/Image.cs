@@ -91,12 +91,12 @@ namespace Blade.MG.UI.Controls
                 if (parentStackPanel.Orientation == Orientation.Horizontal)
                 {
                     // Horizontal Alignment
-                    ImageLayout.HorizontalAlignment = Parent.HorizontalContentAlignment.Value;
+                    ImageLayout.HorizontalAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment.Value;
                 }
                 else
                 {
                     // Vertical Aligment
-                    ImageLayout.VerticalAlignment = Parent.VerticalContentAlignment.Value;
+                    ImageLayout.VerticalAlignment = VerticalAlignmentType.Top; // Parent.VerticalContentAlignment.Value;
                 }
             }
 
@@ -110,7 +110,7 @@ namespace Blade.MG.UI.Controls
 
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            if (string.Equals(Name, "ZYX")) { }
+            //if (string.Equals(Name, "ZYX")) { }
             base.Arrange(context, layoutBounds, parentLayoutBounds);
 
             //var tmpDesiredSize = DesiredSize;

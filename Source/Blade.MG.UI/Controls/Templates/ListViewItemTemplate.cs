@@ -36,7 +36,7 @@ namespace Blade.MG.UI.Controls.Templates
         {
             base.InitTemplate();
 
-            HitTestVisible = true;
+            IsHitTestVisible = true;
 
             string item = DataContext?.ToString() ?? "null";
 
@@ -45,8 +45,8 @@ namespace Blade.MG.UI.Controls.Templates
 
             HorizontalAlignment = HorizontalAlignmentType.Stretch;
             VerticalAlignment = VerticalAlignmentType.Stretch;
-            HorizontalContentAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment;
-            VerticalContentAlignment = VerticalAlignmentType.Center; //Parent.VerticalContentAlignment;
+            //HorizontalContentAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment;
+            //VerticalContentAlignment = VerticalAlignmentType.Center; //Parent.VerticalContentAlignment;
 
             label1 = new Label()
             {

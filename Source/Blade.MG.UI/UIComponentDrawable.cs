@@ -1,4 +1,5 @@
 ﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Models;
 using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,6 +10,15 @@ namespace Blade.MG.UI
 {
     public abstract class UIComponentDrawable : UIComponentEvents
     {
+        [JsonIgnore]
+        [XmlIgnore]
+        public string ResourceKey { get => resourceKey ?? this.GetType().Name; set => resourceKey = value; }
+        private string resourceKey;
+
+        [JsonIgnore]
+        [XmlIgnore]
+        public ResourceDict ResourceDict { get; set; } = new ResourceDict(); // Component Resource Dictionary
+
         [JsonIgnore]
         [XmlIgnore]
         public UITheme Theme => ParentWindow?.Context?.Theme ?? (this as UIWindow)?.Context?.Theme ?? UIManager.DefaultTheme;
@@ -23,6 +33,44 @@ namespace Blade.MG.UI
         [XmlIgnore]
         public TextureLayout BackgroundLayout { get; set; }
 
+
+        public string GetResourceValue(string property)
+        {
+            // First try the local resource dictionary
+            if (ResourceDict != null)
+            {
+                if (ResourceDict.TryGetValue(property, out var value))
+                {
+                    return value;
+                }
+            }
+
+            // Then the global resource dictionary
+            if (UIManager.ResourceDicts != null)
+            {
+                // First look for a resource dictionary specific to the Type (e.g. CheckBox)
+                UIManager.ResourceDicts.TryGetValue(ResourceKey, out var resourceDict);
+                if (resourceDict != null)
+                {
+                    if (resourceDict.TryGetValue(property, out var value))
+                    {
+                        return value;
+                    }
+                }
+
+                // Then look for the default resource dictionary (type = blank)
+                UIManager.ResourceDicts.TryGetValue("", out resourceDict);
+                if (resourceDict != null)
+                {
+                    if (resourceDict.TryGetValue(property, out var value))
+                    {
+                        return value;
+                    }
+                }
+            }
+
+            return "";
+        }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {

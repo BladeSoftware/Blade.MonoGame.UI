@@ -59,8 +59,8 @@ namespace Examples.UI
                 Orientation = Orientation.Vertical,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-                HorizontalContentAlignment = HorizontalAlignmentType.Stretch,
-                VerticalContentAlignment = VerticalAlignmentType.Top
+                //HorizontalContentAlignment = HorizontalAlignmentType.Stretch,
+                //VerticalContentAlignment = VerticalAlignmentType.Top
 
             };
 
@@ -81,6 +81,8 @@ namespace Examples.UI
                 Margin = new Thickness(0, verticalMargin, 0, verticalMargin),
                 Padding = new Thickness(20, 0),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                HorizontalTextAlignment = HorizontalAlignmentType.Center,
+                VerticalTextAlignment = VerticalAlignmentType.Center,
                 OnClick = (sender, uiEvents) =>
                 {
                     content.Content = new HelpPage_Panel();
@@ -94,6 +96,8 @@ namespace Examples.UI
                 Margin = new Thickness(0, verticalMargin, 0, verticalMargin),
                 Padding = new Thickness(20, 0),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                HorizontalTextAlignment = HorizontalAlignmentType.Center,
+                VerticalTextAlignment = VerticalAlignmentType.Center,
                 OnClick = (sender, uiEvents) =>
                 {
                     content.Content = new HelpPage_Button();
@@ -107,6 +111,8 @@ namespace Examples.UI
                 Margin = new Thickness(0, 5, 0, verticalMargin),
                 Padding = new Thickness(20, 0),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                HorizontalTextAlignment = HorizontalAlignmentType.Center,
+                VerticalTextAlignment = VerticalAlignmentType.Center,
                 OnClick = (sender, uiEvents) =>
                 {
                     content.Content = new HelpPage_Label();
@@ -120,6 +126,8 @@ namespace Examples.UI
                 Margin = new Thickness(0, 5, 0, verticalMargin),
                 Padding = new Thickness(20, 0),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                HorizontalTextAlignment = HorizontalAlignmentType.Center,
+                VerticalTextAlignment = VerticalAlignmentType.Center,
                 OnClick = (sender, uiEvents) =>
                 {
                     content.Content = new HelpPage_FormFields();
@@ -133,6 +141,8 @@ namespace Examples.UI
                 Margin = new Thickness(0, verticalMargin, 0, verticalMargin),
                 Padding = new Thickness(20, 0),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                HorizontalTextAlignment = HorizontalAlignmentType.Center,
+                VerticalTextAlignment = VerticalAlignmentType.Center,
                 OnClick = (sender, uiEvents) =>
                 {
                     content.Content = null;

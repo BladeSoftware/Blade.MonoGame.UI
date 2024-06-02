@@ -8,7 +8,7 @@ namespace Blade.MG.UI.Controls
         public Panel()
         {
             Background = Color.Transparent;
-            HitTestVisible = true;
+            IsHitTestVisible = true;
         }
 
         protected override void InitTemplate()

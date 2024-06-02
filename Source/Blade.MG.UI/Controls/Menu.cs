@@ -25,7 +25,7 @@ namespace Blade.MG.UI.Controls
 
         public void BuildScreen(Game game)
         {
-            HitTestVisible = true;
+            IsHitTestVisible = true;
 
             var border1 = new Border
             {

@@ -8,15 +8,23 @@ namespace Blade.MG.UI.Controls
 {
     public class Label : TemplatedControl
     {
+        public Binding<HorizontalAlignmentType> HorizontalTextAlignment;
+        public Binding<VerticalAlignmentType> VerticalTextAlignment;
+
         public Binding<string> Text { get; set; } = string.Empty;
         public Binding<string> FontName { get; set; } = new Binding<string>();
         public Binding<float> FontSize { get; set; } = new Binding<float>();
         public Binding<Color> TextColor { get; set; } = new Binding<Color>();
 
+        public Rectangle TextRect { get; set; } = new Rectangle();
+        public Rectangle TextBaseLine { get; set; } = new Rectangle();
 
         public Label()
         {
             TemplateType = typeof(LabelTemplate);
+
+            HorizontalTextAlignment = HorizontalAlignmentType.Left;
+            VerticalTextAlignment = VerticalAlignmentType.Center;
 
             Text = null;
             FontName = null; // Use default font
@@ -27,19 +35,11 @@ namespace Blade.MG.UI.Controls
 
             HorizontalAlignment = HorizontalAlignmentType.Stretch;
             VerticalAlignment = VerticalAlignmentType.Stretch;
-            HorizontalContentAlignment = HorizontalAlignmentType.Center;
-            VerticalContentAlignment = VerticalAlignmentType.Center;
+            //HorizontalContentAlignment = HorizontalAlignmentType.Center;
+            //VerticalContentAlignment = VerticalAlignmentType.Center;
 
-            HitTestVisible = false;
+            IsHitTestVisible = false;
         }
-
-        //protected override void InitTemplate()
-        //{
-        //    base.InitTemplate();
-
-        //    Content = Activator.CreateInstance(TemplateType) as UIComponent;
-        //}
-
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
@@ -58,7 +58,8 @@ namespace Blade.MG.UI.Controls
             {
 
                 SpriteFontBase font = FontService.GetFontOrDefault(FontName?.Value, FontSize?.Value);
-                Vector2 textSize = font.MeasureString(Text.ToString());
+                Vector2 textSizeDefault = font.MeasureString("Iyjg");
+                Vector2 textSize = font.MeasureString(Text.Value);
 
                 if (FloatHelper.IsNaN(Width))
                 {
@@ -69,7 +70,7 @@ namespace Blade.MG.UI.Controls
 
                 if (FloatHelper.IsNaN(Height))
                 {
-                    desiredHeight = textSize.Y;
+                    desiredHeight = Math.Max(textSize.Y, textSizeDefault.Y);
                 }
             }
 
@@ -105,27 +106,6 @@ namespace Blade.MG.UI.Controls
             }
 
             base.RenderControl(context, layoutBounds, parentTransform);
-
-            //try
-            //{
-            //    context.Renderer.BeginBatch(transform: parentTransform); // Transform.Combine(parentTransform, Transform)
-
-            //    if (this.Background.Value != Color.Transparent)
-            //    {
-            //        ////context.Renderer.FillRect(FinalRect, Background.Value, layoutBounds);
-            //        context.Renderer.FillRect(FinalContentRect, Background.Value, layoutBounds);
-            //    }
-
-            //    SpriteFontBase font = context.FontService.GetFontOrDefault(FontName?.Value, FontSize?.Value);
-            //    context.Renderer.DrawString(FinalContentRect, Text.ToString(), font, TextColor?.Value, HorizontalContentAlignment.Value, VerticalContentAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
-
-            //    //context.Renderer.DrawString(FinalContentRect, Text.ToString(), SpriteFont?.Value, TextColor?.Value, HorizontalContentAlignment.Value, VerticalContentAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
-            //}
-            //finally
-            //{
-            //    context.Renderer.EndBatch();
-            //}
-
         }
     }
 }

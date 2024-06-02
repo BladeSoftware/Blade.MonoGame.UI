@@ -1,6 +1,7 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace Blade.MG.UI.Controls.Templates
 {
@@ -55,8 +56,8 @@ namespace Blade.MG.UI.Controls.Templates
                 //VerticalAlignment = this.VerticalAlignment, //VerticalAlignmentType.Center,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-                HorizontalContentAlignment = HorizontalAlignmentType.Stretch,
-                VerticalContentAlignment = VerticalAlignmentType.Stretch,
+                //HorizontalContentAlignment = HorizontalAlignmentType.Stretch,
+                //VerticalContentAlignment = VerticalAlignmentType.Stretch,
                 Margin = new Thickness(0),
                 Padding = new Thickness(0)
             };
@@ -70,6 +71,8 @@ namespace Blade.MG.UI.Controls.Templates
                 FontSize = button.FontSize, // Use the Button Font
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
+                HorizontalTextAlignment = button.HorizontalTextAlignment,
+                VerticalTextAlignment = button.VerticalTextAlignment,
                 Padding = new Thickness(2),
                 Margin = new Thickness(0)
             };

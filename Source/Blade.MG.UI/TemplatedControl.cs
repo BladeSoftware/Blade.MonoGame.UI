@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using Blade.MG.UI.Components;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
 namespace Blade.MG.UI
@@ -19,7 +20,11 @@ namespace Blade.MG.UI
         {
             base.InitTemplate();
 
-            Content = Activator.CreateInstance(TemplateType) as UIComponent;
+            UIComponent templateControl = Activator.CreateInstance(TemplateType) as UIComponent;
+            templateControl.HorizontalAlignment = HorizontalAlignmentType.Stretch;
+            templateControl.VerticalAlignment = VerticalAlignmentType.Stretch;
+
+            Content = templateControl;
         }
 
     }

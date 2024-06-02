@@ -59,7 +59,7 @@ namespace Blade.MG.UI.Controls
 
             Orientation = Orientation.Vertical;
 
-            HitTestVisible = true;
+            IsHitTestVisible = true;
         }
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)

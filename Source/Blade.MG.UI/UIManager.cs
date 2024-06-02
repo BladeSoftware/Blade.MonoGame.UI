@@ -1,5 +1,6 @@
 ﻿using Blade.MG.Primitives;
 using Blade.MG.UI.Components;
+using Blade.MG.UI.Models;
 using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -29,6 +30,8 @@ namespace Blade.MG.UI
         //private static SemaphoreSlim uiSemaphore = new SemaphoreSlim(1);
 
         public static UITheme DefaultTheme { get; set; } = DefaultThemes.LightTheme();
+
+        public static Dictionary<string, ResourceDict> ResourceDicts { get; set; } = new Dictionary<string, ResourceDict>(); // Default Resource Dictionaries
 
         //public static Rectangle SafeLayoutRect = Instance.game.GraphicsDevice.PresentationParameters.IsFullScreen ? Instance.game.TitleSafeArea : Instance.game.Viewport.Bounds;
 
@@ -96,7 +99,7 @@ namespace Blade.MG.UI
         public static void Add(UIWindow ui, int priority = 100)
         {
             Instance.EnqueTask(new UITask { TaskType = UITaskType.Add, Window = ui, Priority = priority });
-            
+
             ui.Initialize(Instance.game);
             ui.LoadContent();
 

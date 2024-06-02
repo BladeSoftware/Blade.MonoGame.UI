@@ -25,7 +25,7 @@ namespace Blade.MG.UI.Controls
 
         public Grid()
         {
-            HitTestVisible = false;
+            IsHitTestVisible = false;
 
             Init();
         }

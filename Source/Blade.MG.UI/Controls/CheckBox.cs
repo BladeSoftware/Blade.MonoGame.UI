@@ -14,13 +14,16 @@ namespace Blade.MG.UI.Controls
         public Binding<bool?> IsChecked { get; set; } = new Binding<bool?>();
         public Binding<bool> Tristate { get; set; } = false;
 
+        public string CheckedIcon { get; set; }
+        public string UncheckedIcon { get; set; }
+
 
         public CheckBox()
         {
             TemplateType = typeof(CheckBoxTemplate);
 
             IsTabStop = true;
-            HitTestVisible = true;
+            IsHitTestVisible = true;
 
             FontName = null; // Use default
             FontSize = null; // Use default
@@ -28,8 +31,8 @@ namespace Blade.MG.UI.Controls
             Text = string.Empty;
             IsChecked = Tristate?.Value == true ? null : false;
 
-            HorizontalContentAlignment = HorizontalAlignmentType.Left;
-            VerticalContentAlignment = VerticalAlignmentType.Center;
+            //HorizontalContentAlignment = HorizontalAlignmentType.Left;
+            //VerticalContentAlignment = VerticalAlignmentType.Center;
 
         }
 
@@ -103,6 +106,12 @@ namespace Blade.MG.UI.Controls
         public override Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // return base.HandleClickEventAsync(uiWindow, uiEvent);
+
+            // Don't change state if not Enabled
+            if (!IsEnabled.Value)
+            {
+                return Task.CompletedTask;
+            }
 
             if (Tristate.Value)
             {

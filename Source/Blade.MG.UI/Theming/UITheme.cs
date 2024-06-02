@@ -46,19 +46,5 @@ namespace Blade.MG.UI.Theming
         public Color SurfaceVariant;
         public Color OnSurfaceVariant;
 
-        //public Color ToolwindowBackground = Color.WhiteSmoke;
-
-        /*
-         --md-sys-color-inverse-surface: var(--md-sys-color-inverse-surface-light);
-         --md-sys-color-inverse-on-surface: var(--md-sys-color-inverse-on-surface-light);
-         --md-sys-color-inverse-primary: var(--md-sys-color-inverse-primary-light);
-
-         --md-sys-color-shadow: var(--md-sys-color-shadow-light);
-         --md-sys-color-surface-tint: var(--md-sys-color-surface-tint-light);
-         --md-sys-color-outline: var(--md-sys-color-outline-light);
-         --md-sys-color-outline-variant: var(--md-sys-color-outline-variant-light);
-         --md-sys-color-scrim: var(--md-sys-color-scrim-light);
-        */
-
     }
 }

@@ -11,10 +11,10 @@ namespace Blade.MG.UI.Controls
         {
             HorizontalAlignment = HorizontalAlignmentType.Stretch;
             VerticalAlignment = VerticalAlignmentType.Stretch;
-            HorizontalContentAlignment = HorizontalAlignmentType.Center;
-            VerticalContentAlignment = VerticalAlignmentType.Center;
+            //HorizontalContentAlignment = HorizontalAlignmentType.Center;
+            //VerticalContentAlignment = VerticalAlignmentType.Center;
 
-            HitTestVisible = true;
+            IsHitTestVisible = true;
             IsTabStop = false;
 
             Padding = new Thickness(16, 0, 5, 0);

@@ -8,25 +8,27 @@ namespace Blade.MG.UI.Controls
     {
         public Binding<string> Text;
 
+        public Binding<HorizontalAlignmentType> HorizontalTextAlignment;
+        public Binding<VerticalAlignmentType> VerticalTextAlignment;
+
         public Binding<string> FontName { get; set; }
         public Binding<float> FontSize { get; set; }
         public Binding<Color> FontColor { get; set; }
-
-        //public Binding<Border> Border { get; set; }
-
 
 
         public Button()
         {
             TemplateType = typeof(ButtonTemplate);
 
-            Text = null;
             HorizontalAlignment = HorizontalAlignmentType.Stretch;
             VerticalAlignment = VerticalAlignmentType.Stretch;
-            HorizontalContentAlignment = HorizontalAlignmentType.Center;
-            VerticalContentAlignment = VerticalAlignmentType.Center;
 
-            HitTestVisible = true;
+            HorizontalTextAlignment = HorizontalAlignmentType.Center;
+            VerticalTextAlignment = VerticalAlignmentType.Center;
+
+            Text = null;
+
+            IsHitTestVisible = true;
             IsTabStop = true;
         }
 

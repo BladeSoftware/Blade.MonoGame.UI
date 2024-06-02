@@ -1,5 +1,6 @@
 ﻿using Blade.MG.Primitives;
 using Blade.MG.UI.Components;
+using Blade.MG.UI.Models;
 using Blade.MG.UI.Services;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
@@ -36,11 +37,11 @@ namespace Blade.MG.UI.Renderer
         [JsonIgnore]
         [XmlIgnore]
         public static DepthStencilState stencilStateReplaceAlways; // Always replace stencil pixels, no depth test
-        
+
         [JsonIgnore]
         [XmlIgnore]
         public static DepthStencilState stencilStateZeroAlways; // Use to clear stencil pixels
-        
+
         [JsonIgnore]
         [XmlIgnore]
         public static DepthStencilState stencilStateKeepLessEqual;
@@ -431,11 +432,15 @@ namespace Blade.MG.UI.Renderer
             Primitives2D.FillRoundedRect(spriteBatch, rectangle, cornerRadius, color);
         }
 
-
-        public void DrawString(SpriteBatch spriteBatch, Rectangle rectangle, string text, SpriteFontBase spriteFont, Color? color, HorizontalAlignmentType horizontalAlignment = HorizontalAlignmentType.Left, VerticalAlignmentType verticalAlignment = VerticalAlignmentType.Center, Rectangle? clippingRect = null)
+        public TextDimensions DrawString(SpriteBatch spriteBatch, Rectangle rectangle, string text, SpriteFontBase spriteFont, Color? color, HorizontalAlignmentType horizontalAlignment = HorizontalAlignmentType.Left, VerticalAlignmentType verticalAlignment = VerticalAlignmentType.Center, Rectangle? clippingRect = null)
         {
             SpriteFontBase font = spriteFont ?? FontService.GetFontOrDefault(null, null);
             Vector2 textSize = font.MeasureString(text);
+
+            Vector2 textSizeA = font.MeasureString("I");
+            Vector2 textSizeB = font.MeasureString("Iyjg");
+
+            //float baseLineY = textSizeB.Y - textSizeA.Y;
 
             float x;
             float y;
@@ -473,7 +478,7 @@ namespace Blade.MG.UI.Renderer
 
                 case VerticalAlignmentType.Center:
                 case VerticalAlignmentType.Stretch:
-                    y = (rectangle.Top + rectangle.Bottom) / 2 - (int)textSize.Y / 2;
+                    y = (rectangle.Top + rectangle.Bottom) / 2 - (int)textSizeA.Y / 2;
                     if (y < rectangle.Top)
                     {
                         y = rectangle.Top;
@@ -481,7 +486,7 @@ namespace Blade.MG.UI.Renderer
                     break;
 
                 case VerticalAlignmentType.Bottom:
-                    y = rectangle.Bottom - (int)textSize.Y;
+                    y = rectangle.Bottom - (int)textSizeB.Y;
                     break;
 
                 default:
@@ -503,6 +508,17 @@ namespace Blade.MG.UI.Renderer
 
             //spriteBatch.DrawString(font, text, textPosition, color ?? Color.White);
             spriteBatch.DrawString(font, text, textPosition, color ?? Color.White);
+
+            var textRect = new Rectangle((int)x, (int)y, (int)textSize.X, Math.Max((int)textSize.Y, (int)textSizeB.Y));
+            var baseline = new Rectangle(textRect.Left, (int)y + (int)textSizeA.Y, textRect.Width, 1);
+            //var baseline = new Rectangle(textRect.Left, (int)baseLineY, textRect.Width, 1);
+
+            return new TextDimensions
+            {
+                TextRect = textRect,
+                Baseline = baseline,
+            };
+
         }
 
 

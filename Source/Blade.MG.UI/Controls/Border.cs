@@ -15,14 +15,6 @@ namespace Blade.MG.UI.Controls
         public Binding<int> Elevation { get; set; } = 0;
 
 
-        //public Binding<Color> Background { get; set; } = new Color();
-        //public Binding<Texture2D> BackgroundTexture { get; set; } = new Binding<Texture2D>();
-
-        //private static AlphaTestEffect alphaTestEffect;
-        //private static Matrix projectionMatrix;
-
-        //private static BlendState blendState; // Blend State to only write to Depth Buffer and not Back Buffer
-
         public Border()
         {
             BorderColor.Value = Color.White;
@@ -32,11 +24,8 @@ namespace Blade.MG.UI.Controls
 
             HorizontalAlignment = HorizontalAlignmentType.Stretch;
             VerticalAlignment = VerticalAlignmentType.Stretch;
-            HorizontalContentAlignment = HorizontalAlignmentType.Center;
-            VerticalContentAlignment = VerticalAlignmentType.Center;
 
-            HitTestVisible = false;
-
+            IsHitTestVisible = false;
         }
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
@@ -51,12 +40,6 @@ namespace Blade.MG.UI.Controls
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
-            //if (alphaTestEffect == null)
-            //{
-            //    InitStencilBufferVars(context);
-            //}
-
-
             // Draw the shadow if Elevation is > 0
             if (Elevation.Value > 0)
             {
@@ -84,33 +67,11 @@ namespace Blade.MG.UI.Controls
 
 
             // If we have rounded corners, then we need to draw the stencil mask
-            if (BorderThickness.Value > 0 && CornerRadius.Value > 0)
+            if (CornerRadius.Value > 0)
             {
                 // Render the border background
                 DrawStencil(context, FinalRect);
             }
-
-
-            //// Draw background
-            //try
-            //{
-            //    context.Renderer.BeginBatch(transform: parentTransform);
-            //    context.Renderer.ClipToRect(layoutBounds);
-
-            //    if (BackgroundTexture == null || BackgroundTexture == null)
-            //    {
-            //        context.Renderer.FillRect(finalRect, Background.Value);
-            //    }
-            //    else
-            //    {
-            //        context.Renderer.FillRect(finalRect, BackgroundTexture, Background.Value);
-            //    }
-            //}
-            //finally
-            //{
-            //    context.Renderer.EndBatch();
-            //}
-
 
 
             // Render the Contents
@@ -118,10 +79,8 @@ namespace Blade.MG.UI.Controls
 
 
             // If we have rounded corners, then we need to restore the stencil mask
-            if (BorderThickness.Value > 0 && CornerRadius.Value > 0)
+            if (CornerRadius.Value > 0)
             {
-                //alphaTestEffect.Projection = projectionMatrix;
-
                 //context.Renderer.BeginBatch(depthStencilState: Renderer.UIRenderer.stencilStateReplaceAlways, effect: alphaTestEffect, blendState: Renderer.UIRenderer.blendStateStencilOnly);
                 using var spriteBatch = context.Renderer.BeginBatch(depthStencilState: UIRenderer.stencilStateReplaceAlways, blendState: UIRenderer.blendStateStencilOnly, transform: null);
                 context.Renderer.FillRect(spriteBatch, FinalRect, Color.White);
@@ -145,36 +104,6 @@ namespace Blade.MG.UI.Controls
                     context.Renderer.EndBatch();
                 }
             }
-
-
-            ////-- Testing---
-            //try
-            //{
-            //    BasicEffect basicEffect = new BasicEffect(context.Game.GraphicsDevice);
-
-            //    basicEffect.Projection = Matrix.CreateOrthographicOffCenter(context.Game.Viewport.TitleSafeArea, 0f, 10f);
-            //    //basicEffect.Projection = Matrix.CreateOrthographicOffCenter(ViewportBounds, 0f, 10f);
-
-            //    //context.Renderer.BeginBatch(transform: parentTransform, blendState: BlendState.AlphaBlend, effect: basicEffect);
-            //    context.Renderer.BeginBatch(transform: parentTransform, blendState: BlendState.NonPremultiplied);
-            //    //context.Renderer.BeginBatch(transform: parentTransform);
-
-            //    context.Renderer.ClipToRect(layoutBounds);
-
-            //    //Rectangle shadowRect = finalRect with { X = finalRect.X - Elevation.Value, Y = finalRect.Y - Elevation.Value, Width = finalRect.Width + 3 * Elevation.Value, Height = finalRect.Height + 3 * Elevation.Value };
-            //    Rectangle shadowRect = finalRect with { X = finalRect.X + Elevation.Value, Y = finalRect.Y + Elevation.Value, Width = finalRect.Width + Elevation.Value, Height = finalRect.Height + Elevation.Value };
-            //    context.Renderer.FillRoundedRect(shadowRect, 8, new Color(Color.LightBlue, 0.25f));
-
-            //    //context.Renderer.DrawRoundedRect(finalRect, CornerRadius.Value, BorderColor.Value, BorderThickness.Value);
-            //    //context.Renderer.FillRect(shadowRect, new Color(Color.LightBlue, 0.8f));
-            //    //context.Renderer.FillRect(shadowRect, BackgroundTexture, new Color(Color.LightBlue, 0.5f));
-
-            //}
-            //finally
-            //{
-            //    context.Renderer.EndBatch();
-            //}
-
 
         }
 

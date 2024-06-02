@@ -50,14 +50,15 @@ namespace Blade.MG.UI.Controls.Templates
 
                 if (Background.Value != Color.Transparent)
                 {
-                    ////context.Renderer.FillRect(FinalRect, Background.Value, layoutBounds);
                     context.Renderer.FillRect(spriteBatch, FinalContentRect, Background.Value, layoutBounds);
                 }
 
                 SpriteFontBase font = FontService.GetFontOrDefault(label.FontName?.Value, label.FontSize?.Value);
-                context.Renderer.DrawString(spriteBatch, FinalContentRect, label.Text.ToString(), font, label.TextColor?.Value, HorizontalContentAlignment.Value, VerticalContentAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
 
-                //context.Renderer.DrawString(FinalContentRect, Text.ToString(), SpriteFont?.Value, TextColor?.Value, HorizontalContentAlignment.Value, VerticalContentAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
+                var textDimensions = context.Renderer.DrawString(spriteBatch, FinalContentRect, label.Text.ToString(), font, label.TextColor?.Value, label.HorizontalTextAlignment.Value, label.VerticalTextAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
+
+                label.TextRect = textDimensions.TextRect;
+                label.TextBaseLine = textDimensions.Baseline;
             }
             finally
             {

@@ -29,7 +29,7 @@ namespace Blade.MG.UI.Controls
 
         public ScrollBar()
         {
-            HitTestVisible = true;
+            IsHitTestVisible = true;
 
             Background = Color.LightGray;
             GrabHandle = Color.Gray;

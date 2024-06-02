@@ -20,7 +20,7 @@ namespace Blade.MG.UI.Controls
             HorizontalAlignment = HorizontalAlignmentType.Stretch;
             VerticalAlignment = VerticalAlignmentType.Top;
 
-            HitTestVisible = true;
+            IsHitTestVisible = true;
             IsTabStop = true;
         }
 
