@@ -3,6 +3,7 @@ using Blade.MG.UI.Models;
 using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
@@ -33,6 +34,45 @@ namespace Blade.MG.UI
         [XmlIgnore]
         public TextureLayout BackgroundLayout { get; set; }
 
+
+        public T GetResourceValue<T>(string property)
+        {
+            string value = GetResourceValue(property);
+
+            Type typeT = typeof(T);
+
+            if (typeT == typeof(Color))
+            {
+                var color = ((UIColor)Activator.CreateInstance(typeof(UIColor), value)).ToColor();
+                return (T)Activator.CreateInstance(typeof(Color), color.R, color.G, color.B, color.A);
+            }
+
+            if (typeT == typeof(UIColor) || typeT == typeof(Length) || typeT == typeof(Thickness))
+            {
+                return (T)Activator.CreateInstance(typeT, value);
+            }
+
+            try
+            {
+                return (T)Convert.ChangeType(value, typeT);
+            }
+            catch (Exception ex)
+            {
+                return default(T);
+            }
+
+            //if (typeT.IsEquivalentTo(typeof(string)))
+            //{
+            //    return (T)Convert.ChangeType("ABC", typeof(string));
+            //}
+
+            //if (typeT.IsEquivalentTo(typeof(float)))
+            //{
+            //    return (T)Convert.ChangeType("123.45", typeof(float));
+            //}
+
+            //return default(T);
+        }
 
         public string GetResourceValue(string property)
         {

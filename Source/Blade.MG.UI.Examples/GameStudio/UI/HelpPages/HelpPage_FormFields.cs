@@ -55,7 +55,7 @@ namespace Examples.UI.HelpPages
             layoutPanel.AddChild(alignTopGrid);
 
 
-            //// ---------------------
+            // ---------------------
             //Dictionary<string, string> appResourceDict = new Dictionary<string, string>();
             //appResourceDict.Add("Background", Color.Green.ToString());
             //appResourceDict.Add("TextColor", Color.SkyBlue.ToString());
@@ -65,13 +65,27 @@ namespace Examples.UI.HelpPages
             //localResourceDict.Add("Background", Color.Pink.ToString());
             //localResourceDict.Add("TextColor", Color.LightSalmon.ToString());
 
-            //CheckBox checkBox = new CheckBox();
-            //string resourceProperty = "TextColor";
+            CheckBox checkBox = new CheckBox();
+
+            string resourceProperty = "TextColor";
             //string resourceKey1 = $"[{checkBox.ResourceKey}]{resourceProperty}";
             //string resourceKey2 = $"{resourceProperty}";
 
+            string col = checkBox.GetResourceValue(resourceProperty);
 
-            //string col = checkBox.GetResourceValue(resourceProperty);
+            checkBox.ResourceDict.SetValue("Text", "This is some text");
+            checkBox.ResourceDict.SetValue("TextColor", Color.Red);
+            checkBox.ResourceDict.SetValue("TextSize", 32);
+            checkBox.ResourceDict.SetValue("BorderSize", new Length(5, LengthUnit.Pixels));
+            checkBox.ResourceDict.SetValue("Padding", new Thickness(2,4,6,8));
+
+            string Tstring = checkBox.GetResourceValue<string>("Text");
+            float Tfloat = checkBox.GetResourceValue<float>("TextSize");
+            UIColor TuiColor = checkBox.GetResourceValue<UIColor>("TextColor");
+            Color Tcolor = checkBox.GetResourceValue<Color>("TextColor");
+            Length Tlength = checkBox.GetResourceValue<Length>("BorderSize");
+            Thickness Tthickness = checkBox.GetResourceValue<Thickness>("Padding");
+
 
             //string value = "";
             //if (!localResourceDict.TryGetValue("TextColor", out value))
@@ -83,16 +97,16 @@ namespace Examples.UI.HelpPages
             //}
 
             //UIColor testColor = new UIColor(value);
-            ////testColor = "#FFFF00";
-            ////testColor = "TextColor";
+            //testColor = "#FFFF00";
+            //testColor = "TextColor";
 
-            ////testColor = Color.Green.ToString();
+            //testColor = Color.Green.ToString();
 
             //Color x = testColor;
             //Binding<UIColor> XBackground = testColor;
             //Background = testColor.ToColor();
 
-            //// ---------------------
+            // ---------------------
 
 
 

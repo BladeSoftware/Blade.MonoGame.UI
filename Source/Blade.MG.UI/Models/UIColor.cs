@@ -19,46 +19,44 @@ namespace Blade.MG.UI.Models
 
         public UIColor(string color)
         {
-            if (string.IsNullOrWhiteSpace(color))
-            {
-                // No color specified
-                this.color = Color.Transparent;
-            }
-            else if (color.StartsWith("#"))
-            {
-                // Hex Color (Web Format)
-                this.color = ColorHelper.FromHexColor(color);
-            }
-            else if (color.StartsWith("{"))
-            {
-                // {R:0 G:128 B:0 A:255}
-                color = color[1..^1];
-                string[] parts = color.Split(' ');
-
-                int r = 255;
-                int g = 255;
-                int b = 255;
-                int a = 255;
-
-                if (parts.Length >= 1) r = int.Parse(parts[0][2..]);
-                if (parts.Length >= 2) g = int.Parse(parts[1][2..]);
-                if (parts.Length >= 3) b = int.Parse(parts[2][2..]);
-                if (parts.Length >= 4) a = int.Parse(parts[3][2..]);
-
-                this.color = new Color(r, g, b, a);
-
-            }
-            else
-            {
-                // Color Key - Lookup color from Resource Dictionary
-
-            }
+            UIColor t = UIColor.FromString(color);
+            this.color = t.color;
         }
 
         public Color ToColor()
         {
             return this.color;
         }
+
+        public static UIColor FromString(string value)
+        {
+            UIColor uiColor = new UIColor();
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                // No color specified
+                uiColor.color = Color.Transparent;
+            }
+            else if (value.StartsWith('#'))
+            {
+                // Hex Color (Web Format)
+                uiColor.color = ColorHelper.FromHexColor(value);
+            }
+            else if (value.Contains('{'))
+            {
+                // {"R":0, "G":128, "B":0, "A":255} or {R:0 G:128 B:0 A:255}
+                uiColor.color = ColorHelper.FromJsonColor(value);
+
+            }
+            else
+            {
+                // Color Key - Lookup color from Resource Dictionary
+                // TODO:
+            }
+
+            return uiColor;
+        }
+
 
         // Convert from a Hex Color to a UIColor
         public static implicit operator UIColor(string value)

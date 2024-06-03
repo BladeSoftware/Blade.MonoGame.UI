@@ -52,6 +52,14 @@ namespace Blade.MG.UI.Components
             Unit = unit;
         }
 
+        public Length(string value)
+        {
+            Length l = Length.FromString(value);
+
+            Value = l.Value;
+            Unit = l.Unit;
+        }
+
         public float ToPixelsWidth(UIComponent control, Rectangle parent)
         {
             float width = ToPixels(parent.Width);
@@ -101,6 +109,44 @@ namespace Blade.MG.UI.Components
             return Value;
         }
 
+        public static Length FromString(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return new Length(float.NaN, LengthUnit.Pixels);
+            }
+
+            var spanValue = value.AsSpan().Trim();
+
+            var unitIndex = spanValue.IndexOfAnyExcept("0123456789.".AsSpan());
+
+            var valueSpan = spanValue.Slice(0, unitIndex).Trim();
+            var unitSpan = spanValue.Slice(unitIndex).Trim();
+
+            LengthUnit lengthUnit = unitSpan switch
+            {
+                var p when p.Equals("px", StringComparison.OrdinalIgnoreCase) => LengthUnit.Pixels,
+                var p when p.Equals("%", StringComparison.OrdinalIgnoreCase) => LengthUnit.Percent,
+                var p when p.Equals("pixels", StringComparison.OrdinalIgnoreCase) => LengthUnit.Pixels,
+                var p when p.Equals("percent", StringComparison.OrdinalIgnoreCase) => LengthUnit.Percent,
+                var p when p.Equals("vmin", StringComparison.OrdinalIgnoreCase) => LengthUnit.VMin,
+                var p when p.Equals("vmax", StringComparison.OrdinalIgnoreCase) => LengthUnit.VMax,
+                var p when p.Equals("vw", StringComparison.OrdinalIgnoreCase) => LengthUnit.VWidth,
+                var p when p.Equals("vwidth", StringComparison.OrdinalIgnoreCase) => LengthUnit.VWidth,
+                var p when p.Equals("vh", StringComparison.OrdinalIgnoreCase) => LengthUnit.VHeight,
+                var p when p.Equals("vheight", StringComparison.OrdinalIgnoreCase) => LengthUnit.VHeight,
+
+                _ => throw new FormatException($"Invalid Length Format : {value}")
+            };
+
+            if (!float.TryParse(valueSpan, out float f))
+            {
+                f = 0f;
+            }
+
+            return new Length(f, lengthUnit);
+        }
+
         public static implicit operator Length(float value)
         {
             return new Length(value, LengthUnit.Pixels);
@@ -108,43 +154,45 @@ namespace Blade.MG.UI.Components
 
         public static implicit operator Length(string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return new Length(float.NaN, LengthUnit.Pixels);
-            }
+            return Length.FromString(value);
 
-            value = value.Trim();
+            //if (string.IsNullOrWhiteSpace(value))
+            //{
+            //    return new Length(float.NaN, LengthUnit.Pixels);
+            //}
 
-            if (value.EndsWith("px", StringComparison.InvariantCultureIgnoreCase))
-            {
-                value = value.Substring(0, value.Length - 2);
-                if (!float.TryParse(value, out float f))
-                {
-                    f = 0f;
-                }
+            //value = value.Trim();
 
-                return new Length(f, LengthUnit.Pixels);
-            }
+            //if (value.EndsWith("px", StringComparison.InvariantCultureIgnoreCase))
+            //{
+            //    value = value.Substring(0, value.Length - 2);
+            //    if (!float.TryParse(value, out float f))
+            //    {
+            //        f = 0f;
+            //    }
 
-            if (value.EndsWith("%", StringComparison.InvariantCultureIgnoreCase))
-            {
-                value = value.Substring(0, value.Length - 1);
-                if (!float.TryParse(value, out float f))
-                {
-                    f = 0f;
-                }
+            //    return new Length(f, LengthUnit.Pixels);
+            //}
 
-                return new Length(f, LengthUnit.Percent);
-            }
+            //if (value.EndsWith("%", StringComparison.InvariantCultureIgnoreCase))
+            //{
+            //    value = value.Substring(0, value.Length - 1);
+            //    if (!float.TryParse(value, out float f))
+            //    {
+            //        f = 0f;
+            //    }
 
-            // Default to Pixels
-            if (float.TryParse(value, out float f2))
-            {
-                return new Length(f2, LengthUnit.Pixels);
-            }
+            //    return new Length(f, LengthUnit.Percent);
+            //}
+
+            //// Default to Pixels
+            //if (float.TryParse(value, out float f2))
+            //{
+            //    return new Length(f2, LengthUnit.Pixels);
+            //}
 
 
-            throw new FormatException($"Invalid Length Format : {value}");
+            //throw new FormatException($"Invalid Length Format : {value}");
         }
 
         //public static explicit operator T(Binding<T> value)
@@ -154,6 +202,19 @@ namespace Blade.MG.UI.Components
 
         public override string ToString()
         {
+            string unitCode = Unit switch
+            {
+                LengthUnit.Pixels => "px",
+                LengthUnit.Percent => "%",
+                LengthUnit.VMin => "vmin",
+                LengthUnit.VMax => "vmax",
+                LengthUnit.VWidth => "vw",
+                LengthUnit.VHeight => "vh",
+
+                _ => Enum.GetName(Unit),
+            };
+
+
             return $"{Value} {Enum.GetName(Unit)}";
         }
     }
