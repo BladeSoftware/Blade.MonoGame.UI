@@ -31,9 +31,7 @@ namespace Blade.MG.UI
 
         public static UITheme DefaultTheme { get; set; } = DefaultThemes.LightTheme();
 
-        public static Dictionary<string, ResourceDict> ResourceDicts { get; set; } = new Dictionary<string, ResourceDict>(); // Default Resource Dictionaries
-
-        //public static Rectangle SafeLayoutRect = Instance.game.GraphicsDevice.PresentationParameters.IsFullScreen ? Instance.game.TitleSafeArea : Instance.game.Viewport.Bounds;
+        public static ResourceDict ResourceDict { get; set; } = new ResourceDict(); // Default Resource Dictionaries
 
         public static UIManager Instance { get; set; } = new UIManager();
 

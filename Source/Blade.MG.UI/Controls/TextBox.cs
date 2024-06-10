@@ -22,6 +22,9 @@ namespace Blade.MG.UI.Controls
         public Binding<HorizontalAlignmentType> HorizontalTextAlignment;
         public Binding<VerticalAlignmentType> VerticalTextAlignment;
 
+        private Binding<Color> textColor = new Binding<Color>();
+        public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
+
         public Binding<string> FontName { get; set; } = new Binding<string>();
 
         public Binding<float> FontSize { get; set; } = new Binding<float>();
@@ -51,6 +54,8 @@ namespace Blade.MG.UI.Controls
 
             HorizontalTextAlignment = HorizontalAlignmentType.Left;
             VerticalTextAlignment = VerticalAlignmentType.Bottom;
+
+            TextColor = Color.Black;
 
             IsTabStop = true;
             IsHitTestVisible = true;

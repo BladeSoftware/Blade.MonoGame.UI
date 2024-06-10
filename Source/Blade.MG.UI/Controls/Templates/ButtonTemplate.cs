@@ -66,7 +66,7 @@ namespace Blade.MG.UI.Controls.Templates
             label1 = new Label()
             {
                 Text = button.Text, // Use the Button Text
-                TextColor = button.FontColor ?? Color.Black,  // Use the Button Foreground Color
+                TextColor = button.TextColor ?? Color.Black,  // Use the Button Foreground Color
                 FontName = button.FontName, // Use the Button Font
                 FontSize = button.FontSize, // Use the Button Font
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,

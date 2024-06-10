@@ -3,6 +3,7 @@ using Blade.MG.Primitives;
 using Blade.MG.UI.CompiledResources;
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
+using Blade.MG.UI.Models;
 using Blade.MG.UI.Renderer;
 using Blade.MG.UI.Services;
 using Blade.MG.UI.Theming;
@@ -47,6 +48,10 @@ namespace Blade.MG.UI
         [JsonIgnore]
         [XmlIgnore]
         public Viewport Viewport => Game.GraphicsDevice.Viewport;
+
+        [JsonIgnore]
+        [XmlIgnore]
+        public ResourceDict ResourceDict { get; set; } = new ResourceDict(); // Component Resource Dictionary
 
 
         public virtual void Initialize(Game game)

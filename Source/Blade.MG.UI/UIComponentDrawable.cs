@@ -3,6 +3,7 @@ using Blade.MG.UI.Models;
 using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
@@ -18,10 +19,6 @@ namespace Blade.MG.UI
 
         [JsonIgnore]
         [XmlIgnore]
-        public ResourceDict ResourceDict { get; set; } = new ResourceDict(); // Component Resource Dictionary
-
-        [JsonIgnore]
-        [XmlIgnore]
         public UITheme Theme => ParentWindow?.Context?.Theme ?? (this as UIWindow)?.Context?.Theme ?? UIManager.DefaultTheme;
 
         public Binding<Color> Background { get; set; } = Color.Transparent;
@@ -34,83 +31,94 @@ namespace Blade.MG.UI
         [XmlIgnore]
         public TextureLayout BackgroundLayout { get; set; }
 
+        //public T GetResourceValue<T>(string property)
+        //{
+        //    return GetResourceValue<T>(ResourceKey, property);
+        //}
 
-        public T GetResourceValue<T>(string property)
-        {
-            string value = GetResourceValue(property);
+        //public T GetResourceValue<T>(string resource, string property)
+        //{
+        //    string value = GetResourceValue(resource, property);
 
-            Type typeT = typeof(T);
+        //    Type typeT = typeof(T);
 
-            if (typeT == typeof(Color))
-            {
-                var color = ((UIColor)Activator.CreateInstance(typeof(UIColor), value)).ToColor();
-                return (T)Activator.CreateInstance(typeof(Color), color.R, color.G, color.B, color.A);
-            }
+        //    if (typeT == typeof(Color))
+        //    {
+        //        var color = ((UIColor)Activator.CreateInstance(typeof(UIColor), value)).ToColor();
+        //        return (T)Activator.CreateInstance(typeof(Color), color.R, color.G, color.B, color.A);
+        //    }
 
-            if (typeT == typeof(UIColor) || typeT == typeof(Length) || typeT == typeof(Thickness))
-            {
-                return (T)Activator.CreateInstance(typeT, value);
-            }
+        //    if (typeT == typeof(UIColor) || typeT == typeof(Length) || typeT == typeof(Thickness))
+        //    {
+        //        return (T)Activator.CreateInstance(typeT, value);
+        //    }
 
-            try
-            {
-                return (T)Convert.ChangeType(value, typeT);
-            }
-            catch (Exception ex)
-            {
-                return default(T);
-            }
+        //    try
+        //    {
+        //        return (T)Convert.ChangeType(value, typeT);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return default(T);
+        //    }
 
-            //if (typeT.IsEquivalentTo(typeof(string)))
-            //{
-            //    return (T)Convert.ChangeType("ABC", typeof(string));
-            //}
+        //    //if (typeT.IsEquivalentTo(typeof(string)))
+        //    //{
+        //    //    return (T)Convert.ChangeType("ABC", typeof(string));
+        //    //}
 
-            //if (typeT.IsEquivalentTo(typeof(float)))
-            //{
-            //    return (T)Convert.ChangeType("123.45", typeof(float));
-            //}
+        //    //if (typeT.IsEquivalentTo(typeof(float)))
+        //    //{
+        //    //    return (T)Convert.ChangeType("123.45", typeof(float));
+        //    //}
 
-            //return default(T);
-        }
+        //    //return default(T);
+        //}
 
-        public string GetResourceValue(string property)
-        {
-            // First try the local resource dictionary
-            if (ResourceDict != null)
-            {
-                if (ResourceDict.TryGetValue(property, out var value))
-                {
-                    return value;
-                }
-            }
 
-            // Then the global resource dictionary
-            if (UIManager.ResourceDicts != null)
-            {
-                // First look for a resource dictionary specific to the Type (e.g. CheckBox)
-                UIManager.ResourceDicts.TryGetValue(ResourceKey, out var resourceDict);
-                if (resourceDict != null)
-                {
-                    if (resourceDict.TryGetValue(property, out var value))
-                    {
-                        return value;
-                    }
-                }
+        //public string GetResourceValue(string property)
+        //{
+        //    return GetResourceValue(ResourceKey, property);
+        //}
 
-                // Then look for the default resource dictionary (type = blank)
-                UIManager.ResourceDicts.TryGetValue("", out resourceDict);
-                if (resourceDict != null)
-                {
-                    if (resourceDict.TryGetValue(property, out var value))
-                    {
-                        return value;
-                    }
-                }
-            }
+        //public string GetResourceValue(string resource, string property)
+        //{
+        //    //Debug.WriteLine($"GetResourceValue : {resource}, {property}");
 
-            return "";
-        }
+        //    // TODO: Decide on the order of property inheritance
+        //    string value;
+
+        //    // First try the local window resource dictionary
+        //    var windowResourceDict = ParentWindow?.ResourceDict;
+        //    if (windowResourceDict != null)
+        //    {
+        //        if (windowResourceDict.TryGetValue(resource, property, out value))
+        //        {
+        //            return value;
+        //        }
+
+        //        if (windowResourceDict.TryGetValue(property, out value))
+        //        {
+        //            return value;
+        //        }
+        //    }
+
+        //    // Then the global resource dictionary
+        //    if (UIManager.ResourceDict != null)
+        //    {
+        //        if (UIManager.ResourceDict.TryGetValue(resource, property, out value))
+        //        {
+        //            return value;
+        //        }
+
+        //        if (UIManager.ResourceDict.TryGetValue(property, out value))
+        //        {
+        //            return value;
+        //        }
+        //    }
+
+        //    return "";
+        //}
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {

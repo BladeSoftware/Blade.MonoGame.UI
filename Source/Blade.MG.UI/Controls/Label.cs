@@ -8,16 +8,19 @@ namespace Blade.MG.UI.Controls
 {
     public class Label : TemplatedControl
     {
+
         public Binding<HorizontalAlignmentType> HorizontalTextAlignment;
         public Binding<VerticalAlignmentType> VerticalTextAlignment;
 
         public Binding<string> Text { get; set; } = string.Empty;
         public Binding<string> FontName { get; set; } = new Binding<string>();
         public Binding<float> FontSize { get; set; } = new Binding<float>();
-        public Binding<Color> TextColor { get; set; } = new Binding<Color>();
 
-        public Rectangle TextRect { get; set; } = new Rectangle();
-        public Rectangle TextBaseLine { get; set; } = new Rectangle();
+        private Binding<Color> textColor = new Binding<Color>();
+        public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
+
+        public Rectangle TextRect { get; set; }// = new Rectangle();
+        public Rectangle TextBaseLine { get; set; }// = new Rectangle();
 
         public Label()
         {
@@ -29,14 +32,12 @@ namespace Blade.MG.UI.Controls
             Text = null;
             FontName = null; // Use default font
             FontSize = null;
-            TextColor.Value = Color.White;
+            TextColor = Color.Black;
 
             Background = Color.Transparent;
 
             HorizontalAlignment = HorizontalAlignmentType.Stretch;
             VerticalAlignment = VerticalAlignmentType.Stretch;
-            //HorizontalContentAlignment = HorizontalAlignmentType.Center;
-            //VerticalContentAlignment = VerticalAlignmentType.Center;
 
             IsHitTestVisible = false;
         }

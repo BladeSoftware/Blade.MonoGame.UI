@@ -13,7 +13,7 @@ namespace Blade.MG.UI.Controls
 
         public Binding<string> FontName { get; set; }
         public Binding<float> FontSize { get; set; }
-        public Binding<Color> FontColor { get; set; }
+        public Binding<Color> TextColor { get; set; }
 
 
         public Button()

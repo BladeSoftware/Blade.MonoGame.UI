@@ -56,6 +56,23 @@ namespace Examples.UI.HelpPages
 
 
             // ---------------------
+            UIManager.ResourceDict.SetValue("TextSize", 32); // Default Text Size
+            UIManager.ResourceDict.SetValue("Label", "TextSize", 52); // Default Text Size for Labels
+            UIManager.ResourceDict.SetValue("Text", "Hello, World!");
+
+            UIManager.ResourceDict.SetValue("Background", Color.White);
+            UIManager.ResourceDict.SetValue("Background.Hover", Color.LightGray);
+            UIManager.ResourceDict.SetValue("Background.Focused", Color.White);
+
+            UIManager.ResourceDict.SetValue("TextColor", Color.Black);
+            UIManager.ResourceDict.SetValue("TextColor.Focused", Color.Black);
+            UIManager.ResourceDict.SetValue("TextColor.Hover", Color.Black);
+
+            //private Color borderColorNormal = Color.DarkSlateBlue;
+            //private Color borderColorHover = Color.White;  // Color.Gray;
+            //private Color borderColorFocused = Color.MediumSlateBlue;
+
+
             //Dictionary<string, string> appResourceDict = new Dictionary<string, string>();
             //appResourceDict.Add("Background", Color.Green.ToString());
             //appResourceDict.Add("TextColor", Color.SkyBlue.ToString());
@@ -67,34 +84,25 @@ namespace Examples.UI.HelpPages
 
             CheckBox checkBox = new CheckBox();
 
-            string resourceProperty = "TextColor";
-            //string resourceKey1 = $"[{checkBox.ResourceKey}]{resourceProperty}";
-            //string resourceKey2 = $"{resourceProperty}";
+            //string resourceProperty = "TextColor";
+            ////string resourceKey1 = $"[{checkBox.ResourceKey}]{resourceProperty}";
+            ////string resourceKey2 = $"{resourceProperty}";
 
-            string col = checkBox.GetResourceValue(resourceProperty);
+            //string col = checkBox.GetResourceValue(resourceProperty);
 
-            checkBox.ResourceDict.SetValue("Text", "This is some text");
-            checkBox.ResourceDict.SetValue("TextColor", Color.Red);
-            checkBox.ResourceDict.SetValue("TextSize", 32);
-            checkBox.ResourceDict.SetValue("BorderSize", new Length(5, LengthUnit.Pixels));
-            checkBox.ResourceDict.SetValue("Padding", new Thickness(2,4,6,8));
+            //ParentWindow?.ResourceDict?.SetValue("Text", "This is some text");
+            ////ParentWindow?.ResourceDict?.SetValue("TextColor", Color.Red);
+            //ParentWindow?.ResourceDict?.SetValue("TextSize", 32);
+            //ParentWindow?.ResourceDict?.SetValue("BorderSize", new Length(5, LengthUnit.Pixels));
+            //ParentWindow?.ResourceDict?.SetValue("Padding", new Thickness(2, 4, 6, 8));
 
-            string Tstring = checkBox.GetResourceValue<string>("Text");
-            float Tfloat = checkBox.GetResourceValue<float>("TextSize");
-            UIColor TuiColor = checkBox.GetResourceValue<UIColor>("TextColor");
-            Color Tcolor = checkBox.GetResourceValue<Color>("TextColor");
-            Length Tlength = checkBox.GetResourceValue<Length>("BorderSize");
-            Thickness Tthickness = checkBox.GetResourceValue<Thickness>("Padding");
+            //string Tstring = GetResourceValue<string>("Text");
+            //float Tfloat = GetResourceValue<float>("TextSize");
+            //UIColor TuiColor = GetResourceValue<UIColor>("TextColor");
+            //Color Tcolor = GetResourceValue<Color>("TextColor");
+            //Length Tlength = GetResourceValue<Length>("BorderSize");
+            //Thickness Tthickness = GetResourceValue<Thickness>("Padding");
 
-
-            //string value = "";
-            //if (!localResourceDict.TryGetValue("TextColor", out value))
-            //{
-            //    if (!appResourceDict.TryGetValue("TextColor", out value))
-            //    {
-            //        value = Color.Black.ToString();
-            //    }
-            //}
 
             //UIColor testColor = new UIColor(value);
             //testColor = "#FFFF00";
@@ -124,11 +132,12 @@ namespace Examples.UI.HelpPages
                         //TextColor = Color.Black,
                         //Width = "75%",
                         //Height = "40%",
-                        Background = Color.White,
+                        //Background = Color.White,
+                        //Background = GetResourceValue<Color>("Background"),
+                        Background = new Style<Color>("TextBox.Background"),  // How to reference View State ??
                         HorizontalAlignment = HorizontalAlignmentType.Stretch,
                         VerticalAlignment = VerticalAlignmentType.Center,
                         Margin = new Thickness(5, 10)
-
                     }
                 },
                 0, 0);
@@ -302,7 +311,8 @@ namespace Examples.UI.HelpPages
                         MaxWidth = "75%",
                         Height = "40%",
                         HorizontalAlignment = HorizontalAlignmentType.Right,
-                        VerticalAlignment = VerticalAlignmentType.Bottom
+                        VerticalAlignment = VerticalAlignmentType.Bottom,
+                        OnClick = (eventSource, eventData) => { UIManager.ResourceDict.SetValue("Background", Color.Orange); }
                     }
                 },
                 2, 2);

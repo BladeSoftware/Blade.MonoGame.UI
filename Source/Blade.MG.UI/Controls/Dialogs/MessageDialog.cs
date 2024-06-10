@@ -167,7 +167,7 @@ namespace Blade.MG.UI.Controls.Dialogs
                         Text = button.Text,
                         Width = button.Width ?? 200,
                         Margin = new Thickness(10, 2),
-                        FontColor = button?.Color ?? Color.White,
+                        TextColor = button?.Color ?? Color.White,
 
                         //OnClick = (uiEvent) => { DialogButtonPressed(button.Id); }
                         OnClickAsync = async (sender, uiEvent) => { await DialogButtonPressedAsync(button.Id); }

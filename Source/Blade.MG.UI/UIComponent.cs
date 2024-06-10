@@ -1,9 +1,12 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
+using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.ComponentModel;
+using System.Globalization;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Security.Authentication.ExtendedProtection;
@@ -47,8 +50,8 @@ namespace Blade.MG.UI
         [JsonIgnore]
         [XmlIgnore]
         public object DataContext { get { return dataContext ?? parent?.DataContext; } set { dataContext = value; } }
-        
-        
+
+
         public int FrameID;
 
         private UIComponent parent;
@@ -109,6 +112,54 @@ namespace Blade.MG.UI
 
         public Transform Transform { get; set; } = new Transform();
 
+
+        public string ViewState
+        {
+            get
+            {
+                if (HasFocus) return ViewStates.Focused;
+                if (MouseHover) return ViewStates.Hover;
+                return "";
+            }
+        }
+
+        protected void SetField<T>(ref Binding<T> field, T value)
+        {
+            if (field == null)
+            {
+                field = new Binding<T>();
+            }
+
+            field.Value = value;
+        }
+
+        protected void SetField<T>(ref Binding<T> field, Binding<T> value)
+        {
+            if (field == null)
+            {
+                field = new Binding<T>();
+            }
+
+            if (value.IsImplicitCast)
+            {
+                field.SetFromBinding(value);
+            }
+            else
+            {
+                field = value;
+            }
+        }
+
+        //protected void SetField<T>(ref Binding<T> field, DynamicBinding<Binding<T>> value)
+        //{
+        //    if (field == null)
+        //    {
+        //        field = new Binding<T>();
+        //    }
+
+        //    //field.SetFromBinding(value);
+        //    field = value.Binding;
+        //}
 
         //----
 
