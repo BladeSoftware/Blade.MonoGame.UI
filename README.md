@@ -1,2 +1,2 @@
 # Blade.MonoGame.UI
-WPF Inspired MonoGame UI Library
+MonoGame UI Library
