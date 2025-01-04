@@ -55,7 +55,7 @@ namespace Blade.MG.UI.Controls
         }
 
         // ---=== UI Events ===---
-        public override async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public override async Task HandlePrimaryClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             if (!FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
@@ -71,7 +71,7 @@ namespace Blade.MG.UI.Controls
                 parentMenu.OnMenuItemClicked(this);
             }
 
-            await OnClickAsync?.Invoke(this, uiEvent);
+            await OnPrimaryClickAsync?.Invoke(this, uiEvent);
 
             //base.HandleClickEvent(uiWindow, uiEvent);
         }

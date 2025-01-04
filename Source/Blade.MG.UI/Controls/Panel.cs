@@ -9,6 +9,8 @@ namespace Blade.MG.UI.Controls
         {
             Background = Color.Transparent;
             IsHitTestVisible = true;
+            CanHover = true;
+            CanFocus = false;
         }
 
         protected override void InitTemplate()

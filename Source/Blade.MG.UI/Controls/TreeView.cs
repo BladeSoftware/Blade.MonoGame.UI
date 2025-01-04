@@ -2,6 +2,7 @@
 using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
 using Blade.MG.UI.Models;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
@@ -38,10 +39,12 @@ namespace Blade.MG.UI.Controls
         public Action<object, UIClickEvent> OnNodeRightClick { get; set; }
         public Func<object, UIClickEvent, Task> OnNodeRightClickAsync { get; set; }
 
-        public Action<object, UIClickEvent> OnNodeDoubleClick { get; set; }
-        public Func<object, UIClickEvent, Task> OnNodeDoubleClickAsync { get; set; }
+        public Action<object, UIClickEvent> OnNodeMultiClick { get; set; }
+        public Func<object, UIClickEvent, Task> OnNodeMultiClickAsync { get; set; }
 
         public Func<object, string, Task<bool>> OnNodeRenamedAsync { get; set; }
+
+        private JoinableTaskFactory joinableTaskFactory;
 
         //private Size NodesDesiredSize { get; set; }
 
@@ -57,6 +60,8 @@ namespace Blade.MG.UI.Controls
         {
             base.InitTemplate();
 
+            joinableTaskFactory = new JoinableTaskFactory(new JoinableTaskContext());
+
             Orientation = Orientation.Vertical;
 
             IsHitTestVisible = true;
@@ -64,9 +69,6 @@ namespace Blade.MG.UI.Controls
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
-
-            if (string.Equals(Name, "ProjectExplorerTree")) { }
-
             base.Measure(context, ref availableSize, ref parentMinMax);
 
 
@@ -369,19 +371,19 @@ namespace Blade.MG.UI.Controls
             InitNodeTemplate(TempNodeTemplate, node);
 
 
-            ((UIComponentEvents)TempNodeTemplate).OnClickAsync = async (eventSource, uiEvent) =>
+            ((UIComponentEvents)TempNodeTemplate).OnPrimaryClickAsync = async (eventSource, uiEvent) =>
             {
                 await HandleNodeClickAsync(ParentWindow, uiEvent, ((UIComponent)eventSource).DataContext as ITreeNode);
             };
 
-            ((UIComponentEvents)TempNodeTemplate).OnRightClickAsync = async (eventSource, uiEvent) =>
+            ((UIComponentEvents)TempNodeTemplate).OnSecondaryClickAsync = async (eventSource, uiEvent) =>
             {
                 await HandleNodeRightClickAsync(ParentWindow, uiEvent, ((UIComponent)eventSource).DataContext as ITreeNode);
             };
 
-            ((UIComponentEvents)TempNodeTemplate).OnDoubleClickAsync = async (eventSource, uiEvent) =>
+            ((UIComponentEvents)TempNodeTemplate).OnMultiClickAsync = async (eventSource, uiEvent) =>
             {
-                await HandleNodeDoubleClickAsync(ParentWindow, uiEvent, ((UIComponent)eventSource).DataContext as ITreeNode);
+                await HandleNodeMultiClickAsync(ParentWindow, uiEvent, ((UIComponent)eventSource).DataContext as ITreeNode);
             };
 
 
@@ -427,13 +429,21 @@ namespace Blade.MG.UI.Controls
                 }
             };
 
+            // Check if TempNodeTemplate has focus
             bool hasFocus = focusedNodeHash == TempNodeTemplate.DataContext.GetHashCode();
+
+            // Check if the Focused State of TempNodeTemplate matches the hasFocus value i.e.
+            // If TempNoteTemplate is the Current Focused Component but TempNodeTemplate.HasFocus = False
+            // Or TempNoteTemplate is not the Current Focused Component but TempNodeTemplate.HasFocus = True
+            // Then fire the FocusChanged Event
             if (hasFocus != TempNodeTemplate.HasFocus.Value)
             {
                 //TempNodeTemplate.HasFocus = hasFocus;
                 ParentWindow.focusedComponent = TempNodeTemplate;
 
-                TempNodeTemplate.HandleFocusChangedEventAsync(ParentWindow, new UIFocusChangedEvent { Focused = hasFocus, ForcePropogation = false, Handled = false });
+                joinableTaskFactory.Run(async () => await TempNodeTemplate.HandleFocusChangedEventAsync(ParentWindow, new UIFocusChangedEvent { Focused = hasFocus, ForcePropogation = false, Handled = false }));
+
+                //TempNodeTemplate.HandleFocusChangedEventAsync(ParentWindow, new UIFocusChangedEvent { Focused = hasFocus, ForcePropogation = false, Handled = false });
             }
 
             //TempNodeTemplate.HasFocus = (focusedNode == TempNodeTemplate.DataContext.GetHashCode());
@@ -444,11 +454,6 @@ namespace Blade.MG.UI.Controls
 
         private void InitNodeTemplate(UIComponent nodeTemplate, ITreeNode node)
         {
-            if (node != null && string.Equals(node.Text, "Animations"))
-            {
-
-            }
-
             nodeTemplate.Parent = this;
             nodeTemplate.ReInitTemplate(node);
         }
@@ -533,10 +538,10 @@ namespace Blade.MG.UI.Controls
             await (OnNodeRightClickAsync?.Invoke(treeNode, uiEvent) ?? Task.CompletedTask);
         }
 
-        public virtual async Task HandleNodeDoubleClickAsync(UIWindow uiWindow, UIClickEvent uiEvent, ITreeNode treeNode)
+        public virtual async Task HandleNodeMultiClickAsync(UIWindow uiWindow, UIClickEvent uiEvent, ITreeNode treeNode)
         {
-            OnNodeDoubleClick?.Invoke(treeNode, uiEvent);
-            await (OnNodeDoubleClickAsync?.Invoke(treeNode, uiEvent) ?? Task.CompletedTask);
+            OnNodeMultiClick?.Invoke(treeNode, uiEvent);
+            await (OnNodeMultiClickAsync?.Invoke(treeNode, uiEvent) ?? Task.CompletedTask);
         }
 
     }

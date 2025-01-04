@@ -9,11 +9,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Blade.MonoGame.Core\Source\Blade.MG.Core\Blade.MG.Core.csproj" />
     <ProjectReference Include="..\..\Blade.MG.UI\Blade.MG.UI.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Blade.MG.Core">
-      <HintPath>..\..\..\..\Blade.MonoGame.Core\Source\Blade.MG.Core\bin\Debug\net7.0\Blade.MG.Core.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

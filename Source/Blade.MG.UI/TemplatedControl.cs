@@ -8,23 +8,44 @@ namespace Blade.MG.UI
     {
         [JsonIgnore]
         [XmlIgnore]
-        public Type TemplateType { get; set; } // = typeof(ButtonTemplate); // TODO: Validate TemplateType extends UIComponent
-
-        public TemplatedControl()
+        public Type TemplateType
         {
-            // Leave the Hover decision to the Content
-            CanHover = false;
+            get => templateType;
+
+            set
+            {
+                // Validate TemplateType extends UIComponent
+                if (value.IsSubclassOf(typeof(UIComponent)))
+                {
+                    templateType = value;
+                }
+                else
+                {
+                    throw new System.Exception("TemplateType must extend UIComponent");
+                }
+            }
         }
+        private Type templateType;
+
+
+        // Leave the Hover / Focus decision to the main Control
+        //public new bool CanHover { get => Parent.CanHover; set => Parent.CanHover = value; }
+        //public new bool CanFocus { get => Parent.CanFocus; set => Parent.CanFocus = value; }
+
 
         protected override void InitTemplate()
         {
             base.InitTemplate();
 
+            // Leave Hover and Focus to the main Control
+            CanHover = false;
+            CanFocus = false;
+
             UIComponent templateControl = Activator.CreateInstance(TemplateType) as UIComponent;
             templateControl.HorizontalAlignment = HorizontalAlignmentType.Stretch;
             templateControl.VerticalAlignment = VerticalAlignmentType.Stretch;
 
-            Content = templateControl;
+            AddInternalChild(templateControl);
         }
 
     }

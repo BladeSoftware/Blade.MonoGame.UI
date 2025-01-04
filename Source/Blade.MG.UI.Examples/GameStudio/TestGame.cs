@@ -3,6 +3,7 @@ using Blade.MG.UI;
 using Blade.MG.UI.Common;
 using Examples.UI;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 
@@ -18,7 +19,7 @@ namespace Examples
 
         public TestGame()
         {
-            graphicsDeviceManager = new GraphicsDeviceManager(this);
+            graphicsDeviceManager = new GraphicsDeviceManager(this) { PreferHalfPixelOffset = false };
             Content.RootDirectory = "Content";
         }
 
@@ -32,14 +33,29 @@ namespace Examples
         {
 
             // --- Set to Full Screen Mode
-            graphicsDeviceManager.IsFullScreen = false;
+            graphicsDeviceManager.IsFullScreen = true;
             graphicsDeviceManager.HardwareModeSwitch = false;
 
             IsFixedTimeStep = false;
 
             // --- Set a pre-defined window size
-            graphicsDeviceManager.PreferredBackBufferWidth = 1280;
-            graphicsDeviceManager.PreferredBackBufferHeight = 720;
+            //var viewport = graphicsDeviceManager.GraphicsDevice.Viewport.Bounds;
+            //if (viewport.Width < viewport.Height)
+            //{
+            //    // Portrait mode
+            //    graphicsDeviceManager.PreferredBackBufferWidth = 720;
+            //    graphicsDeviceManager.PreferredBackBufferHeight = 1280;
+            //}
+            //else
+            //{
+            //    // Landscape mode
+            //    graphicsDeviceManager.PreferredBackBufferWidth = 1280;
+            //    graphicsDeviceManager.PreferredBackBufferHeight = 720;
+            //}
+
+            //var x = graphicsDeviceManager.PreferredBackBufferWidth;
+            //var y = graphicsDeviceManager.PreferredBackBufferHeight;
+
 
             // -- Set allowed Orientations
             graphicsDeviceManager.SupportedOrientations = DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight;
@@ -93,7 +109,7 @@ namespace Examples
             base.Update(gameTime);
 
             // Check Input
-            if (InputManager.IsKeyDown(Keys.Escape))
+            if (InputManager.Keyboard.IsKeyDown(Keys.Escape))
             {
 #if !__IOS__
                 this.Exit();
@@ -118,6 +134,25 @@ namespace Examples
         protected override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
+
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            //var viewBounds = GraphicsDevice.Viewport.Bounds;
+            //viewBounds = new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight);
+
+
+            //GraphicsDevice.ScissorRectangle = Rectangle.Empty; // viewport.Bounds;
+
+            //using (var sb = new SpriteBatch(GraphicsDevice))
+            //{
+            //    sb.Begin();
+            //    Blade.MG.Primitives.Primitives2D.FillRect(sb, viewBounds, Color.Pink);
+
+            //    viewBounds.Inflate(-5, -5);
+            //    Blade.MG.Primitives.Primitives2D.FillRect(sb, viewBounds, Color.Purple);
+
+            //    sb.End();
+            //}
 
             UIManager.Instance.Draw(null, gameTime);
         }

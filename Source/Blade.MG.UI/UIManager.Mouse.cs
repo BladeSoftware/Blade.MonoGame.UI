@@ -1,7 +1,6 @@
 ﻿using Blade.MG.Input;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 
 namespace Blade.MG.UI
 {
@@ -13,8 +12,7 @@ namespace Blade.MG.UI
 
         // Handle Mouse Input
         // Despatch events to all windows 
-        // TODO: We should probably sort windows by 'z-index' and stop despatching if the event is handled
-        // For now, just iterate in reverse order
+        // TODO: We should probably sort windows by 'z-index' and stop despatching if the event is handled, for now, just iterate in reverse order
         private async Task HandleMouseInputAsync(UIWindow eventLockedWindow, UIComponent eventLockedControl, bool propagateEvents, GameTime gameTime)
         {
             propagateEvents = true;
@@ -26,7 +24,7 @@ namespace Blade.MG.UI
                 if (component == null ||
                     component.Visible.Value != Components.Visibility.Visible ||
                     component.ParentWindow?.Visible?.Value != Components.Visibility.Visible ||
-                    !component.FinalRect.Contains(InputManager.MouseState.Position))
+                    !component.FinalRect.Contains(InputManager.Mouse.Position))
                 {
                     eventLockedWindow.hover.Remove(component);
                     await eventLockedWindow.RaiseHoverLeaveEventAsync(component, eventLockedWindow);
@@ -39,12 +37,13 @@ namespace Blade.MG.UI
                 bool selector(UIComponent component, UIComponent parent) =>
                     (
                       component.IsHitTestVisible &&
+                      component.CanHover &&
                       component.Visible.Value == Components.Visibility.Visible &&
                       component.ParentWindow?.Visible?.Value == Components.Visibility.Visible &&
-                      component.FinalRect.Contains(InputManager.MouseState.Position)
+                      component.FinalRect.Contains(InputManager.Mouse.Position)
                     );
 
-                UIComponent selected = SelectFirst(selector, true, InputManager.MouseState.Position);
+                UIComponent selected = SelectFirst(selector, true, InputManager.Mouse.Position);
                 UIWindow selectedUIWindow = selected?.ParentWindow;
 
                 // Check if the mouse has moved off of a control is was previously hovering over
@@ -72,58 +71,77 @@ namespace Blade.MG.UI
 
             }
 
-            // Select first hover component
-            UIComponent hoverComponent = HoverIterator.FirstOrDefault();
-            UIWindow hoverUIWindow = hoverComponent?.ParentWindow;
-
 
             // Check if user is pressing any mouse buttons
-            if ((InputManager.MouseState.LeftButton == ButtonState.Pressed && InputManager.LastMouseState.LeftButton != ButtonState.Pressed) ||
-                (InputManager.MouseState.MiddleButton == ButtonState.Pressed && InputManager.LastMouseState.MiddleButton != ButtonState.Pressed) ||
-                (InputManager.MouseState.RightButton == ButtonState.Pressed && InputManager.LastMouseState.RightButton != ButtonState.Pressed))
+            if (InputManager.Mouse.PrimaryButton.Pressed ||
+                InputManager.Mouse.MiddleButton.Pressed ||
+                InputManager.Mouse.SecondaryButton.Pressed)
             {
                 var uiEvent = new UIMouseDownEvent
                 {
-                    X = InputManager.MouseState.X,
-                    Y = InputManager.MouseState.Y,
+                    X = InputManager.Mouse.X,
+                    Y = InputManager.Mouse.Y,
 
-                    LeftButton = InputManager.MouseState.LeftButton,
-                    MiddleButton = InputManager.MouseState.MiddleButton,
-                    RightButton = InputManager.MouseState.RightButton
+                    PrimaryButton = InputManager.Mouse.PrimaryButton,
+                    MiddleButton = InputManager.Mouse.MiddleButton,
+                    SecondaryButton = InputManager.Mouse.SecondaryButton
                 };
 
                 await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseDownEventAsync(uiWindow, uiEvent); });
 
-                if (hoverComponent != null)
+                // Select first hover component
+                //UIComponent hoverComponent = HoverIterator.FirstOrDefault();
+                //UIWindow hoverUIWindow = hoverComponent?.ParentWindow;
+
+                //if (hoverComponent != null)
+                //{
+                //    uiEvent.Handled = false;
+                //    await hoverUIWindow.RaiseFocusChangedEventAsync(hoverComponent, hoverUIWindow);
+                //}
+
+                // Check if the mouse is over a control that can receive focus
+                bool selector(UIComponent component, UIComponent parent) =>
+                    (
+                      component.IsHitTestVisible &&
+                      component.CanFocus &&
+                      component.Visible.Value == Components.Visibility.Visible &&
+                      component.ParentWindow?.Visible?.Value == Components.Visibility.Visible &&
+                      component.FinalRect.Contains(InputManager.Mouse.Position)
+                    );
+
+                UIComponent focusComponent = SelectFirst(selector, true, InputManager.Mouse.Position);
+                UIWindow focusUIWindow = focusComponent?.ParentWindow;
+
+                if (focusComponent != null)
                 {
                     uiEvent.Handled = false;
-                    await hoverUIWindow.RaiseFocusChangedEventAsync(hoverComponent, hoverUIWindow);
+                    await focusUIWindow.RaiseFocusChangedEventAsync(focusComponent, focusUIWindow);
                 }
             }
 
             // Check if user has released the left mouse button - Handle this separately as we also fire Click / Double Click events on the Left Button
-            if (InputManager.MouseState.LeftButton != ButtonState.Pressed && InputManager.LastMouseState.LeftButton == ButtonState.Pressed)
+            if (InputManager.Mouse.PrimaryButton.Released)
             {
                 var uiEvent = new UIMouseUpEvent
                 {
-                    X = InputManager.MouseState.X,
-                    Y = InputManager.MouseState.Y,
+                    X = InputManager.Mouse.X,
+                    Y = InputManager.Mouse.Y,
 
-                    LeftButton = InputManager.MouseState.LeftButton,
-                    MiddleButton = InputManager.MouseState.MiddleButton,
-                    RightButton = InputManager.MouseState.RightButton,
+                    PrimaryButton = InputManager.Mouse.PrimaryButton,
+                    MiddleButton = InputManager.Mouse.MiddleButton,
+                    SecondaryButton = InputManager.Mouse.SecondaryButton,
 
                     ForcePropogation = eventLockedWindow != null
                 };
                 await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
 
-                var uiClickEvent = new UIClickEvent { X = InputManager.MouseState.X, Y = InputManager.MouseState.Y };
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleClickEventAsync(uiWindow, uiClickEvent); });
+                var uiClickEvent = new UIClickEvent { X = InputManager.Mouse.X, Y = InputManager.Mouse.Y };
+                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseClickEventAsync(uiWindow, uiClickEvent); });
 
                 if (MouseDoubleClickTime != DateTime.MinValue && (DateTime.Now - MouseDoubleClickTime).TotalMilliseconds < MouseDoubleClickDelay)
                 {
-                    uiClickEvent = new UIClickEvent { X = InputManager.MouseState.X, Y = InputManager.MouseState.Y };
-                    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleDoubleClickEventAsync(uiWindow, uiClickEvent); });
+                    uiClickEvent = new UIClickEvent { X = InputManager.Mouse.X, Y = InputManager.Mouse.Y };
+                    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseDoubleClickEventAsync(uiWindow, uiClickEvent); });
 
                     MouseDoubleClickTime = DateTime.MinValue;
                 }
@@ -134,36 +152,36 @@ namespace Blade.MG.UI
             }
 
             // Check if user has released the right mouse button - Handle this separately as we also fire Click / Double Click events on the Right Button
-            if (InputManager.MouseState.RightButton != ButtonState.Pressed && InputManager.LastMouseState.RightButton == ButtonState.Pressed)
+            if (InputManager.Mouse.SecondaryButton.Released)
             {
                 var uiEvent = new UIMouseUpEvent
                 {
-                    X = InputManager.MouseState.X,
-                    Y = InputManager.MouseState.Y,
+                    X = InputManager.Mouse.X,
+                    Y = InputManager.Mouse.Y,
 
-                    LeftButton = InputManager.MouseState.LeftButton,
-                    MiddleButton = InputManager.MouseState.MiddleButton,
-                    RightButton = InputManager.MouseState.RightButton,
+                    PrimaryButton = InputManager.Mouse.PrimaryButton,
+                    MiddleButton = InputManager.Mouse.MiddleButton,
+                    SecondaryButton = InputManager.Mouse.SecondaryButton,
 
                     ForcePropogation = eventLockedWindow != null
                 };
                 await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
 
-                var uiClickEvent = new UIClickEvent { X = InputManager.MouseState.X, Y = InputManager.MouseState.Y };
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleRightClickEventAsync(uiWindow, uiClickEvent); });
+                var uiClickEvent = new UIClickEvent { X = InputManager.Mouse.X, Y = InputManager.Mouse.Y };
+                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseRightClickEventAsync(uiWindow, uiClickEvent); });
             }
 
             // Check if user has released the middle mouse buttons
-            if (InputManager.MouseState.MiddleButton != ButtonState.Pressed && InputManager.LastMouseState.MiddleButton == ButtonState.Pressed)
+            if (InputManager.Mouse.MiddleButton.Released)
             {
                 var uiEvent = new UIMouseUpEvent
                 {
-                    X = InputManager.MouseState.X,
-                    Y = InputManager.MouseState.Y,
+                    X = InputManager.Mouse.X,
+                    Y = InputManager.Mouse.Y,
 
-                    LeftButton = InputManager.MouseState.LeftButton,
-                    MiddleButton = InputManager.MouseState.MiddleButton,
-                    RightButton = InputManager.MouseState.RightButton,
+                    PrimaryButton = InputManager.Mouse.PrimaryButton,
+                    MiddleButton = InputManager.Mouse.MiddleButton,
+                    SecondaryButton = InputManager.Mouse.SecondaryButton,
 
                     ForcePropogation = eventLockedWindow != null
                 };
@@ -171,16 +189,16 @@ namespace Blade.MG.UI
             }
 
             // Handle Mouse Movement
-            if (InputManager.LastMouseState.X != InputManager.MouseState.X || InputManager.LastMouseState.Y != InputManager.MouseState.Y)
+            if (InputManager.Mouse.HasPointerMoved)
             {
                 var uiEvent = new UIMouseMoveEvent
                 {
-                    X = InputManager.MouseState.X,
-                    Y = InputManager.MouseState.Y,
-                    LastX = InputManager.LastMouseState.X,
-                    LastY = InputManager.LastMouseState.Y,
-                    DeltaX = InputManager.MouseState.X - InputManager.LastMouseState.X,
-                    DeltaY = InputManager.MouseState.Y - InputManager.LastMouseState.Y
+                    X = InputManager.Mouse.X,
+                    Y = InputManager.Mouse.Y,
+                    LastX = InputManager.Mouse.PreviousMouseState.X,
+                    LastY = InputManager.Mouse.PreviousMouseState.Y,
+                    DeltaX = InputManager.Mouse.PositionXDelta,
+                    DeltaY = InputManager.Mouse.PositionYDelta
                 };
 
                 await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseMoveEventAsync(uiWindow, uiEvent); });
@@ -188,15 +206,15 @@ namespace Blade.MG.UI
             }
 
             // Handle Mouse Scroll
-            int scrollVertical = InputManager.MouseState.ScrollWheelValue - InputManager.LastMouseState.ScrollWheelValue;
-            int scrollHorizontal = InputManager.MouseState.HorizontalScrollWheelValue - InputManager.LastMouseState.HorizontalScrollWheelValue;
+            int scrollVertical = InputManager.Mouse.ScrollWheelValueDelta;
+            int scrollHorizontal = InputManager.Mouse.HorizontalScrollWheelValueDelta;
 
             if (scrollVertical != 0 || scrollHorizontal != 0)
             {
                 var uiEvent = new UIMouseWheelScrollEvent
                 {
-                    X = InputManager.MouseState.X,
-                    Y = InputManager.MouseState.Y,
+                    X = InputManager.Mouse.X,
+                    Y = InputManager.Mouse.Y,
                     VerticalScroll = scrollVertical,
                     HorizontalScroll = scrollHorizontal,
                     ForcePropogation = false
@@ -212,8 +230,8 @@ namespace Blade.MG.UI
             UIComponentEvents ctrl = component as UIComponentEvents;
             if (ctrl != null)
             {
-                var uiEvent = new UIClickEvent { X = InputManager.MouseState.X, Y = InputManager.MouseState.Y };
-                await ctrl.HandleClickEventAsync(uiWindow, uiEvent);
+                var uiEvent = new UIClickEvent { X = InputManager.Mouse.X, Y = InputManager.Mouse.Y };
+                await ctrl.HandleMouseClickEventAsync(uiWindow, uiEvent);
             }
         }
 

@@ -1,7 +1,6 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
-using System.Runtime.InteropServices;
 
 namespace Blade.MG.UI.Controls
 {
@@ -59,11 +58,14 @@ namespace Blade.MG.UI.Controls
             HorizontalScrollBar = new ScrollBar { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, verticalScrollBarVisible ? 20 : 0, 0), Visible = BoolToVisibility(HorizontalScrollBarVisible), VerticalAlignment = VerticalAlignmentType.Bottom };
             VerticalScrollBar = new ScrollBar { Orientation = Orientation.Vertical, Margin = new Thickness(0, 0, 0, horizontalScrollBarVisible ? 20 : 0), Visible = BoolToVisibility(VerticalScrollBarVisible), HorizontalAlignment = HorizontalAlignmentType.Right };
 
-            HorizontalScrollBar.Parent = this;
-            VerticalScrollBar.Parent = this;
+            //HorizontalScrollBar.Parent = this;
+            //VerticalScrollBar.Parent = this;
 
-            privateControls.Add(HorizontalScrollBar);
-            privateControls.Add(VerticalScrollBar);
+            //internalChildren.Add(HorizontalScrollBar);
+            //internalChildren.Add(VerticalScrollBar);
+
+            AddInternalChild(HorizontalScrollBar);
+            AddInternalChild(VerticalScrollBar);
 
         }
 
@@ -139,8 +141,8 @@ namespace Blade.MG.UI.Controls
             Rectangle childBounds = Rectangle.Empty;
             //Rectangle childBounds = Children.FirstOrDefault()?.FinalContentRect ?? Rectangle.Empty;
 
-            //foreach (var child in Children)
-            foreach (var child in CollectionsMarshal.AsSpan(Children))
+            //foreach (var child in CollectionsMarshal.AsSpan(Children))
+            foreach (var child in Children)
             {
                 var childFinalRect = child.FinalRect with
                 {

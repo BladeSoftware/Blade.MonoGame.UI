@@ -2,6 +2,7 @@
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Renderer;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 
 namespace Blade.MG.UI.Controls
@@ -124,12 +125,10 @@ namespace Blade.MG.UI.Controls
 
             // Draw Stencil
             using var spriteBatch = context.Renderer.BeginBatch(depthStencilState: UIRenderer.stencilStateZeroAlways, blendState: UIRenderer.blendStateStencilOnly, transform: null);
-            //context.Renderer.BeginBatch(depthStencilState: Renderer.UIRenderer.stencilStateZeroAlways, effect: alphaTestEffect, blendState: Renderer.UIRenderer.blendStateStencilOnly);
-            //context.SpriteBatch.Begin(SpriteSortMode.Immediate, depthStencilState: stencilState1, effect: alphaTestEffect, blendState: blendState);
-            //Primitives2D.FillRoundedRect(context.Game, context.SpriteBatch, finalRect, CornerRadius.Value, Color.White);
+            //using var spriteBatch = context.Renderer.BeginBatch(null);
 
-            //Primitives2D.FillRoundedRectCornersInverted(context.Game, context.SpriteBatch, finalRect, CornerRadius.Value, Color.White);
-            Primitives2D.FillRoundedRectCornersInverted(spriteBatch, rectangle, CornerRadius.Value, Color.White);
+            //Primitives2D.FillRoundedRectCornersInverted(spriteBatch, rectangle, CornerRadius.Value, Color.White);
+            MaskRoundedRectCornersInverted(spriteBatch, rectangle, CornerRadius.Value);
 
             //context.SpriteBatch.End();
             context.Renderer.EndBatch();
@@ -167,6 +166,125 @@ namespace Blade.MG.UI.Controls
             //    context.Renderer.FillRect(finalRect, Color.White);
             //    context.Renderer.EndBatch();
             //}
+
+        }
+
+
+        public static void MaskRoundedRectCornersInverted(SpriteBatch spriteBatch, Rectangle rectangle, float radius)
+        {
+            MaskRoundedRectCornersInverted(spriteBatch, rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom, radius);
+        }
+
+        public static void MaskRoundedRectCornersInverted(SpriteBatch spriteBatch, float x1, float y1, float x2, float y2, float radius)
+        {
+            Color color = Color.White;
+
+            int yPixelOffset = 0;
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                // Cater for rendering difference on Android : PlatformID.Unix
+                bool halfPixelOffset = spriteBatch.GraphicsDevice.UseHalfPixelOffset;
+                yPixelOffset = halfPixelOffset ? 0 : 1;
+            }
+
+
+            float width = x2 - x1;
+            float height = y2 - y1;
+
+            if (width == 0 || height == 0) return;
+            if (width < 0)
+            {
+                float t1 = x1;
+                x1 = x2;
+                x2 = t1;
+                //width = -width;
+            }
+
+            if (radius < 0)
+            {
+                radius = 0;
+            }
+
+            float lineWidth = 0f;
+
+            float cx1 = x1 + radius;
+            float cy1 = y1 + radius - 1;
+            float cx2 = x2 - radius;
+            float cy2 = y2 - radius;
+
+            Vector2 cTL = new Vector2(cx1 + 0.5f, cy1 + 0.5f);
+
+            bool crossover = false;
+            Vector2 p3 = Vector2.Zero;
+
+            float oy = float.NegativeInfinity;
+
+            float x = radius;
+            for (int a = 0; a < radius; a++)
+            {
+                Vector2 p2 = new Vector2(cx1 - x - 0.5f, cy1 - a);
+                if (!crossover)
+                {
+                    p3 = new Vector2(cx1 - a, cy1 - x - 0.5f);
+                }
+
+                if (!crossover && p2.X >= p3.X - lineWidth)
+                {
+                    crossover = true;
+                }
+
+                if (p2.X > p3.X)
+                {
+                    break;
+                }
+
+
+                float dist3 = Vector2.Distance(p2, cTL) - radius;
+
+                while (dist3 > 1f)
+                {
+                    p2 = p2 with { X = p2.X + 1f };
+                    p3 = p3 with { Y = p3.Y + 1f };
+
+                    dist3 = Vector2.Distance(p2, cTL) - radius;
+                    x -= 1;
+                }
+
+                // First pixel in row is anti-aliased
+                //float alias = 1f - dist3;
+                var pixelColor = Color.White; //color with { A = (byte)((float)color.A * alias) };
+
+                var p2TL = p2 with { Y = p2.Y + 0 };
+                var p2TR = p2 with { X = -p2.X + cx1 + cx2 - 1 };
+                var p2BL = p2 with { Y = -p2.Y + cy1 + cy2 - yPixelOffset };
+                var p2BR = p2 with { X = -p2.X + cx1 + cx2 - 1, Y = -p2.Y + cy1 + cy2 - yPixelOffset };
+
+                float len = p2TL.X - x1 + 1;
+                spriteBatch.Draw(Primitives2D.PixelTexture(spriteBatch.GraphicsDevice), p2TL with { X = x1 }, null, color, 0f, new Vector2(0, 0), new Vector2(len, 1f), SpriteEffects.None, 0f);
+                spriteBatch.Draw(Primitives2D.PixelTexture(spriteBatch.GraphicsDevice), p2TR with { X = x2 - len }, null, color, 0f, new Vector2(0, 0), new Vector2(len, 1f), SpriteEffects.None, 0f);
+                spriteBatch.Draw(Primitives2D.PixelTexture(spriteBatch.GraphicsDevice), p2BL with { X = x1 }, null, color, 0f, new Vector2(0, 0), new Vector2(len, 1f), SpriteEffects.None, 0f);
+                spriteBatch.Draw(Primitives2D.PixelTexture(spriteBatch.GraphicsDevice), p2BR with { X = x2 - len }, null, color, 0f, new Vector2(0, 0), new Vector2(len, 1f), SpriteEffects.None, 0f);
+
+                if (p2.Y > p3.Y && oy != p3.Y)
+                {
+                    oy = p3.Y;
+
+                    var p3TL = p3 with { Y = p3.Y + 1 - yPixelOffset };
+                    var p3TR = p3 with { X = -p3.X + cx1 + cx2 - 2, Y = p3.Y + 1 - yPixelOffset };
+                    var p3BL = p3 with { Y = -p3.Y + cy1 + cy2 - yPixelOffset };
+                    var p3BR = p3 with { X = -p3.X + cx1 + cx2 - 2, Y = -p3.Y + cy1 + cy2 - yPixelOffset };
+
+                    len = p3TL.X - x1 + 1;
+
+                    spriteBatch.Draw(Primitives2D.PixelTexture(spriteBatch.GraphicsDevice), p3TL with { X = x1 }, null, color, 0f, new Vector2(0, 0), new Vector2(len, 1f), SpriteEffects.None, 0f);
+                    spriteBatch.Draw(Primitives2D.PixelTexture(spriteBatch.GraphicsDevice), p3TR with { X = x2 - len }, null, color, 0f, new Vector2(0, 0), new Vector2(len, 1f), SpriteEffects.None, 0f);
+                    spriteBatch.Draw(Primitives2D.PixelTexture(spriteBatch.GraphicsDevice), p3BL with { X = x1 }, null, color, 0f, new Vector2(0, 0), new Vector2(len, 1f), SpriteEffects.None, 0f);
+                    spriteBatch.Draw(Primitives2D.PixelTexture(spriteBatch.GraphicsDevice), p3BR with { X = x2 - len }, null, color, 0f, new Vector2(0, 0), new Vector2(len, 1f), SpriteEffects.None, 0f);
+
+                }
+
+
+            }
 
         }
 

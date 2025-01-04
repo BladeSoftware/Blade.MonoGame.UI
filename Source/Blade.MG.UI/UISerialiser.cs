@@ -1,9 +1,7 @@
 ﻿using System.Data;
 using System.Reflection;
-using System.Reflection.PortableExecutable;
 using System.Runtime.Serialization;
 using System.Xml;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {

@@ -1,5 +1,4 @@
-﻿using FontStashSharp.Rasterizers.StbTrueTypeSharp;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Blade.MG.UI.Components

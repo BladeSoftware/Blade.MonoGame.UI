@@ -7,7 +7,7 @@ namespace Blade.MG.UI.Controls.Templates
 {
     public class TreeNodeTemplate : Border
     {
-        //public Button button1;
+        public Button button1;
         public Label label0;
         public Label label1;
 
@@ -37,30 +37,40 @@ namespace Blade.MG.UI.Controls.Templates
             IsHitTestVisible = true;
 
             //button = Parent as Button;
-            ITreeNode treeNode = (ITreeNode)DataContext;
+            ITreeNode treeNode = DataContext as ITreeNode;
 
             HorizontalAlignment = HorizontalAlignmentType.Stretch; //Parent.HorizontalAlignment;
             VerticalAlignment = VerticalAlignmentType.Stretch; //Parent.VerticalAlignment;
             //HorizontalContentAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment;
             //VerticalContentAlignment = VerticalAlignmentType.Center; //Parent.VerticalContentAlignment;
 
-            //button1 = new Button()
-            //{
-            //    Text = ">",
-            //    Width = 20,
-            //    Height = 20,
-            //    HorizontalAlignment = HorizontalAlignmentType.Left,
-            //    VerticalAlignment = VerticalAlignmentType.Center,
-            //    FontColor = new Color(Color.Black, 1f),
-            //    Background = Color.Red,
-            //    //Padding = new Thickness(10),
-            //    HorizontalContentAlignment = HorizontalAlignmentType.Left,
-            //    //OnClick = (p) =>
-            //    //{
-            //    //    treeNode.IsExpanded = !treeNode.IsExpanded;
-            //    //    //p.Handled = true;
-            //    //}
-            //};
+            button1 = new Button()
+            {
+                TemplateType = typeof(ButtonBaseTemplate),
+
+                //Text = ">",
+                Width = 32,
+                Height = 32,
+                HorizontalAlignment = HorizontalAlignmentType.Left,
+                VerticalAlignment = VerticalAlignmentType.Center,
+                TextColor = new Color(Color.Black, 1f),
+                Background = Color.Transparent,
+
+                CanHover = false,
+
+                OnMouseDown = (sender, uiEvent) =>
+                {
+                    treeNode.IsExpanded = !treeNode.IsExpanded;
+                    uiEvent.Handled = true;
+                },
+
+                //Padding = new Thickness(10),
+                //OnClick = (p) =>
+                //{
+                //    treeNode.IsExpanded = !treeNode.IsExpanded;
+                //    //p.Handled = true;
+                //}
+            };
 
             label0 = new Label()
             {
@@ -72,15 +82,23 @@ namespace Blade.MG.UI.Controls.Templates
                 Background = Color.Transparent,
                 Margin = new Thickness(10, 0, 0, 0),
 
-                OnClick = (sender, uiEvent) =>
-                {
-                    treeNode.IsExpanded = !treeNode.IsExpanded;
-                    uiEvent.Handled = true;
-                }
+                //OnMouseDown = (sender, uiEvent) =>
+                //{
+                //    treeNode.IsExpanded = !treeNode.IsExpanded;
+                //    uiEvent.Handled = true;
+                //},
+
+                //OnPrimaryClick = (sender, uiEvent) =>
+                //{
+                //    treeNode.IsExpanded = !treeNode.IsExpanded;
+                //    uiEvent.Handled = true;
+                //}
 
                 //Transform = new Transform() with { Rotation = new Vector3(0, 0, 3.1415f / 4f) }
                 //SpriteFont = button.SpriteFont // Use the Button Font
             };
+
+            button1.Content = label0;
 
             label1 = new Label()
             {
@@ -109,8 +127,8 @@ namespace Blade.MG.UI.Controls.Templates
                 //HorizontalContentAlignment = HorizontalAlignmentType.Left
             };
 
-            //stackPanel.AddChild(button1, this);
-            stackPanel.AddChild(label0, this);
+            //stackPanel.AddChild(label0, this);
+            stackPanel.AddChild(button1, this);
             stackPanel.AddChild(label1, this);
             stackPanel.HorizontalScrollBarVisible = false;
             stackPanel.VerticalScrollBarVisible = false;
@@ -126,7 +144,7 @@ namespace Blade.MG.UI.Controls.Templates
             //    uiEvent.Handled = true;
             //};
 
-            OnDoubleClick = (sender, uiEvent) =>
+            OnMultiClick = (sender, uiEvent) =>
             {
                 treeNode.IsExpanded = !treeNode.IsExpanded;
                 uiEvent.Handled = true;

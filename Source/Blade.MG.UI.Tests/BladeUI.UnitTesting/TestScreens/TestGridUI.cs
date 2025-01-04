@@ -120,7 +120,7 @@ namespace BladeUI.UnitTesting
                 Width = 200,
                 Margin = new Thickness(10, 2),
 
-                OnClick = (sender, uiEvent) => { OpenProject(); }
+                OnPrimaryClick = (sender, uiEvent) => { OpenProject(); }
             };
 
             var buttonNew = new Button()
@@ -129,7 +129,7 @@ namespace BladeUI.UnitTesting
                 Width = 200,
                 Margin = new Thickness(10, 2),
 
-                OnClick = (sender, uiEvent) => { NewProject(); }
+                OnPrimaryClick = (sender, uiEvent) => { NewProject(); }
             };
 
             stackButtons.AddChild(buttonNew);

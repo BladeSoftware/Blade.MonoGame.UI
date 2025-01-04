@@ -1,15 +1,8 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
-using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using System.ComponentModel;
-using System.Globalization;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Security.Authentication.ExtendedProtection;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
@@ -41,15 +34,21 @@ namespace Blade.MG.UI
         [XmlIgnore]
         protected UIContext Context => ParentWindow?.Context;
 
+        /// <summary>
+        /// TODO: Find a better name for these 'internal' components
+        /// </summary>
         [JsonIgnore]
         [XmlIgnore]
-        protected ICollection<UIComponent> privateControls = new List<UIComponent>();
+        protected IReadOnlyList<UIComponent> InternalChildren => internalChildren.AsReadOnly();
+        private List<UIComponent> internalChildren = new List<UIComponent>();
+
 
         private object dataContext;
 
         [JsonIgnore]
         [XmlIgnore]
-        public object DataContext { get { return dataContext ?? parent?.DataContext; } set { dataContext = value; } }
+        public object DataContext { get { return dataContext; } set { dataContext = value; } }
+        //public object DataContext { get { return dataContext ?? parent?.DataContext; } set { dataContext = value; } }
 
 
         public int FrameID;
@@ -105,6 +104,7 @@ namespace Blade.MG.UI
 
         public bool IsHitTestVisible { get; set; } = false;
         public bool CanHover { get; set; } = true;
+        public bool CanFocus { get; set; } = true;  // Same meaning as IsHitTestVisible ??
 
         public Binding<bool> HasFocus { get; set; } = false;
         public Binding<bool> MouseHover { get; set; } = false;
@@ -162,6 +162,32 @@ namespace Blade.MG.UI
         //}
 
         //----
+
+        public virtual void AddInternalChild(UIComponent item, UIComponent parent = null, object dataContext = null)
+        {
+            item.DataContext = dataContext ?? DataContext ?? parent?.DataContext;
+
+            item.Parent = parent ?? this;
+            internalChildren.Add(item);
+        }
+
+        public bool RemoveInternalChild(UIComponent item)
+        {
+            return internalChildren.Remove(item);
+        }
+
+        public void RemoveAllInternalChildren()
+        {
+            internalChildren.Clear();
+        }
+
+        public int IndexOfInternalChild(UIComponent item)
+        {
+            return internalChildren.IndexOf(item);
+        }
+
+        //----
+
 
         protected internal Size DesiredSize { get; set; }
         protected internal Rectangle FinalRect;        // Final Layout Rectangle for Control, including Margin
@@ -249,8 +275,6 @@ namespace Blade.MG.UI
 
         protected void MeasureSelf(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
-            //if (string.Equals(Name, "ProjectExplorerTree")) { }
-
             parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
 
             float desiredWidth = float.NaN;
@@ -318,17 +342,6 @@ namespace Blade.MG.UI
                 Top = layoutBounds.Top;
             }
 
-            //ActualWidth = layoutBounds.Width;
-            //ActualHeight = layoutBounds.Height;
-
-            //bool isWidthVirtual = Parent.IsWidthVirtual;
-            //bool isHeightVirtual = Parent.IsHeightVirtual;
-
-            //if (Parent is TemplatedControl)
-            //{
-            //    isWidthVirtual = Parent.Parent.IsWidthVirtual;
-            //    isHeightVirtual = Parent.Parent.IsHeightVirtual;
-            //}
 
             float desiredWidth = DesiredSize.Width - Margin.Value.Horizontal;
             float desiredHeight = DesiredSize.Height - Margin.Value.Vertical;
@@ -338,13 +351,11 @@ namespace Blade.MG.UI
 
             if (float.IsNaN(ActualWidth))
             {
-                //ActualWidth = desiredWidth;
                 ActualWidth = 0;
             }
 
             if (float.IsNaN(ActualHeight))
             {
-                //ActualHeight = desiredHeight;
                 ActualHeight = 0;
             }
 
@@ -469,6 +480,16 @@ namespace Blade.MG.UI
             FinalContentRect = new Rectangle(left, top, width, height);
 
             //clippingRect = Rectangle.Intersect(parent.finalRect, finalRect);
+
+
+            //--------------
+
+            // Arrange the Internal Components
+            foreach (var child in internalChildren)
+            {
+                child?.Arrange(context, FinalContentRect, layoutBounds);
+            }
+
         }
 
 
@@ -486,6 +507,12 @@ namespace Blade.MG.UI
         {
             float desiredWidth = float.NaN;
             float desiredHeight = float.NaN;
+
+            if (Visible.Value == Visibility.Collapsed)
+            {
+                DesiredSize = new Size(0, 0);
+                return;
+            }
 
             foreach (var child in children)
             {
@@ -835,7 +862,7 @@ namespace Blade.MG.UI
         {
             get
             {
-                foreach (var control in privateControls)
+                foreach (var control in internalChildren)
                 {
                     yield return control;
                 }
@@ -853,13 +880,16 @@ namespace Blade.MG.UI
                     break;
 
                 case Container container:
+
                     foreach (var child in container.PrivateControls)
                     {
                         child?.SetParentWindow(newParentWindow);
                     }
+
                     foreach (var child in container.Children)
                     {
                         child?.SetParentWindow(newParentWindow);
+
                     }
                     break;
             };
@@ -987,6 +1017,99 @@ namespace Blade.MG.UI
 
         }
 
+        // ----------
+
+        public virtual async Task HandlePrimaryClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        {
+            // Limit Events to the component layout window
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            {
+                await PropagateAsync(uiEvent, uiWindow, async (component) =>
+                {
+                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    {
+                        await component?.HandlePrimaryClickEventAsync(uiWindow, uiEvent);
+                    }
+                });
+
+                //if (this.HitTestVisible) uiEvent.Handled = true;
+            }
+            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
+        }
+
+        public virtual async Task HandleMultiClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        {
+            // Limit Events to the component layout window
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            {
+                await PropagateAsync(uiEvent, uiWindow, async (component) =>
+                {
+                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    {
+                        await component?.HandleMultiClickEventAsync(uiWindow, uiEvent);
+                    }
+                });
+
+                //if (this.HitTestVisible) uiEvent.Handled = true;
+            }
+            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
+        }
+
+        public virtual async Task HandleSecondaryClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        {
+            // Limit Events to the component layout window
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            {
+                await PropagateAsync(uiEvent, uiWindow, async (component) =>
+                {
+                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    {
+                        await component?.HandleSecondaryClickEventAsync(uiWindow, uiEvent);
+                    }
+                });
+
+                //if (this.HitTestVisible) uiEvent.Handled = true;
+            }
+            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
+        }
+
+
+
+        public virtual async Task HandleTapEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        {
+            // Limit Events to the component layout window
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            {
+                await PropagateAsync(uiEvent, uiWindow, async (component) =>
+                {
+                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    {
+                        await component?.HandleTapEventAsync(uiWindow, uiEvent);
+                    }
+                });
+
+                //if (this.HitTestVisible) uiEvent.Handled = true;
+            }
+            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
+        }
+
+        public virtual async Task HandleLongPressEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        {
+            // Limit Events to the component layout window
+            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            {
+                await PropagateAsync(uiEvent, uiWindow, async (component) =>
+                {
+                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    {
+                        await component?.HandleLongPressEventAsync(uiWindow, uiEvent);
+                    }
+                });
+
+                //if (this.HitTestVisible) uiEvent.Handled = true;
+            }
+            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
+        }
 
         public virtual async Task HandleMouseMoveEventAsync(UIWindow uiWindow, UIMouseMoveEvent uiEvent)
         {
@@ -1054,7 +1177,7 @@ namespace Blade.MG.UI
             //if (this.HitTestVisible && this.finalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
         }
 
-        public virtual async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public virtual async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // Limit Mouse Events to the component layout window
             if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
@@ -1063,7 +1186,7 @@ namespace Blade.MG.UI
                 {
                     if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
-                        await component?.HandleClickEventAsync(uiWindow, uiEvent);
+                        await component?.HandleMouseClickEventAsync(uiWindow, uiEvent);
                     }
                 });
 
@@ -1072,7 +1195,7 @@ namespace Blade.MG.UI
             //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
         }
 
-        public virtual async Task HandleDoubleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public virtual async Task HandleMouseDoubleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // Limit Mouse Events to the component layout window
             if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
@@ -1081,7 +1204,7 @@ namespace Blade.MG.UI
                 {
                     if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
-                        await component?.HandleDoubleClickEventAsync(uiWindow, uiEvent);
+                        await component?.HandleMouseDoubleClickEventAsync(uiWindow, uiEvent);
                     }
                 });
 
@@ -1090,7 +1213,7 @@ namespace Blade.MG.UI
             //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
         }
 
-        public virtual async Task HandleRightClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public virtual async Task HandleMouseRightClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // Limit Mouse Events to the component layout window
             if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
@@ -1099,7 +1222,7 @@ namespace Blade.MG.UI
                 {
                     if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
-                        await component?.HandleRightClickEventAsync(uiWindow, uiEvent);
+                        await component?.HandleMouseRightClickEventAsync(uiWindow, uiEvent);
                     }
                 });
 

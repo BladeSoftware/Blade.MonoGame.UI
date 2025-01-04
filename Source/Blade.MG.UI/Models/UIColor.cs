@@ -1,5 +1,4 @@
-﻿using Blade.MG.UI.Components;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Models
 {

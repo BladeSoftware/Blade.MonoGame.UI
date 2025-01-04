@@ -143,8 +143,8 @@ namespace Blade.MG.UI.Renderer
         private Stack<State> renderState = new Stack<State>();
         private Stack<DepthStencilState> depthStencil = new Stack<DepthStencilState>();
 
+        private Rectangle BackBufferBounds => new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight);
         private Rectangle ViewportBounds => GraphicsDevice.Viewport.Bounds;
-        //private Rectangle ViewportBounds => Context.Game.GraphicsDevice.Viewport.Bounds;
 
 
         //private DepthStencilState currentDepthStencilState = DepthStencilState.Default;
@@ -220,24 +220,40 @@ namespace Blade.MG.UI.Renderer
 
         public void ClearStencilBuffer()
         {
+            //GraphicsDevice.Clear(ClearOptions.Stencil, Color.Black, 0f, 0);
+
+            //GraphicsDevice.Clear(Color.Red);
+            //var v = GraphicsDevice.Viewport.Bounds;
+            //GraphicsDevice.ScissorRectangle = new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth + v.Left, GraphicsDevice.PresentationParameters.BackBufferHeight + v.Top);
+            //GraphicsDevice.Clear(ClearOptions.Stencil, Color.Transparent, 0f, -1);
+
+            //Rectangle viewport = GraphicsDevice.Viewport.Bounds;
+
             using var spriteBatch = BeginBatch(depthStencilState: stencilStateReplaceAlways, effect: null, blendState: blendStateStencilOnly, transform: null);
             //Primitives2D.FillRect(Context.Game, spriteBatch, ViewportBounds, Color.White);
-            Primitives2D.FillRect(spriteBatch, ViewportBounds, Color.White);
+            //Primitives2D.FillRect(spriteBatch, ViewportBounds, Color.White);
+            //Primitives2D.FillRect(spriteBatch, BackBufferBounds, Color.White);
+
+            spriteBatch.Draw(Primitives2D.PixelTexture(GraphicsDevice), BackBufferBounds, Color.White);
+
             EndBatch();
 
         }
 
         public void ClipToRect(Rectangle rect)
         {
-            Rectangle clippedRect = Rectangle.Intersect(rect, ViewportBounds);
+            //Rectangle clippedRect = Rectangle.Intersect(rect, ViewportBounds);
+            Rectangle clippedRect = Rectangle.Intersect(rect, BackBufferBounds);
 
             if (clippedRect == Rectangle.Empty)
             {
+                // Clip to an offscreen 1x1 pixel region to hide the rendering
                 GraphicsDevice.ScissorRectangle = new Rectangle(-1, -1, 1, 1);
             }
             else
             {
-                GraphicsDevice.ScissorRectangle = new Rectangle(clippedRect.Left, clippedRect.Top, clippedRect.Width, clippedRect.Height);
+                //GraphicsDevice.ScissorRectangle = new Rectangle(clippedRect.Left, clippedRect.Top, clippedRect.Width, clippedRect.Height);
+                GraphicsDevice.ScissorRectangle = new Rectangle(clippedRect.Left + ViewportBounds.Left, clippedRect.Top + ViewportBounds.Top, clippedRect.Width, clippedRect.Height);
             }
         }
 
@@ -337,9 +353,10 @@ namespace Blade.MG.UI.Renderer
 
         public void DrawTexture(Texture2D texture, Rectangle rectangle, TextureLayout textureLayout, Vector2 scale, Rectangle? clippingRect = null)
         {
-            var viewport = GraphicsDevice.Viewport;
+            //var viewport = GraphicsDevice.Viewport;
+            //Matrix projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1);
 
-            Matrix projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1);
+            Matrix projection = Matrix.CreateOrthographicOffCenter(0, BackBufferBounds.Width, BackBufferBounds.Height, 0, 0, 1);
 
             Matrix view = Matrix.Identity;
             //if (clippingRect != null)

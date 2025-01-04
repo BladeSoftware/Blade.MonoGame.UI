@@ -312,7 +312,7 @@ namespace Examples.UI.HelpPages
                         Height = "40%",
                         HorizontalAlignment = HorizontalAlignmentType.Right,
                         VerticalAlignment = VerticalAlignmentType.Bottom,
-                        OnClick = (eventSource, eventData) => { UIManager.ResourceDict.SetValue("Background", Color.Orange); }
+                        OnPrimaryClick = (eventSource, eventData) => { UIManager.ResourceDict.SetValue("Background", Color.Orange); }
                     }
                 },
                 2, 2);

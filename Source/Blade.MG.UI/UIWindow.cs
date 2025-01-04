@@ -47,7 +47,8 @@ namespace Blade.MG.UI
 
         [JsonIgnore]
         [XmlIgnore]
-        public Viewport Viewport => Game.GraphicsDevice.Viewport;
+        //public Viewport Viewport => Game.GraphicsDevice.Viewport;
+        public Rectangle BackBufferBounds => new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight);
 
         [JsonIgnore]
         [XmlIgnore]
@@ -96,7 +97,9 @@ namespace Blade.MG.UI
         {
             Context.GameTime = gameTime;
 
-            var layoutRect = Game.GraphicsDevice.PresentationParameters.IsFullScreen ? Viewport.TitleSafeArea : Viewport.Bounds;
+            //var layoutRect = Game.GraphicsDevice.PresentationParameters.IsFullScreen ? Viewport.TitleSafeArea : Viewport.Bounds;
+            var layoutRect = GetLayoutRect();
+
             PerformLayout(layoutRect);
         }
 
@@ -104,9 +107,13 @@ namespace Blade.MG.UI
         {
             Context.GameTime = gameTime;
 
-            var layoutRect = Game.GraphicsDevice.PresentationParameters.IsFullScreen ? Viewport.TitleSafeArea : Viewport.Bounds;
+            // var layoutRect = Game.GraphicsDevice.PresentationParameters.IsFullScreen ? Viewport.TitleSafeArea : Viewport.Bounds;
+            var layoutRect = GetLayoutRect();
+
             RenderLayout(layoutRect);
         }
+
+        private Rectangle GetLayoutRect() => new Rectangle(0, 0, Game.GraphicsDevice.PresentationParameters.BackBufferWidth, Game.GraphicsDevice.PresentationParameters.BackBufferHeight);
 
 
         protected virtual void PerformLayout(Rectangle layoutRect)
@@ -149,6 +156,11 @@ namespace Blade.MG.UI
         protected virtual void RenderLayout(Rectangle layoutRect)
         {
             // Render Layout
+
+            // layoutRect is relative to the BackBuffer i.e. (0,0) is the Top-Left pixel
+            // However. the Viewport on the screen may be offset, so adjust the layoutRect to be relative to the Viewport
+            var viewportBounds = Game.GraphicsDevice.Viewport.Bounds;
+            Game.GraphicsDevice.ScissorRectangle = layoutRect with { X = layoutRect.X + viewportBounds.X, Y = layoutRect.Y + viewportBounds.Y };
 
             Transform.CalcCenterPoint(this);
 
@@ -321,7 +333,7 @@ namespace Blade.MG.UI
             UIComponentEvents ctrl = component as UIComponentEvents;
             if (ctrl != null)
             {
-                await ctrl.HandleHoverChangedAsync(uiWindow, new UIHoverChangedEvent { Hover = true, X = InputManager.MouseState.X, Y = InputManager.MouseState.Y });
+                await ctrl.HandleHoverChangedAsync(uiWindow, new UIHoverChangedEvent { Hover = true, X = InputManager.Mouse.X, Y = InputManager.Mouse.Y });
             }
         }
 
@@ -331,7 +343,7 @@ namespace Blade.MG.UI
             if (ctrl != null)
             {
                 // Always propogate Hover Leave event as we've aleady moved off that control
-                await ctrl.HandleHoverChangedAsync(uiWindow, new UIHoverChangedEvent { Hover = false, X = InputManager.MouseState.X, Y = InputManager.MouseState.Y, ForcePropogation = true });
+                await ctrl.HandleHoverChangedAsync(uiWindow, new UIHoverChangedEvent { Hover = false, X = InputManager.Mouse.X, Y = InputManager.Mouse.Y, ForcePropogation = true });
             }
         }
 

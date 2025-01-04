@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.Threading;
-using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls
 {

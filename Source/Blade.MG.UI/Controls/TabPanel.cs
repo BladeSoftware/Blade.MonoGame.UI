@@ -71,12 +71,14 @@ namespace Blade.MG.UI.Controls
                 //Margin = new Thickness(0, 10, 0, 0)
             };
 
-            tabsStackPanel.Parent = this;
-            contentPanel.Parent = this;
+            //tabsStackPanel.Parent = this;
+            //contentPanel.Parent = this;
 
-            privateControls.Add(tabsStackPanel);
-            privateControls.Add(contentPanel);
+            //internalChildren.Add(tabsStackPanel);
+            //internalChildren.Add(contentPanel);
 
+            AddInternalChild(tabsStackPanel);
+            AddInternalChild(contentPanel);
         }
 
         public string AddTab(UIComponent content, object dataContext, bool setAsActiveTab = false, string id = null)
@@ -157,7 +159,7 @@ namespace Blade.MG.UI.Controls
 
                 if (tabHeader != null)
                 {
-                    int index = tabsStackPanel.Children.IndexOf(tabHeader);
+                    int index = tabsStackPanel.IndexOfChild(tabHeader);
 
                     //tabsStackPanel.RemoveChild(tabHeader); // Remove Header from Header Stack Panel
                     //tabHeaderLink.Remove(tabPage);
@@ -174,7 +176,7 @@ namespace Blade.MG.UI.Controls
                         SelectedPage = null;
                         SelectedHeader = null;
 
-                        (contentPanel.Children as IList)?.Clear();
+                        contentPanel.RemoveAllChildren();
 
                         if (index > 0)
                         {
@@ -273,10 +275,10 @@ namespace Blade.MG.UI.Controls
         {
             base.Arrange(context, layoutBounds, parentLayoutBounds);
 
-            foreach (var child in privateControls)
-            {
-                child?.Arrange(context, FinalContentRect, layoutBounds);
-            }
+            //foreach (var child in privateControls)
+            //{
+            //    child?.Arrange(context, FinalContentRect, layoutBounds);
+            //}
 
         }
 
@@ -293,11 +295,11 @@ namespace Blade.MG.UI.Controls
             base.RenderControl(context, contentLayoutRect, parentTransform);
 
 
-            // Render the Tab Headers
-            foreach (var child in privateControls)
-            {
-                child?.RenderControl(context, contentLayoutRect, parentTransform);
-            }
+            //// Render the Tab Headers
+            //foreach (var child in privateControls)
+            //{
+            //    child?.RenderControl(context, contentLayoutRect, parentTransform);
+            //}
 
             // Draw the dividing line between the tab headers and tab body
             try
@@ -356,7 +358,7 @@ namespace Blade.MG.UI.Controls
             }
             else
             {
-                (contentPanel.Children as IList)?.Clear();
+                contentPanel.RemoveAllChildren();
 
                 // Check if we've been passed a Tab Page 
                 if (tabHeaderLink.TryGetValue(tabPage, out newHeader))
@@ -404,7 +406,7 @@ namespace Blade.MG.UI.Controls
             }
         }
 
-        public override async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
 
             // Handle click event on Tab Headers
@@ -412,7 +414,7 @@ namespace Blade.MG.UI.Controls
             {
                 if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropogation))
                 {
-                    await item.HandleClickEventAsync(uiWindow, uiEvent);
+                    await item.HandleMouseClickEventAsync(uiWindow, uiEvent);
 
                     if (!uiEvent.Handled)
                     {
@@ -423,13 +425,13 @@ namespace Blade.MG.UI.Controls
 
             ProcessTabsActions();
 
-            await base.HandleClickEventAsync(uiWindow, uiEvent);
+            await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
 
             // Prevent Click Event for propogating outside the TabPanel
             uiEvent.Handled = true;
         }
 
-        public override async Task HandleDoubleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public override async Task HandleMouseDoubleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
 
             // Handle double click event on Tab Headers
@@ -437,7 +439,7 @@ namespace Blade.MG.UI.Controls
             {
                 if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropogation))
                 {
-                    await item.HandleDoubleClickEventAsync(uiWindow, uiEvent);
+                    await item.HandleMouseDoubleClickEventAsync(uiWindow, uiEvent);
 
                     if (!uiEvent.Handled)
                     {
@@ -448,13 +450,13 @@ namespace Blade.MG.UI.Controls
 
             ProcessTabsActions();
 
-            await base.HandleDoubleClickEventAsync(uiWindow, uiEvent);
+            await base.HandleMouseDoubleClickEventAsync(uiWindow, uiEvent);
 
             // Prevent Click Event for propogating outside the TabPanel
             uiEvent.Handled = true;
         }
 
-        public override async Task HandleRightClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public override async Task HandleMouseRightClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
 
             // Handle right click event on Tab Headers
@@ -462,7 +464,7 @@ namespace Blade.MG.UI.Controls
             {
                 if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropogation))
                 {
-                    await item.HandleRightClickEventAsync(uiWindow, uiEvent);
+                    await item.HandleMouseRightClickEventAsync(uiWindow, uiEvent);
 
                     if (!uiEvent.Handled)
                     {
@@ -473,7 +475,7 @@ namespace Blade.MG.UI.Controls
 
             ProcessTabsActions();
 
-            await base.HandleRightClickEventAsync(uiWindow, uiEvent);
+            await base.HandleMouseRightClickEventAsync(uiWindow, uiEvent);
 
             // Prevent Click Event for propogating outside the TabPanel
             uiEvent.Handled = true;

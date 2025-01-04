@@ -229,7 +229,7 @@ namespace Blade.MG.UI.Controls
 
             for (int i = 1; i <= maxColSpan; i++)
             {
-                foreach (var child in Children.Where(p=> GetColumnSpan(p) == i))
+                foreach (var child in Children.Where(p => GetColumnSpan(p) == i))
                 {
                     int col = GetColumn(child);
                     int colSpan = i; // GetColumnSpan(child);
@@ -450,6 +450,7 @@ namespace Blade.MG.UI.Controls
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
+
             base.RenderControl(context, layoutBounds, parentTransform);
 
             // For debugging, highlight the row and column under the mouse
@@ -468,7 +469,7 @@ namespace Blade.MG.UI.Controls
                     {
                         Rectangle colRect = new Rectangle((int)left, (int)top, (int)col.CalcSize, FinalContentRect.Height);
 
-                        if (colRect.Contains(InputManager.MouseState.Position))
+                        if (colRect.Contains(InputManager.Mouse.Position))
                         {
                             Primitives2D.FillRect(sb, colRect, color);
                         }
@@ -484,7 +485,7 @@ namespace Blade.MG.UI.Controls
                     {
                         Rectangle rowRect = new Rectangle((int)left, (int)top, FinalContentRect.Width, (int)row.CalcSize);
 
-                        if (rowRect.Contains(InputManager.MouseState.Position))
+                        if (rowRect.Contains(InputManager.Mouse.Position))
                         {
                             Primitives2D.FillRect(sb, rowRect, color);
                         }
@@ -516,6 +517,12 @@ namespace Blade.MG.UI.Controls
             SetRow(item, row);
             SetRowSpan(item, rowSpan);
         }
+
+
+        //public override Task HandleFocusChangedEventAsync(UIWindow uiWindow, UIFocusChangedEvent uiEvent)
+        //{
+        //    return base.HandleFocusChangedEventAsync(uiWindow, uiEvent);
+        //}
 
     }
 }

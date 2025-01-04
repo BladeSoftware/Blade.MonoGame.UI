@@ -55,7 +55,9 @@ namespace Blade.MG.UI.Controls.Templates
 
                 SpriteFontBase font = FontService.GetFontOrDefault(label.FontName?.Value, label.FontSize?.Value);
 
-                var textDimensions = context.Renderer.DrawString(spriteBatch, FinalContentRect, label.Text.ToString(), font, label.TextColor?.Value, label.HorizontalTextAlignment.Value, label.VerticalTextAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
+                string labelText = label?.Text?.ToString() ?? "";
+
+                var textDimensions = context.Renderer.DrawString(spriteBatch, FinalContentRect, labelText, font, label.TextColor?.Value, label.HorizontalTextAlignment.Value, label.VerticalTextAlignment.Value, Rectangle.Intersect(layoutBounds, FinalContentRect));
 
                 label.TextRect = textDimensions.TextRect;
                 label.TextBaseLine = textDimensions.Baseline;

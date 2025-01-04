@@ -2,7 +2,6 @@
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace Blade.MG.UI.Controls
 {
@@ -135,7 +134,8 @@ namespace Blade.MG.UI.Controls
                     context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Right - BarThickness, rect.Bottom - BarThickness, BarThickness, BarThickness), Background.Value);
 
                     //var arrowTexture = Content.Load<Texture2D>("Images/arrow_right_20x20");
-                    var arrowTexture = context.Game.Content.Load<Texture2D>("Images/arrow_right_small");
+                    //var arrowTexture = context.Game.Content.Load<Texture2D>("Images/arrow_right_small");
+                    var arrowTexture = context.LoadContent<Texture2D>("Images/arrow_right_small");
 
                     spriteBatch.Draw(arrowTexture, new Vector2(rect.Left + BarThickness, rect.Bottom - BarThickness), null, EndCaps, 0f, new Vector2(0, 0), new Vector2(-1f, 1f), SpriteEffects.None, 0f);
                     spriteBatch.Draw(arrowTexture, new Vector2(rect.Right - BarThickness, rect.Bottom - BarThickness), null, EndCaps, 0f, new Vector2(0, 0), new Vector2(1f, 1f), SpriteEffects.None, 0f);
@@ -163,7 +163,8 @@ namespace Blade.MG.UI.Controls
                     context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Right - BarThickness, rect.Bottom - endcapLength, BarThickness, endcapLength), Background.Value);
 
                     //var arrowTexture = context.Content.Load<Texture2D>("Images/arrow_up_20x20");
-                    var arrowTexture = context.Game.Content.Load<Texture2D>("Images/arrow_up_small");
+                    //var arrowTexture = context.Game.Content.Load<Texture2D>("Images/arrow_up_small");
+                    var arrowTexture = context.LoadContent<Texture2D>("Images/arrow_up_small");
 
                     spriteBatch.Draw(arrowTexture, new Vector2(rect.Right - BarThickness, rect.Top), null, EndCaps, 0f, new Vector2(0, 0), 1f, SpriteEffects.None, 0f);
                     spriteBatch.Draw(arrowTexture, new Vector2(rect.Right - BarThickness, rect.Bottom), null, EndCaps, 0f, new Vector2(0, 0), new Vector2(1f, -1f), SpriteEffects.None, 0f);
@@ -227,7 +228,7 @@ namespace Blade.MG.UI.Controls
         {
             if (uiEvent.Handled) return;
 
-            if (uiEvent.LeftButton == ButtonState.Pressed && FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.PrimaryButton.Pressed && FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 LockEventsToControl(uiWindow, this);
 

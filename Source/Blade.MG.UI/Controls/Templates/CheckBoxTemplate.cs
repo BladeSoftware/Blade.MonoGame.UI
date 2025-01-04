@@ -1,5 +1,4 @@
 ﻿using Blade.MG.SVG;
-using Blade.MG.SVG.Geometries;
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;

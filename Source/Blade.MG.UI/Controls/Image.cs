@@ -1,5 +1,4 @@
-﻿using Blade.MG.Primitives;
-using Blade.MG.UI.Components;
+﻿using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text.Json.Serialization;

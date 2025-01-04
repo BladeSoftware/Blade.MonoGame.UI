@@ -5,7 +5,8 @@ namespace Blade.MG.UI
 {
     public class Container : UIComponentDrawable
     {
-        public List<UIComponent> Children { get; private set; } = new List<UIComponent>();
+        private List<UIComponent> children = new List<UIComponent>();
+        public IReadOnlyList<UIComponent> Children { get => children.AsReadOnly(); }
 
         public Container()
         {
@@ -17,17 +18,22 @@ namespace Blade.MG.UI
             item.DataContext = dataContext ?? DataContext ?? parent?.DataContext;
 
             item.Parent = parent ?? this;
-            Children.Add(item);
+            children.Add(item);
         }
 
         public bool RemoveChild(UIComponent item)
         {
-            return Children.Remove(item);
+            return children.Remove(item);
         }
 
-        public int RemoveAllChildren()
+        public void RemoveAllChildren()
         {
-            return Children.RemoveAll(p => true);
+            children.Clear();
+        }
+
+        public int IndexOfChild(UIComponent item)
+        {
+            return children.IndexOf(item);
         }
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)

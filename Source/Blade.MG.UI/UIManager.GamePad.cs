@@ -16,7 +16,7 @@ namespace Blade.MG.UI
                 return;
             }
 
-            if (InputManager.GamePadStatePlayer1.IsConnected)
+            if (InputManager.GamePad(PlayerIndex.One).IsConnected)
             {
                 // ...
             }

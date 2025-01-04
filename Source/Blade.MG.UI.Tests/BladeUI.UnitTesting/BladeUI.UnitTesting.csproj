@@ -19,6 +19,7 @@
     <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Blade.MonoGame.Core\Source\Blade.MG.Core\Blade.MG.Core.csproj" />
     <ProjectReference Include="..\..\Blade.MG.UI\Blade.MG.UI.csproj" />
   </ItemGroup>
   <Import Project="..\Content.Shared\Content.Shared.projitems" Label="Shared" />

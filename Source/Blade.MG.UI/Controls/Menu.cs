@@ -38,8 +38,8 @@ namespace Blade.MG.UI.Controls
                 VerticalAlignment = VerticalAlignmentType.Absolute,
 
 
-                Left = InputManager.MouseState.X,
-                Top = InputManager.MouseState.Y,
+                Left = InputManager.Mouse.X,
+                Top = InputManager.Mouse.Y,
                 //Width = 200,
                 //Height = 350
 
@@ -66,7 +66,7 @@ namespace Blade.MG.UI.Controls
                         case MenuOption menuOption:
                             optionsStackPanel.AddChild(new MenuItem
                             {
-                                OnClickAsync = async (sender, uiEvent) => { await OptionSelectedAsync(menuOption.Id); }
+                                OnPrimaryClickAsync = async (sender, uiEvent) => { await OptionSelectedAsync(menuOption.Id); }
                             },
                             this,
                             option);
@@ -97,7 +97,7 @@ namespace Blade.MG.UI.Controls
             base.RenderLayout(layoutRect);
         }
 
-        public override async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             CloseModal();
 
@@ -112,7 +112,7 @@ namespace Blade.MG.UI.Controls
 
             ReturnAsyncResult();
 
-            await base.HandleClickEventAsync(uiWindow, uiEvent);
+            await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
         }
 
         protected internal void OnMenuItemClicked(MenuItem menuItem)

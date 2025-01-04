@@ -35,6 +35,7 @@ namespace Examples.UI
                 //Background = new Color(Color.DarkSlateBlue, 0.5f),
                 Background = new Color(Color.DarkBlue, 1f),
                 //Margin = new Thickness(0, 15, 0, 0),
+                // Margin = new Thickness(5, 5, 5, 5)
 
                 //Margin = new Thickness(250, 100, 250, 100),
                 //Padding = new Thickness(0, 0, 0, 0),
@@ -44,8 +45,8 @@ namespace Examples.UI
 
 
             //gridMainLayout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1f) });
-            gridMainLayout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Auto) });
             gridMainLayout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1f) });
+            gridMainLayout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 2f) });
 
             gridMainLayout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Star, 1f) });
 
@@ -55,13 +56,12 @@ namespace Examples.UI
             {
                 Name = "Tester Buttons",
                 Background = Color.Green,
-                Width = 400,
+                //Width = 400,
                 Orientation = Orientation.Vertical,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
                 //HorizontalContentAlignment = HorizontalAlignmentType.Stretch,
-                //VerticalContentAlignment = VerticalAlignmentType.Top
-
+                //VerticalContentAlignment = VerticalAlignmentType.Top,
             };
 
             var content = new Control()
@@ -71,6 +71,7 @@ namespace Examples.UI
 
             gridMainLayout.AddChild(stackPanel1, 0, 0);
             gridMainLayout.AddChild(content, 1, 0);
+
 
             int verticalMargin = 5;
 
@@ -83,7 +84,7 @@ namespace Examples.UI
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 HorizontalTextAlignment = HorizontalAlignmentType.Center,
                 VerticalTextAlignment = VerticalAlignmentType.Center,
-                OnClick = (sender, uiEvents) =>
+                OnPrimaryClick = (sender, uiEvents) =>
                 {
                     content.Content = new HelpPage_Panel();
                 }
@@ -98,7 +99,7 @@ namespace Examples.UI
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 HorizontalTextAlignment = HorizontalAlignmentType.Center,
                 VerticalTextAlignment = VerticalAlignmentType.Center,
-                OnClick = (sender, uiEvents) =>
+                OnPrimaryClick = (sender, uiEvents) =>
                 {
                     content.Content = new HelpPage_Button();
                 }
@@ -113,7 +114,7 @@ namespace Examples.UI
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 HorizontalTextAlignment = HorizontalAlignmentType.Center,
                 VerticalTextAlignment = VerticalAlignmentType.Center,
-                OnClick = (sender, uiEvents) =>
+                OnPrimaryClick = (sender, uiEvents) =>
                 {
                     content.Content = new HelpPage_Label();
                 }
@@ -128,7 +129,7 @@ namespace Examples.UI
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 HorizontalTextAlignment = HorizontalAlignmentType.Center,
                 VerticalTextAlignment = VerticalAlignmentType.Center,
-                OnClick = (sender, uiEvents) =>
+                OnPrimaryClick = (sender, uiEvents) =>
                 {
                     content.Content = new HelpPage_FormFields();
                 }
@@ -143,7 +144,7 @@ namespace Examples.UI
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 HorizontalTextAlignment = HorizontalAlignmentType.Center,
                 VerticalTextAlignment = VerticalAlignmentType.Center,
-                OnClick = (sender, uiEvents) =>
+                OnPrimaryClick = (sender, uiEvents) =>
                 {
                     content.Content = null;
                 }

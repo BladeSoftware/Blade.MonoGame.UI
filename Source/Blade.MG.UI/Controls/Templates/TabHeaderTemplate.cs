@@ -55,6 +55,8 @@ namespace Blade.MG.UI.Controls.Templates
                 Background = Theme.SecondaryContainer,
                 HorizontalAlignment = HorizontalAlignmentType.Left,
                 VerticalAlignment = VerticalAlignmentType.Top,
+                HorizontalTextAlignment = HorizontalAlignmentType.Center,
+                VerticalTextAlignment = VerticalAlignmentType.Center,
 
                 IsHitTestVisible = true,
                 Name = "CloseTab1",
@@ -73,7 +75,7 @@ namespace Blade.MG.UI.Controls.Templates
                     //args.Handled = true;
                 },
 
-                OnClick = (sender, args) =>
+                OnPrimaryClick = (sender, args) =>
                 {
                     // Use Selected Tab Page rather than Focus
                     var parentTabPanel = FindParent<TabPanel>();

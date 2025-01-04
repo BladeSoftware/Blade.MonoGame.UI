@@ -2,6 +2,7 @@
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Models;
 using Blade.MG.UI.Theming;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Concurrent;
@@ -41,9 +42,12 @@ namespace Blade.MG.UI
         // Windows with a higher priority are on top of windows with lower priorities
         private SortedList<string, UIWindow> uiWindows { get; set; } = new();
 
+        private JoinableTaskFactory joinableTaskFactory;
+
 
         protected UIManager()
         {
+            joinableTaskFactory = new JoinableTaskFactory(new JoinableTaskContext());
         }
 
         private string ToPriority(int i) => $"{i.ToString("0000")}.{Stopwatch.GetTimestamp()}";
@@ -227,15 +231,11 @@ namespace Blade.MG.UI
 
         }
 
-        public override async void Update(GameTime gameTime)
+        public override void Update(GameTime gameTime)
         {
-            try
-            {
-                await UpdateAsync(gameTime).ConfigureAwait(true);
-            }
-            catch (Exception ex)
-            {
-            }
+            joinableTaskFactory.Run(async () => await UpdateAsync(gameTime));
+
+            //await UpdateAsync(gameTime).ConfigureAwait(true);
         }
 
         public async Task UpdateAsync(GameTime gameTime)
@@ -271,6 +271,7 @@ namespace Blade.MG.UI
             // Converts physical input into 'abstracted' actions
             await HandleKeyboardInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
             await HandleMouseInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
+            await HandleTouchInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
             await HandleGamePadInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
 
             // Arrange layout

@@ -2,7 +2,6 @@
 using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
-using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
@@ -37,8 +36,8 @@ namespace Blade.MG.UI.Controls
 
             var desiredize = DesiredSize;
 
-            //foreach (var child in Children)
-            foreach (var child in CollectionsMarshal.AsSpan(Children))
+            //foreach (var child in CollectionsMarshal.AsSpan(Children))
+            foreach (var child in Children)
             {
                 child.Measure(context, ref desiredize, ref parentMinMax);
 
@@ -285,7 +284,7 @@ namespace Blade.MG.UI.Controls
         // ---=== UI Events ===---
 
         // Override the Click Event handling
-        public override async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // If we've clicked on a list item, then update SelectedItem
             if (FinalRect.Contains(uiEvent.X, FinalRect.Y))
@@ -302,7 +301,7 @@ namespace Blade.MG.UI.Controls
                 }
             }
 
-            await base.HandleClickEventAsync(uiWindow, uiEvent);
+            await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
 
             //OnClick?.Invoke(uiEvent);
         }

@@ -36,5 +36,38 @@ namespace Blade.MG.UI
         [XmlIgnore]
         public GameTime GameTime { get; set; }
 
+
+        public T LoadContent<T>(string assetName)
+        {
+            try
+            {
+                return Game.Content.Load<T>(assetName);
+            }
+            catch (ContentLoadException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public T LoadLocalizedContent<T>(string assetName)
+        {
+            try
+            {
+                return Game.Content.LoadLocalized<T>(assetName);
+            }
+            catch (ContentLoadException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
     }
 }

@@ -68,7 +68,7 @@ namespace Blade.MG.UI.Controls
         }
 
         // ---=== UI Events ===---
-        public override async Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             if (!FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {

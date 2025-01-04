@@ -9,10 +9,7 @@ namespace Blade.MG.UI
         private UIComponent content;
         public UIComponent Content
         {
-            get
-            {
-                return content;
-            }
+            get => content;
 
             set
             {
@@ -21,7 +18,6 @@ namespace Blade.MG.UI
                 {
                     content.Parent = this;
                 }
-
             }
         }
 
@@ -59,7 +55,7 @@ namespace Blade.MG.UI
             // Render Content control
             if (Content != null)
             {
-                Content.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalContentRect), parentTransform);
+                Content.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalContentRect), Transform.Combine(parentTransform, Content.Transform, Content));
             }
         }
 

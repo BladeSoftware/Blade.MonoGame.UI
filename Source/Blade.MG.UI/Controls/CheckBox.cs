@@ -1,5 +1,4 @@
-﻿using Blade.MG.UI.Components;
-using Blade.MG.UI.Controls.Templates;
+﻿using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
 
 namespace Blade.MG.UI.Controls
@@ -103,7 +102,7 @@ namespace Blade.MG.UI.Controls
             //}
         }
 
-        public override Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public override Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // return base.HandleClickEventAsync(uiWindow, uiEvent);
 

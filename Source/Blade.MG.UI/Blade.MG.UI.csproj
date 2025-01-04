@@ -6,10 +6,10 @@
     <RootNamespace>Blade.MG.UI</RootNamespace>
 
     <PackageId>BladeSoftware.MonoGame.UI</PackageId>
-    <Title>WPF Inspired MonoGame UI Library </Title>
-    <PackageVersion>1.0.1</PackageVersion>
+    <Title>MonoGame UI Library</Title>
+    <PackageVersion>1.0.2</PackageVersion>
     <Company>Blade Software</Company>
-    <Description>WPF Inspired MonoGame UI Library </Description>
+    <Description>MonoGame UI Library with templateable controls</Description>
     <Copyright>Copyright (c) Blade Software 2023</Copyright>
     <RepositoryUrl>https://github.com/BladeSoftware/Blade.MonoGame.UI</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -38,10 +38,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BladeSoftware.MonoGame.Core" Version="1.0.5" />
+    <!--<PackageReference Include="BladeSoftware.MonoGame.Core" Version="1.0.7" />-->
     <PackageReference Include="FontStashSharp.MonoGame" Version="1.3.7" />
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.10.48" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Blade.MG.Core">
+      <HintPath>..\..\..\Blade.MonoGame.Core\Source\Blade.MG.Core\bin\Debug\net8.0\Blade.MG.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

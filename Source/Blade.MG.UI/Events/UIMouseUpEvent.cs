@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using Blade.MG.Input;
 
 namespace Blade.MG.UI.Events
 {
@@ -7,9 +7,9 @@ namespace Blade.MG.UI.Events
         public int X { get; set; }
         public int Y { get; set; }
 
-        public ButtonState LeftButton { get; set; }
-        public ButtonState MiddleButton { get; set; }
-        public ButtonState RightButton { get; set; }
+        public Button PrimaryButton { get; set; }
+        public Button MiddleButton { get; set; }
+        public Button SecondaryButton { get; set; }
 
     }
 }
