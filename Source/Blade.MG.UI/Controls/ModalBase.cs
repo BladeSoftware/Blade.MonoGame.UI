@@ -1,16 +1,26 @@
 ﻿using Microsoft.VisualStudio.Threading;
+using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls
 {
     public class ModalBase : UIWindow
     {
+        // Services
+        private UIManager uiManager;
+
         private AsyncManualResetEvent asyncManualResetEvent = new AsyncManualResetEvent(false);
         //private ManualResetEventSlim manualResetEventSlim = new ManualResetEventSlim(false);
 
+        public override void Initialize(Game game)
+        {
+            base.Initialize(game);
+
+            uiManager = game.Services.GetService<UIManager>();
+        }
 
         public void Show()
         {
-            UIManager.Add(this);
+            uiManager.Add(this);
         }
 
         //public async Task ShowAsync(Game game)
@@ -26,7 +36,7 @@ namespace Blade.MG.UI.Controls
         {
             asyncManualResetEvent.Reset();
 
-            UIManager.Add(this);
+            uiManager.Add(this);
 
             //await Task.Run(async () =>
             //{
@@ -38,7 +48,7 @@ namespace Blade.MG.UI.Controls
 
         public void CloseModal()
         {
-            UIManager.Remove(this);
+            uiManager.Remove(this);
         }
 
         public void ReturnAsyncResult()

@@ -34,7 +34,7 @@ namespace Blade.MG.UI
 
         public static ResourceDict ResourceDict { get; set; } = new ResourceDict(); // Default Resource Dictionaries
 
-        public static UIManager Instance { get; set; } = new UIManager();
+        //public static UIManager Instance { get; set; } = new UIManager();
 
         protected ConcurrentQueue<UITask> uiTaskQueue = new ConcurrentQueue<UITask>();
 
@@ -45,8 +45,10 @@ namespace Blade.MG.UI
         private JoinableTaskFactory joinableTaskFactory;
 
 
-        protected UIManager()
+        public UIManager(Game game)
         {
+            this.game = game;
+
             joinableTaskFactory = new JoinableTaskFactory(new JoinableTaskContext());
         }
 
@@ -69,20 +71,20 @@ namespace Blade.MG.UI
                 {
 
                     //Instance.UI.Remove(task.Window);
-                    int index = Instance.uiWindows.IndexOfValue(task.Window);
+                    int index = uiWindows.IndexOfValue(task.Window);
                     if (index >= 0)
                     {
-                        Instance.uiWindows.RemoveAt(index);
+                        uiWindows.RemoveAt(index);
                     }
 
                     UnloadWindow(task.Window);
                 }
                 else if (task.TaskType == UITaskType.Clear)
                 {
-                    for (int i = Instance.uiWindows.Count - 1; i >= 0; i--)
+                    for (int i = uiWindows.Count - 1; i >= 0; i--)
                     {
-                        var window = Instance?.uiWindows?.ElementAtOrDefault(i);
-                        Instance?.uiWindows?.RemoveAt(i);
+                        var window = uiWindows?.ElementAtOrDefault(i);
+                        uiWindows?.RemoveAt(i);
                         UnloadWindow(window.Value.Value);
                     }
                 }
@@ -93,86 +95,86 @@ namespace Blade.MG.UI
 
         }
 
-        public static void Clear()
+        public void Clear()
         {
-            Instance.EnqueTask(new UITask { TaskType = UITaskType.Clear, Window = null });
+            EnqueTask(new UITask { TaskType = UITaskType.Clear, Window = null });
         }
 
-        public static void Add(UIWindow ui, int priority = 100)
+        public void Add(UIWindow ui, int priority = 100)
         {
-            Instance.EnqueTask(new UITask { TaskType = UITaskType.Add, Window = ui, Priority = priority });
+            EnqueTask(new UITask { TaskType = UITaskType.Add, Window = ui, Priority = priority });
 
-            ui.Initialize(Instance.game);
+            ui.Initialize(game);
             ui.LoadContent();
 
-            Instance.HandleTaskQueue();
+            HandleTaskQueue();
         }
 
-        public static void Add(ICollection<UIWindow> ui, int priority = 100)
+        public void Add(ICollection<UIWindow> ui, int priority = 100)
         {
             foreach (var uiWindow in ui)
             {
-                Instance.EnqueTask(new UITask { TaskType = UITaskType.Add, Window = uiWindow, Priority = priority });
+                EnqueTask(new UITask { TaskType = UITaskType.Add, Window = uiWindow, Priority = priority });
 
-                uiWindow.Initialize(Instance.game);
+                uiWindow.Initialize(game);
                 uiWindow.LoadContent();
             }
 
-            Instance.HandleTaskQueue();
+            HandleTaskQueue();
         }
 
-        public static T Find<T>() where T : UIWindow
+        public T Find<T>() where T : UIWindow
         {
-            return (T)Instance.uiWindows.Values.FirstOrDefault(p => p.GetType() == typeof(T));
+            return (T)uiWindows.Values.FirstOrDefault(p => p.GetType() == typeof(T));
         }
 
-        public static T Remove<T>() where T : UIWindow
+        public T Remove<T>() where T : UIWindow
         {
-            var window = (T)Instance.uiWindows.Values.FirstOrDefault(p => p.GetType() == typeof(T));
+            var window = (T)uiWindows.Values.FirstOrDefault(p => p.GetType() == typeof(T));
             if (window != null)
             {
-                Instance.EnqueTask(new UITask { TaskType = UITaskType.Remove, Window = window });
+                EnqueTask(new UITask { TaskType = UITaskType.Remove, Window = window });
             }
 
             return window;
         }
 
-        public static T Remove<T>(T instance) where T : UIWindow
+        public T Remove<T>(T instance) where T : UIWindow
         {
-            var window = (T)Instance.uiWindows.Values.FirstOrDefault(p => p == instance);
+            var window = (T)uiWindows.Values.FirstOrDefault(p => p == instance);
             if (window != null)
             {
-                Instance.EnqueTask(new UITask { TaskType = UITaskType.Remove, Window = window });
+                EnqueTask(new UITask { TaskType = UITaskType.Remove, Window = window });
             }
 
             return window;
         }
 
-        public static void RemoveAll<T>() where T : UIWindow
+        public void RemoveAll<T>() where T : UIWindow
         {
 
-            for (int i = Instance.uiWindows.Count - 1; i >= 0; i--)
+            for (int i = uiWindows.Count - 1; i >= 0; i--)
             {
-                var window = Instance?.uiWindows?.Values.ElementAtOrDefault(i);
+                var window = uiWindows?.Values.ElementAtOrDefault(i);
 
                 if (window?.GetType() == typeof(T))
                 {
-                    Instance.EnqueTask(new UITask { TaskType = UITaskType.Remove, Window = window });
+                    EnqueTask(new UITask { TaskType = UITaskType.Remove, Window = window });
                 }
             }
 
         }
 
-        public static void RemoveOthers<T>() where T : UIWindow
+        public void RemoveOthers<T>() where T : UIWindow
         {
 
-            for (int i = Instance.uiWindows.Count - 1; i >= 0; i--)
+            for (int i = uiWindows.Count - 1; i >= 0; i--)
             {
-                if (Instance.uiWindows.Values[i] != null && Instance.uiWindows.Values[i].GetType() != typeof(T))
+                if (uiWindows.Values[i] != null && uiWindows.Values[i].GetType() != typeof(T))
                 {
-                    var window = Instance.uiWindows.Values.ElementAt(i);
+                    var window = uiWindows.Values.ElementAt(i);
 
-                    Instance.EnqueTask(new UITask { TaskType = UITaskType.Remove, Window = window });
+                    EnqueTask(new UITask { TaskType = UITaskType.Remove, Window = window });
                 }
             }
 
