@@ -27,10 +27,10 @@ namespace Blade.MG.UI
 
             if (Content != null && Visible.Value != Visibility.Collapsed)
             {
-                Content.Measure(context, ref availableSize, ref parentMinMax);
+                //Content.Measure(context, ref availableSize, ref parentMinMax);
+                MergeChildDesiredSize(context, ref availableSize, Content, ref parentMinMax);
             }
-
-            MergeChildDesiredSize(context, ref availableSize, Content, ref parentMinMax);
+            
         }
 
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)

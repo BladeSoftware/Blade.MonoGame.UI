@@ -56,8 +56,8 @@ namespace Examples.UI.HelpPages
                 {
                     Content = new Button()
                     {
-                        Name = "TEST",
-                        Text = "This is a Button",
+                        Name = "TEST-BUTTON-1",
+                        Text = "This is a Button - 1",
                         //TextColor = Color.Black,
                         Width = "75%",
                         Height = "40%",
@@ -72,12 +72,13 @@ namespace Examples.UI.HelpPages
                 {
                     Content = new Button()
                     {
-                        Text = "This is a Button",
+                        Name = "TEST-BUTTON-2",
+                        Text = "This is a Button - 2",
                         //TextColor = Color.Black,
                         MaxWidth = "75%",
                         Height = "40%",
                         HorizontalAlignment = HorizontalAlignmentType.Center,
-                        VerticalAlignment = VerticalAlignmentType.Top
+                        VerticalAlignment = VerticalAlignmentType.Top,
                     }
                 },
                 1, 0);

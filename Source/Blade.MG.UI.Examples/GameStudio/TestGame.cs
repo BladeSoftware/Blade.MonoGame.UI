@@ -33,10 +33,22 @@ namespace Examples
         {
 
             // --- Set to Full Screen Mode
-            graphicsDeviceManager.IsFullScreen = true;
+            graphicsDeviceManager.IsFullScreen = false;
             graphicsDeviceManager.HardwareModeSwitch = false;
 
             IsFixedTimeStep = false;
+
+            if (graphicsDeviceManager.IsFullScreen)
+            {
+                graphicsDeviceManager.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+                graphicsDeviceManager.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            }
+            else
+            {
+                // --- Set a pre-defined window size
+                graphicsDeviceManager.PreferredBackBufferWidth = 1280;
+                graphicsDeviceManager.PreferredBackBufferHeight = 720;
+            }
 
             // --- Set a pre-defined window size
             //var viewport = graphicsDeviceManager.GraphicsDevice.Viewport.Bounds;

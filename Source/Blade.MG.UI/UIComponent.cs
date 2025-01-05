@@ -271,6 +271,10 @@ namespace Blade.MG.UI
         public virtual void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
             MeasureSelf(context, ref availableSize, ref parentMinMax);
+
+            // Measure the Internal Components
+            MergeChildDesiredSize(context, ref availableSize, InternalChildren, ref parentMinMax);
+
         }
 
         protected void MeasureSelf(UIContext context, ref Size availableSize, ref Layout parentMinMax)
@@ -314,6 +318,14 @@ namespace Blade.MG.UI
         public virtual void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
             ArrangeSelf(context, layoutBounds, parentLayoutBounds);
+
+
+            // Arrange the Internal Components
+            foreach (var child in internalChildren)
+            {
+                child?.Arrange(context, FinalContentRect, layoutBounds);
+            }
+
         }
 
         public void ArrangeSelf(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
@@ -481,15 +493,6 @@ namespace Blade.MG.UI
 
             //clippingRect = Rectangle.Intersect(parent.finalRect, finalRect);
 
-
-            //--------------
-
-            // Arrange the Internal Components
-            foreach (var child in internalChildren)
-            {
-                child?.Arrange(context, FinalContentRect, layoutBounds);
-            }
-
         }
 
 
@@ -512,6 +515,11 @@ namespace Blade.MG.UI
             {
                 DesiredSize = new Size(0, 0);
                 return;
+            }
+
+            foreach (var child in internalChildren)
+            {
+                MergeChildDesiredSizeInternal(context, ref availableSize, child, ref desiredWidth, ref desiredHeight, ref parentMinMax);
             }
 
             foreach (var child in children)

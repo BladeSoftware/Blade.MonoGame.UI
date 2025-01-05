@@ -33,20 +33,20 @@ namespace Blade.MG.UI.Controls
         }
 
 
-        public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
-        {
-            base.Measure(context, ref availableSize, ref parentMinMax);
-        }
+        //public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
+        //{
+        //    base.Measure(context, ref availableSize, ref parentMinMax);
+        //}
 
-        public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
-        {
-            base.Arrange(context, layoutBounds, parentLayoutBounds);
-        }
+        //public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
+        //{
+        //    base.Arrange(context, layoutBounds, parentLayoutBounds);
+        //}
 
-        public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
-        {
-            base.RenderControl(context, layoutBounds, parentTransform);
-        }
+        //public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
+        //{
+        //    base.RenderControl(context, layoutBounds, parentTransform);
+        //}
 
         // ---=== UI Events ===---
         // ...
