@@ -13,6 +13,13 @@ namespace Blade.MG.UI
         public Panel BottomPanel { get; private set; }
         public Panel CenterPanel { get; private set; }
 
+        /// <summary>
+        /// If true, left/right panels are inset between top/bottom panels.
+        /// If false, top/bottom panels are inset between left/right panels.
+        /// </summary>
+        public bool InsetLeftRightPanels { get; set; } = false;
+
+
         private SplitterBar leftSplitter;
         private SplitterBar rightSplitter;
         private SplitterBar topSplitter;
@@ -245,36 +252,48 @@ namespace Blade.MG.UI
             int th = TopHeight;
             int bh = BottomHeight;
 
-            // Left Panel
-            LeftPanel.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Top + th, lw, layoutBounds.Height - th - bh), layoutBounds);
+            if (InsetLeftRightPanels)
+            {
+                // Left/Right panels are inset between Top/Bottom panels (default)
+                LeftPanel.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Top + th, lw, layoutBounds.Height - th - bh), layoutBounds);
+                leftSplitter.Arrange(context, new Rectangle(layoutBounds.Left + lw, layoutBounds.Top + th, leftSplitter.Thickness, layoutBounds.Height - th - bh), layoutBounds);
 
-            // Left Splitter
-            leftSplitter.Arrange(context, new Rectangle(layoutBounds.Left + lw, layoutBounds.Top + th, leftSplitter.Thickness, layoutBounds.Height - th - bh), layoutBounds);
+                RightPanel.Arrange(context, new Rectangle(layoutBounds.Right - rw, layoutBounds.Top + th, rw, layoutBounds.Height - th - bh), layoutBounds);
+                rightSplitter.Arrange(context, new Rectangle(layoutBounds.Right - rw - rightSplitter.Thickness, layoutBounds.Top + th, rightSplitter.Thickness, layoutBounds.Height - th - bh), layoutBounds);
 
-            // Right Panel
-            RightPanel.Arrange(context, new Rectangle(layoutBounds.Right - rw, layoutBounds.Top + th, rw, layoutBounds.Height - th - bh), layoutBounds);
+                TopPanel.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Top, layoutBounds.Width, th), layoutBounds);
+                topSplitter.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Top + th, layoutBounds.Width, topSplitter.Thickness), layoutBounds);
 
-            // Right Splitter
-            rightSplitter.Arrange(context, new Rectangle(layoutBounds.Right - rw - rightSplitter.Thickness, layoutBounds.Top + th, rightSplitter.Thickness, layoutBounds.Height - th - bh), layoutBounds);
+                BottomPanel.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Bottom - bh, layoutBounds.Width, bh), layoutBounds);
+                bottomSplitter.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Bottom - bh - bottomSplitter.Thickness, layoutBounds.Width, bottomSplitter.Thickness), layoutBounds);
 
-            // Top Panel
-            TopPanel.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Top, layoutBounds.Width, th), layoutBounds);
+                CenterPanel.Arrange(context, new Rectangle(layoutBounds.Left + lw + leftSplitter.Thickness,
+                                                           layoutBounds.Top + th + topSplitter.Thickness,
+                                                           layoutBounds.Width - lw - rw - leftSplitter.Thickness - rightSplitter.Thickness,
+                                                           layoutBounds.Height - th - bh - topSplitter.Thickness - bottomSplitter.Thickness),
+                                    layoutBounds);
+            }
+            else
+            {
+                // Top/Bottom panels are inset between Left/Right panels
+                LeftPanel.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Top, lw, layoutBounds.Height), layoutBounds);
+                leftSplitter.Arrange(context, new Rectangle(layoutBounds.Left + lw, layoutBounds.Top, leftSplitter.Thickness, layoutBounds.Height), layoutBounds);
 
-            // Top Splitter
-            topSplitter.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Top + th, layoutBounds.Width, topSplitter.Thickness), layoutBounds);
+                RightPanel.Arrange(context, new Rectangle(layoutBounds.Right - rw, layoutBounds.Top, rw, layoutBounds.Height), layoutBounds);
+                rightSplitter.Arrange(context, new Rectangle(layoutBounds.Right - rw - rightSplitter.Thickness, layoutBounds.Top, rightSplitter.Thickness, layoutBounds.Height), layoutBounds);
 
-            // Bottom Panel
-            BottomPanel.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Bottom - bh, layoutBounds.Width, bh), layoutBounds);
+                TopPanel.Arrange(context, new Rectangle(layoutBounds.Left + lw + leftSplitter.Thickness, layoutBounds.Top, layoutBounds.Width - lw - rw - leftSplitter.Thickness - rightSplitter.Thickness, th), layoutBounds);
+                topSplitter.Arrange(context, new Rectangle(layoutBounds.Left + lw + leftSplitter.Thickness, layoutBounds.Top + th, layoutBounds.Width - lw - rw - leftSplitter.Thickness - rightSplitter.Thickness, topSplitter.Thickness), layoutBounds);
 
-            // Bottom Splitter
-            bottomSplitter.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Bottom - bh - bottomSplitter.Thickness, layoutBounds.Width, bottomSplitter.Thickness), layoutBounds);
+                BottomPanel.Arrange(context, new Rectangle(layoutBounds.Left + lw + leftSplitter.Thickness, layoutBounds.Bottom - bh, layoutBounds.Width - lw - rw - leftSplitter.Thickness - rightSplitter.Thickness, bh), layoutBounds);
+                bottomSplitter.Arrange(context, new Rectangle(layoutBounds.Left + lw + leftSplitter.Thickness, layoutBounds.Bottom - bh - bottomSplitter.Thickness, layoutBounds.Width - lw - rw - leftSplitter.Thickness - rightSplitter.Thickness, bottomSplitter.Thickness), layoutBounds);
 
-            // Center Panel
-            CenterPanel.Arrange(context, new Rectangle(layoutBounds.Left + lw + leftSplitter.Thickness,
-                                                       layoutBounds.Top + th + topSplitter.Thickness,
-                                                       layoutBounds.Width - lw - rw - leftSplitter.Thickness - rightSplitter.Thickness,
-                                                       layoutBounds.Height - th - bh - topSplitter.Thickness - bottomSplitter.Thickness),
-                                layoutBounds);
+                CenterPanel.Arrange(context, new Rectangle(layoutBounds.Left + lw + leftSplitter.Thickness,
+                                                           layoutBounds.Top + th + topSplitter.Thickness,
+                                                           layoutBounds.Width - lw - rw - leftSplitter.Thickness - rightSplitter.Thickness,
+                                                           layoutBounds.Height - th - bh - topSplitter.Thickness - bottomSplitter.Thickness),
+                                    layoutBounds);
+            }
         }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
