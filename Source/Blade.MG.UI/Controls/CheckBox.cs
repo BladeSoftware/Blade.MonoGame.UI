@@ -1,5 +1,6 @@
 ﻿using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
+using Blade.MG.UI.Models;
 
 namespace Blade.MG.UI.Controls
 {
@@ -15,6 +16,9 @@ namespace Blade.MG.UI.Controls
 
         public string CheckedIcon { get; set; }
         public string UncheckedIcon { get; set; }
+
+        public Action<bool?> OnValueChanged { get; set; }
+        public Func<bool?, Task> OnValueChangedAsync { get; set; }
 
 
         public CheckBox()
@@ -129,6 +133,12 @@ namespace Blade.MG.UI.Controls
                     false => true,
                     true => false
                 };
+            }
+
+            OnValueChanged?.Invoke(IsChecked);
+            if (OnValueChangedAsync != null)
+            {
+                return OnValueChangedAsync(IsChecked);
             }
 
             return Task.CompletedTask;

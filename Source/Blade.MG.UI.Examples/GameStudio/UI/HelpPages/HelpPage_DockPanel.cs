@@ -35,6 +35,54 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
                 });
 
 
+            var horizStack = new StackPanel()
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                VerticalAlignment = VerticalAlignmentType.Top,
+                Margin = new Thickness(20, 10, 20, 10),
+                HorizontalScrollBarVisible = false,
+                VerticalScrollBarVisible = false,
+            };
+
+            layoutPanel.AddChild(horizStack);
+
+
+            var dockPanel = new DockPanel();
+
+            horizStack.AddChild(new CheckBox()
+            {
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 20, 0),
+                Text = "Left Panel",
+                OnValueChanged = (value) => { dockPanel.IsLeftPanelVisible = value ?? false; }
+            });
+
+            horizStack.AddChild(new CheckBox()
+            {
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 20, 0),
+                Text = "Right Panel",
+                OnValueChanged = (value) => { dockPanel.IsRightPanelVisible = value ?? false; }
+            });
+
+            horizStack.AddChild(new CheckBox()
+            {
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 20, 0),
+                Text = "Top Panel",
+                OnValueChanged = (value) => { dockPanel.IsTopPanelVisible = value ?? false; }
+            });
+
+            horizStack.AddChild(new CheckBox()
+            {
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 20, 0),
+                Text = "Bottom Panel",
+                OnValueChanged = (value) => { dockPanel.IsBottomPanelVisible = value ?? false; }
+            });
+
+
             var border = new Border()
             {
                 BorderThickness = 2,
@@ -47,7 +95,6 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
 
             layoutPanel.AddChild(border);
 
-            var dockPanel = new DockPanel();
 
             dockPanel.LeftPanel.Background = Color.LightBlue;
             dockPanel.LeftPanel.AddChild(new Label { Text = "Left Panel" });
@@ -62,7 +109,7 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
             dockPanel.BottomPanel.AddChild(new Label { Text = "Bottom Panel" });
 
             dockPanel.CenterPanel.Background = Color.White;
-            dockPanel.CenterPanel.AddChild(new Label { Text = "Center Panel" });
+            dockPanel.CenterPanel.AddChild(new Label { Text = "Center Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
 
             //dockPanel.Background = Color.Red;
             dockPanel.Width = 800;

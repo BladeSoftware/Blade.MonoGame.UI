@@ -1,5 +1,6 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI
@@ -12,15 +13,128 @@ namespace Blade.MG.UI
         public Panel BottomPanel { get; private set; }
         public Panel CenterPanel { get; private set; }
 
-        private SplitterBar leftSplitter, rightSplitter, topSplitter, bottomSplitter;
-        private int leftWidth = 120, rightWidth = 120, topHeight = 80, bottomHeight = 80;
+        private SplitterBar leftSplitter;
+        private SplitterBar rightSplitter;
+        private SplitterBar topSplitter;
+        private SplitterBar bottomSplitter;
+
+        private int leftWidth = 120;
+        private int rightWidth = 120;
+        private int topHeight = 80;
+        private int bottomHeight = 80;
+
+        public int LeftWidth
+        {
+            get => IsLeftPanelVisible ? leftWidth : 0;
+            set => leftWidth = (int)Math.Clamp(value, 0, ActualWidth - RightWidth - MinLeftWidth);
+        }
+
+        public int RightWidth
+        {
+            get => IsRightPanelVisible ? rightWidth : 0;
+            set => rightWidth = (int)Math.Clamp(value, 0, ActualWidth - LeftWidth - MinRightWidth);
+        }
+
+        public int TopHeight
+        {
+            get => IsTopPanelVisible ? topHeight : 0;
+            set => topHeight = (int)Math.Clamp(value, 0, ActualHeight - BottomHeight - MinTopHeight);
+        }
+
+        public int BottomHeight
+        {
+            get => IsBottomPanelVisible ? bottomHeight : 0;
+            set => bottomHeight = (int)Math.Clamp(value, 0, ActualHeight - TopHeight - MinBottomHeight);
+        }
 
         private int splitterThickness = 8;
+        public int SplitterThickness
+        {
+            get => splitterThickness;
+            set
+            {
+                splitterThickness = Math.Clamp(value, 0, 100);
+
+                if (leftSplitter != null) leftSplitter.Thickness = value;
+                if (rightSplitter != null) rightSplitter.Thickness = value;
+                if (topSplitter != null) topSplitter.Thickness = value;
+                if (bottomSplitter != null) bottomSplitter.Thickness = value;
+            }
+        }
 
         public int MinLeftWidth { get; set; } = 40;
         public int MinRightWidth { get; set; } = 40;
         public int MinTopHeight { get; set; } = 40;
         public int MinBottomHeight { get; set; } = 40;
+
+        // Add properties to control visibility
+        public bool IsLeftPanelVisible
+        {
+            get => LeftPanel.Visible == Visibility.Visible;
+            set
+            {
+                LeftPanel.Visible.Value = value ? Visibility.Visible : Visibility.Collapsed;
+                leftSplitter.Visible.Value = value ? Visibility.Visible : Visibility.Collapsed;
+
+                // Recalculate to ensure it fits within bounds
+                if (value && ActualWidth > 0)
+                {
+                    leftWidth = (int)Math.Clamp(leftWidth, 0, Math.Max(MinLeftWidth, ActualWidth - RightWidth - MinLeftWidth));
+                    rightWidth = (int)Math.Clamp(rightWidth, 0, Math.Max(MinRightWidth, ActualWidth - LeftWidth - MinRightWidth));
+                }
+            }
+        }
+
+        public bool IsRightPanelVisible
+        {
+            get => RightPanel.Visible == Visibility.Visible;
+            set
+            {
+                RightPanel.Visible.Value = value ? Visibility.Visible : Visibility.Collapsed;
+                rightSplitter.Visible.Value = value ? Visibility.Visible : Visibility.Collapsed;
+
+                // Recalculate to ensure it fits within bounds
+                if (value && ActualWidth > 0)
+                {
+                    rightWidth = (int)Math.Clamp(rightWidth, 0, Math.Max(MinRightWidth, ActualWidth - LeftWidth - MinRightWidth));
+                    leftWidth = (int)Math.Clamp(leftWidth, 0, Math.Max(MinLeftWidth, ActualWidth - RightWidth - MinLeftWidth));
+                }
+            }
+        }
+
+        public bool IsTopPanelVisible
+        {
+            get => TopPanel.Visible == Visibility.Visible;
+            set
+            {
+                TopPanel.Visible.Value = value ? Visibility.Visible : Visibility.Collapsed;
+                topSplitter.Visible.Value = value ? Visibility.Visible : Visibility.Collapsed;
+
+                // Recalculate to ensure it fits within bounds
+                if (value && ActualHeight > 0)
+                {
+                    topHeight = (int)Math.Clamp(topHeight, 0, Math.Max(MinTopHeight, ActualHeight - BottomHeight - MinTopHeight));
+                    bottomHeight = (int)Math.Clamp(bottomHeight, 0, Math.Max(MinBottomHeight, ActualHeight - TopHeight - MinBottomHeight));
+                }
+            }
+        }
+
+        public bool IsBottomPanelVisible
+        {
+            get => BottomPanel.Visible == Visibility.Visible;
+            set
+            {
+                BottomPanel.Visible.Value = value ? Visibility.Visible : Visibility.Collapsed;
+                bottomSplitter.Visible.Value = value ? Visibility.Visible : Visibility.Collapsed;
+
+                // Recalculate to ensure it fits within bounds
+                if (value && ActualHeight > 0)
+                {
+                    bottomHeight = (int)Math.Clamp(bottomHeight, 0, Math.Max(MinBottomHeight, ActualHeight - TopHeight - MinBottomHeight));
+                    topHeight = (int)Math.Clamp(topHeight, 0, Math.Max(MinTopHeight, ActualHeight - BottomHeight - MinTopHeight));
+                }
+            }
+        }
 
 
         public DockPanel()
@@ -36,6 +150,11 @@ namespace Blade.MG.UI
             topSplitter = new SplitterBar(SplitterOrientation.Vertical) { Thickness = splitterThickness };
             bottomSplitter = new SplitterBar(SplitterOrientation.Vertical) { Thickness = splitterThickness };
 
+            IsLeftPanelVisible = true;
+            IsRightPanelVisible = true;
+            IsTopPanelVisible = true;
+            IsBottomPanelVisible = true;
+
         }
 
         protected override void InitTemplate()
@@ -49,52 +168,52 @@ namespace Blade.MG.UI
             leftSplitter.OnDragStart = (drag) =>
             {
                 // Store initial width
-                initialSize = leftWidth;
+                initialSize = LeftWidth;
             };
 
             leftSplitter.OnDragging = (drag) =>
             {
                 int newWidth = initialSize + drag.Delta.X;
-                leftWidth = (int)Math.Max(40, Math.Min(newWidth, ActualWidth - rightWidth - MinLeftWidth));
+                LeftWidth = (int)Math.Max(MinLeftWidth, Math.Min(newWidth, ActualWidth - RightWidth - MinLeftWidth));
                 StateHasChanged();
             };
 
             rightSplitter.OnDragStart = (drag) =>
             {
                 // Store initial width
-                initialSize = rightWidth;
+                initialSize = RightWidth;
             };
 
             rightSplitter.OnDragging = (drag) =>
             {
                 int newWidth = initialSize - drag.Delta.X;
-                rightWidth = (int)Math.Max(40, Math.Min(newWidth, ActualWidth - leftWidth - MinRightWidth));
+                RightWidth = (int)Math.Max(MinRightWidth, Math.Min(newWidth, ActualWidth - LeftWidth - MinRightWidth));
                 StateHasChanged();
             };
 
             topSplitter.OnDragStart = (drag) =>
             {
                 // Store initial height
-                initialSize = topHeight;
+                initialSize = TopHeight;
             };
 
             topSplitter.OnDragging = (drag) =>
             {
                 int newHeight = initialSize + drag.Delta.Y;
-                topHeight = (int)Math.Max(30, Math.Min(newHeight, ActualHeight - bottomHeight - MinTopHeight));
+                TopHeight = (int)Math.Max(MinTopHeight, Math.Min(newHeight, ActualHeight - BottomHeight - MinTopHeight));
                 StateHasChanged();
             };
 
             bottomSplitter.OnDragStart = (drag) =>
             {
                 // Store initial height
-                initialSize = bottomHeight;
+                initialSize = BottomHeight;
             };
 
             bottomSplitter.OnDragging = (drag) =>
             {
                 int newHeight = initialSize - drag.Delta.Y;
-                bottomHeight = (int)Math.Max(30, Math.Min(newHeight, ActualHeight - topHeight - MinBottomHeight));
+                BottomHeight = (int)Math.Max(MinBottomHeight, Math.Min(newHeight, ActualHeight - TopHeight - MinBottomHeight));
                 StateHasChanged();
             };
 
@@ -115,50 +234,16 @@ namespace Blade.MG.UI
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
             base.Measure(context, ref availableSize, ref parentMinMax);
-
-            //// Measure each docked panel and splitter
-            //Size leftSize = new Size(leftWidth, Math.Max(0, availableSize.Height - topHeight - bottomHeight));
-            //Size rightSize = new Size(rightWidth, Math.Max(0, availableSize.Height - topHeight - bottomHeight));
-            //Size topSize = new Size(Math.Max(0, availableSize.Width), topHeight);
-            //Size bottomSize = new Size(Math.Max(0, availableSize.Width), bottomHeight);
-
-            //Layout dummyLayout = parentMinMax;
-
-            //LeftPanel.Measure(context, ref leftSize, ref dummyLayout);
-            //RightPanel.Measure(context, ref rightSize, ref dummyLayout);
-            //TopPanel.Measure(context, ref topSize, ref dummyLayout);
-            //BottomPanel.Measure(context, ref bottomSize, ref dummyLayout);
-
-            //// Splitters
-            //Size splitterVSize = new Size(leftSplitter.Thickness, leftSize.Height);
-            //Size splitterHSize = new Size(topSize.Width, topSplitter.Thickness);
-
-            //leftSplitter.Measure(context, ref splitterVSize, ref dummyLayout);
-            //rightSplitter.Measure(context, ref splitterVSize, ref dummyLayout);
-            //topSplitter.Measure(context, ref splitterHSize, ref dummyLayout);
-            //bottomSplitter.Measure(context, ref splitterHSize, ref dummyLayout);
-
-            //// Center panel fills remaining space
-            //float centerWidth = Math.Max(0, availableSize.Width - leftWidth - rightWidth - leftSplitter.Thickness - rightSplitter.Thickness);
-            //float centerHeight = Math.Max(0, availableSize.Height - topHeight - bottomHeight - topSplitter.Thickness - bottomSplitter.Thickness);
-            //Size centerSize = new Size(centerWidth, centerHeight);
-
-            //CenterPanel.Measure(context, ref centerSize, ref dummyLayout);
-
-            //// Desired size is the available size (DockPanel stretches to fill parent)
-            //DesiredSize = new Size(availableSize.Width, availableSize.Height);
-
-            //ClampDesiredSize(availableSize, parentMinMax);
         }
 
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
             base.Arrange(context, layoutBounds, parentLayoutBounds);
 
-            int lw = leftWidth;
-            int rw = rightWidth;
-            int th = topHeight;
-            int bh = bottomHeight;
+            int lw = LeftWidth;
+            int rw = RightWidth;
+            int th = TopHeight;
+            int bh = BottomHeight;
 
             // Left Panel
             LeftPanel.Arrange(context, new Rectangle(layoutBounds.Left, layoutBounds.Top + th, lw, layoutBounds.Height - th - bh), layoutBounds);
