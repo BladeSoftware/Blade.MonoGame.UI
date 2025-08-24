@@ -318,14 +318,6 @@ namespace Blade.MG.UI
         public virtual void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
             ArrangeSelf(context, layoutBounds, parentLayoutBounds);
-
-
-            // Arrange the Internal Components
-            foreach (var child in internalChildren)
-            {
-                child?.Arrange(context, FinalContentRect, layoutBounds);
-            }
-
         }
 
         public void ArrangeSelf(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
@@ -492,6 +484,13 @@ namespace Blade.MG.UI
             FinalContentRect = new Rectangle(left, top, width, height);
 
             //clippingRect = Rectangle.Intersect(parent.finalRect, finalRect);
+
+
+            // Arrange the Internal Components
+            foreach (var child in internalChildren)
+            {
+                child?.Arrange(context, FinalContentRect, layoutBounds);
+            }
 
         }
 
@@ -900,7 +899,8 @@ namespace Blade.MG.UI
 
                     }
                     break;
-            };
+            }
+            ;
         }
 
         public Rectangle GetFinalRect() => FinalRect;

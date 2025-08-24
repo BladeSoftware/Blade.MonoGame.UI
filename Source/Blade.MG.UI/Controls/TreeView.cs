@@ -116,23 +116,25 @@ namespace Blade.MG.UI.Controls
                 return;
             }
 
+            bool skipNode = false;
             if (isRoot && !ShowRootNode)
             {
                 depth = -1;
-                goto SkipNode;
+                skipNode = true;
             }
 
-            var nodeTemplate = GetNodeTemplate(node, out bool isExistingNode);
+            if (!skipNode)
+            {
+                var nodeTemplate = GetNodeTemplate(node, out bool isExistingNode);
 
-            nodeTemplate.FrameID = frameID;
+                nodeTemplate.FrameID = frameID;
 
-            MeasureOneNode(context, ref availableSize, ref parentMinMax, ref collapsed, ref desiredWidth, ref desiredHeight, nodeTemplate);
+                MeasureOneNode(context, ref availableSize, ref parentMinMax, ref collapsed, ref desiredWidth, ref desiredHeight, nodeTemplate);
 
-            desiredHeight += (int)nodeTemplate.DesiredSize.Height;
+                desiredHeight += (int)nodeTemplate.DesiredSize.Height;
 
-            collapsed = collapsed || !node.IsExpanded;
-
-        SkipNode:
+                collapsed = collapsed || !node.IsExpanded;
+            }
 
             if (node.Children != null)
             {
@@ -186,6 +188,8 @@ namespace Blade.MG.UI.Controls
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
             //base.Arrange(context, layoutBounds);
+            base.ArrangeSelf(context, layoutBounds, parentLayoutBounds);
+
             //RemoveAllChildren();
 
             float desiredWidth = 0;

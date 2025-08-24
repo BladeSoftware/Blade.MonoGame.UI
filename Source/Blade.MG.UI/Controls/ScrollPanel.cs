@@ -221,7 +221,7 @@ namespace Blade.MG.UI.Controls
                     using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
 
                     // context.Renderer.FillRect(new Rectangle(finalRect.Left, finalRect.Bottom - HorizontalScrollBar.BarThickness, finalRect.Width, HorizontalScrollBar.BarThickness), HorizontalScrollBar.Background);
-                    context.Renderer.FillRect(spriteBatch, new Rectangle(FinalRect.Right - VerticalScrollBar.BarThickness, FinalRect.Bottom - HorizontalScrollBar.BarThickness, VerticalScrollBar.BarThickness, HorizontalScrollBar.BarThickness), HorizontalScrollBar.Background.Value);
+                    context.Renderer.FillRect(spriteBatch, new Rectangle(FinalRect.Right - VerticalScrollBar.BarThickness, FinalRect.Bottom - HorizontalScrollBar.BarThickness, VerticalScrollBar.BarThickness, HorizontalScrollBar.BarThickness), HorizontalScrollBar.Background.Value, Rectangle.Intersect(layoutBounds, FinalRect));
 
                 }
                 finally
@@ -231,8 +231,8 @@ namespace Blade.MG.UI.Controls
 
             }
 
-            if (HorizontalScrollBarVisible) HorizontalScrollBar.RenderControl(context, FinalRect, parentTransform);
-            if (VerticalScrollBarVisible) VerticalScrollBar.RenderControl(context, FinalRect, parentTransform);
+            if (HorizontalScrollBarVisible) HorizontalScrollBar.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
+            if (VerticalScrollBarVisible) VerticalScrollBar.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
         }
 
 

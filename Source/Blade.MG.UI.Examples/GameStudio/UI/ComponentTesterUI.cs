@@ -166,6 +166,22 @@ namespace Examples.UI
                 }
             });
 
+            stackPanel1.AddChild(new Button()
+            {
+                Text = "Property Editor",
+                Height = 50,
+                Margin = new Thickness(0, verticalMargin, 0, verticalMargin),
+                Padding = new Thickness(20, 0),
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                HorizontalTextAlignment = HorizontalAlignmentType.Center,
+                VerticalTextAlignment = VerticalAlignmentType.Center,
+                OnPrimaryClick = (sender, uiEvents) =>
+                {
+                    content.Content = new HelpPage_PropertyEditor();
+                }
+            });
+
+
             //var panel1 = new Panel
             //{
             //    HorizontalContentAlignment = HorizontalAlignmentType.Center,

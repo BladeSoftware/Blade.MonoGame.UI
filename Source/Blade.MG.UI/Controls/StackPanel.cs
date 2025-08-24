@@ -6,7 +6,7 @@ namespace Blade.MG.UI.Controls
     public class StackPanel : ScrollPanel
     {
         public Orientation Orientation = Orientation.Horizontal;
-
+        public bool StretchLastChild = false;
 
         public StackPanel()
         {
@@ -115,61 +115,56 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            //IsWidthVirtual = Orientation == Orientation.Horizontal;
-            //IsHeightVirtual = Orientation == Orientation.Vertical;
-
-            // if (string.Equals(Name, "QBC")) { }
-
-            // if (string.Equals(Name, "ProjectExplorerStackPanel")) { }
-
             // Arrange the layout for the inherited scroll panel and it's scrollbars
             //base.Arrange(context, layoutBounds, parentLayoutBounds);
+            //base.Arrange(context, layoutBounds, layoutBounds);
+
+            // Arrange the scroll panel first to setup the scrollbars and content area
+            base.ArrangeSelf(context, layoutBounds, layoutBounds);
+
+            if (StretchLastChild)
+            {
+                // Stretch the last child to fill any remaining space
+                if (Children != null && Children.Count > 0)
+                {
+                    var lastChild = Children[Children.Count - 1];
+                    if (Orientation == Orientation.Horizontal)
+                    {
+                        int usedWidth = 0;
+                        foreach (var child in Children)
+                        {
+                            if (child != lastChild && child.Visible.Value != Visibility.Collapsed)
+                            {
+                                usedWidth += (int)child.DesiredSize.Width + child.Margin.Value.Left + child.Margin.Value.Right;
+                            }
+                        }
+                        int remainingWidth = layoutBounds.Width - usedWidth - lastChild.Margin.Value.Left - lastChild.Margin.Value.Right;
+                        if (remainingWidth > 0)
+                        {
+                            lastChild.DesiredSize = new Size(remainingWidth, lastChild.DesiredSize.Height);
+                        }
+                    }
+                    else
+                    {
+                        int usedHeight = 0;
+                        foreach (var child in Children)
+                        {
+                            if (child != lastChild && child.Visible.Value != Visibility.Collapsed)
+                            {
+                                usedHeight += (int)child.DesiredSize.Height + child.Margin.Value.Top + child.Margin.Value.Bottom;
+                            }
+                        }
+                        int remainingHeight = layoutBounds.Height - usedHeight - lastChild.Margin.Value.Top - lastChild.Margin.Value.Bottom;
+                        if (remainingHeight > 0)
+                        {
+                            lastChild.DesiredSize = new Size(lastChild.DesiredSize.Width, remainingHeight);
+                        }
+                    }
+                }
+            }
+
+            // Arrange all the children within the content area of the scroll panel
             base.Arrange(context, layoutBounds, layoutBounds);
-
-
-            //// Measure the total child control layout width and height
-            //int width = 0;
-            //int height = 0;
-
-            ////foreach (var child in CollectionsMarshal.AsSpan(Children))
-            //foreach (var child in Children)
-            //{
-            //    if (Orientation == Orientation.Horizontal)
-            //    {
-            //        if (child.Visible.Value != Visibility.Collapsed)
-            //        {
-            //            int cw = child.FinalRect.Width + child.Margin.Value.Left + child.Margin.Value.Right;
-            //            width += cw;
-            //        }
-            //    }
-            //    else
-            //    {
-            //        if (child.Visible.Value != Visibility.Collapsed)
-            //        {
-            //            int ch = child.FinalRect.Height + child.Margin.Value.Top + child.Margin.Value.Bottom;
-            //            height += ch;
-            //        }
-            //    }
-
-            //}
-
-
-            //int verticalScrollBarWidth = VerticalScrollBarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;
-            //int horizontalScrollBarHeight = HorizontalScrollBarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0;
-
-            //// --=== Re-calculate the Scrollbar Max Values ===--
-            //if (Orientation == Orientation.Horizontal)
-            //{
-            //    int w = width - FinalContentRect.Width;
-            //    HorizontalScrollBar.MaxValue = w < -verticalScrollBarWidth ? w : (w + verticalScrollBarWidth);
-            //}
-
-            //if (Orientation == Orientation.Vertical)
-            //{
-            //    int h = height - FinalContentRect.Height;
-            //    VerticalScrollBar.MaxValue = h < -horizontalScrollBarHeight ? h : (h + horizontalScrollBarHeight);
-            //}
-
         }
 
         /// <summary>

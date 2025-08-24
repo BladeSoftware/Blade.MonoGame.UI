@@ -82,6 +82,14 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
                 OnValueChanged = (value) => { dockPanel.IsBottomPanelVisible = value ?? false; }
             });
 
+            layoutPanel.AddChild(new CheckBox()
+            {
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 20, 0),
+                Text = "Inset Lef/Right",
+                OnValueChanged = (value) => { dockPanel.InsetLeftRightPanels = value ?? false; }
+            });
+
 
             var border = new Border()
             {
@@ -97,23 +105,25 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
 
 
             dockPanel.LeftPanel.Background = Color.LightBlue;
-            dockPanel.LeftPanel.AddChild(new Label { Text = "Left Panel" });
+            dockPanel.LeftPanel.AddChild(new Label { Text = "Left Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
 
             dockPanel.RightPanel.Background = Color.LightGreen;
-            dockPanel.RightPanel.AddChild(new Label { Text = "Right Panel" });
+            dockPanel.RightPanel.AddChild(new Label { Text = "Right Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
 
             dockPanel.TopPanel.Background = Color.LightYellow;
-            dockPanel.TopPanel.AddChild(new Label { Text = "Top Panel" });
+            dockPanel.TopPanel.AddChild(new Label { Text = "Top Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
 
             dockPanel.BottomPanel.Background = Color.LightCoral;
-            dockPanel.BottomPanel.AddChild(new Label { Text = "Bottom Panel" });
+            dockPanel.BottomPanel.AddChild(new Label { Text = "Bottom Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
 
             dockPanel.CenterPanel.Background = Color.White;
             dockPanel.CenterPanel.AddChild(new Label { Text = "Center Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
 
             //dockPanel.Background = Color.Red;
-            dockPanel.Width = 800;
-            dockPanel.Height = 600;
+            dockPanel.Width = 800; // "100%";
+            dockPanel.Height = 400;
+            dockPanel.LeftWidth = "25%";
+            dockPanel.RightWidth = "25%";
 
             border.Content = dockPanel;
         }

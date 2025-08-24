@@ -1,9 +1,8 @@
 ﻿using Blade.MG.UI.Components;
-using Blade.MG.UI.Controls;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.Xna.Framework;
 
-namespace Blade.MG.UI
+namespace Blade.MG.UI.Controls
 {
     public class DockPanel : Container
     {
@@ -17,7 +16,7 @@ namespace Blade.MG.UI
         /// If true, left/right panels are inset between top/bottom panels.
         /// If false, top/bottom panels are inset between left/right panels.
         /// </summary>
-        public bool InsetLeftRightPanels { get; set; } = false;
+        public bool InsetLeftRightPanels { get; set; } = true;
 
 
         private SplitterBar leftSplitter;
@@ -25,33 +24,92 @@ namespace Blade.MG.UI
         private SplitterBar topSplitter;
         private SplitterBar bottomSplitter;
 
-        private int leftWidth = 120;
-        private int rightWidth = 120;
-        private int topHeight = 80;
-        private int bottomHeight = 80;
+        private Length leftWidth = 120;
+        private Length rightWidth = 120;
+        private Length topHeight = 80;
+        private Length bottomHeight = 80;
 
-        public int LeftWidth
+        //private int initalClampSize = 32000;
+
+        private int leftWidthPixels => (int)LeftWidth.ToPixelsWidth(this, FinalRect);
+        private int rightWidthPixels => (int)RightWidth.ToPixelsWidth(this, FinalRect);
+        private int topHeightPixels => (int)TopHeight.ToPixelsWidth(this, FinalRect);
+        private int bottomHeightPixels => (int)BottomHeight.ToPixelsWidth(this, FinalRect);
+
+
+        private bool firstRender = true;
+        private Length initialLeftWidth;
+        private Length initialRightWidth;
+        private Length initialTopHeight;
+        private Length initialBottomHeight;
+
+        public Length LeftWidth
         {
             get => IsLeftPanelVisible ? leftWidth : 0;
-            set => leftWidth = (int)Math.Clamp(value, 0, ActualWidth - RightWidth - MinLeftWidth);
+            set
+            {
+                if (ActualWidth <= 0)
+                {
+                    //leftWidth = Math.Clamp(value, 0, Math.Max(0, initalClampSize));
+                    leftWidth = value;
+                }
+                else
+                {
+                    //leftWidth = (int)Math.Clamp(value, 0, Math.Max(0, ActualWidth - RightWidth - MinLeftWidth));
+                    leftWidth = (int)Math.Clamp(value.ToPixelsWidth(this, FinalContentRect), 0, Math.Max(0, ActualWidth - rightWidthPixels - MinLeftWidth));
+                }
+            }
         }
 
-        public int RightWidth
+        public Length RightWidth
         {
             get => IsRightPanelVisible ? rightWidth : 0;
-            set => rightWidth = (int)Math.Clamp(value, 0, ActualWidth - LeftWidth - MinRightWidth);
+            set
+            {
+                if (ActualWidth <= 0)
+                {
+                    //rightWidth = Math.Clamp(value, 0, Math.Max(0, initalClampSize));
+                    rightWidth = value;
+                }
+                else
+                {
+                    rightWidth = (int)Math.Clamp(value.ToPixelsWidth(this, FinalContentRect), 0, Math.Max(0, ActualWidth - leftWidthPixels - MinRightWidth));
+                }
+            }
         }
 
-        public int TopHeight
+        public Length TopHeight
         {
             get => IsTopPanelVisible ? topHeight : 0;
-            set => topHeight = (int)Math.Clamp(value, 0, ActualHeight - BottomHeight - MinTopHeight);
+            set
+            {
+                if (ActualWidth <= 0)
+                {
+                    //topHeight = Math.Clamp(value, 0, Math.Max(0, initalClampSize));
+                    topHeight = value;
+                }
+                else
+                {
+                    topHeight = (int)Math.Clamp(value.ToPixelsWidth(this, FinalContentRect), 0, Math.Max(0, ActualHeight - bottomHeightPixels - MinTopHeight));
+                }
+            }
         }
 
-        public int BottomHeight
+        public Length BottomHeight
         {
             get => IsBottomPanelVisible ? bottomHeight : 0;
-            set => bottomHeight = (int)Math.Clamp(value, 0, ActualHeight - TopHeight - MinBottomHeight);
+            set
+            {
+                if (ActualWidth <= 0)
+                {
+                    //bottomHeight = Math.Clamp(value, 0, Math.Max(0, initalClampSize));
+                    bottomHeight = value;
+                }
+                else
+                {
+                    bottomHeight = (int)Math.Clamp(value.ToPixelsWidth(this, FinalContentRect), 0, Math.Max(0, ActualHeight - topHeightPixels - MinBottomHeight));
+                }
+            }
         }
 
         private int splitterThickness = 8;
@@ -86,8 +144,8 @@ namespace Blade.MG.UI
                 // Recalculate to ensure it fits within bounds
                 if (value && ActualWidth > 0)
                 {
-                    leftWidth = (int)Math.Clamp(leftWidth, 0, Math.Max(MinLeftWidth, ActualWidth - RightWidth - MinLeftWidth));
-                    rightWidth = (int)Math.Clamp(rightWidth, 0, Math.Max(MinRightWidth, ActualWidth - LeftWidth - MinRightWidth));
+                    leftWidth = (int)Math.Clamp(leftWidthPixels, 0, Math.Max(MinLeftWidth, ActualWidth - rightWidthPixels - MinLeftWidth));
+                    rightWidth = (int)Math.Clamp(rightWidthPixels, 0, Math.Max(MinRightWidth, ActualWidth - leftWidthPixels - MinRightWidth));
                 }
             }
         }
@@ -103,8 +161,8 @@ namespace Blade.MG.UI
                 // Recalculate to ensure it fits within bounds
                 if (value && ActualWidth > 0)
                 {
-                    rightWidth = (int)Math.Clamp(rightWidth, 0, Math.Max(MinRightWidth, ActualWidth - LeftWidth - MinRightWidth));
-                    leftWidth = (int)Math.Clamp(leftWidth, 0, Math.Max(MinLeftWidth, ActualWidth - RightWidth - MinLeftWidth));
+                    rightWidth = (int)Math.Clamp(rightWidthPixels, 0, Math.Max(MinRightWidth, ActualWidth - leftWidthPixels - MinRightWidth));
+                    leftWidth = (int)Math.Clamp(leftWidthPixels, 0, Math.Max(MinLeftWidth, ActualWidth - rightWidthPixels - MinLeftWidth));
                 }
             }
         }
@@ -120,8 +178,8 @@ namespace Blade.MG.UI
                 // Recalculate to ensure it fits within bounds
                 if (value && ActualHeight > 0)
                 {
-                    topHeight = (int)Math.Clamp(topHeight, 0, Math.Max(MinTopHeight, ActualHeight - BottomHeight - MinTopHeight));
-                    bottomHeight = (int)Math.Clamp(bottomHeight, 0, Math.Max(MinBottomHeight, ActualHeight - TopHeight - MinBottomHeight));
+                    topHeight = (int)Math.Clamp(topHeightPixels, 0, Math.Max(MinTopHeight, ActualHeight - bottomHeightPixels - MinTopHeight));
+                    bottomHeight = (int)Math.Clamp(bottomHeightPixels, 0, Math.Max(MinBottomHeight, ActualHeight - topHeightPixels - MinBottomHeight));
                 }
             }
         }
@@ -137,8 +195,8 @@ namespace Blade.MG.UI
                 // Recalculate to ensure it fits within bounds
                 if (value && ActualHeight > 0)
                 {
-                    bottomHeight = (int)Math.Clamp(bottomHeight, 0, Math.Max(MinBottomHeight, ActualHeight - TopHeight - MinBottomHeight));
-                    topHeight = (int)Math.Clamp(topHeight, 0, Math.Max(MinTopHeight, ActualHeight - BottomHeight - MinTopHeight));
+                    bottomHeight = (int)Math.Clamp(bottomHeightPixels, 0, Math.Max(MinBottomHeight, ActualHeight - topHeightPixels - MinBottomHeight));
+                    topHeight = (int)Math.Clamp(topHeightPixels, 0, Math.Max(MinTopHeight, ActualHeight - bottomHeightPixels - MinTopHeight));
                 }
             }
         }
@@ -170,57 +228,63 @@ namespace Blade.MG.UI
 
             IsHitTestVisible = true;
 
+            initialLeftWidth = leftWidth;
+            initialRightWidth = rightWidth;
+            initialTopHeight = topHeight;
+            initialBottomHeight = bottomHeight;
+
+
             int initialSize = 0;
 
             leftSplitter.OnDragStart = (drag) =>
             {
                 // Store initial width
-                initialSize = LeftWidth;
+                initialSize = leftWidthPixels;
             };
 
             leftSplitter.OnDragging = (drag) =>
             {
                 int newWidth = initialSize + drag.Delta.X;
-                LeftWidth = (int)Math.Max(MinLeftWidth, Math.Min(newWidth, ActualWidth - RightWidth - MinLeftWidth));
+                LeftWidth = (int)Math.Max(MinLeftWidth, Math.Min(newWidth, ActualWidth - rightWidthPixels - MinLeftWidth));
                 StateHasChanged();
             };
 
             rightSplitter.OnDragStart = (drag) =>
             {
                 // Store initial width
-                initialSize = RightWidth;
+                initialSize = rightWidthPixels;
             };
 
             rightSplitter.OnDragging = (drag) =>
             {
                 int newWidth = initialSize - drag.Delta.X;
-                RightWidth = (int)Math.Max(MinRightWidth, Math.Min(newWidth, ActualWidth - LeftWidth - MinRightWidth));
+                RightWidth = (int)Math.Max(MinRightWidth, Math.Min(newWidth, ActualWidth - leftWidthPixels - MinRightWidth));
                 StateHasChanged();
             };
 
             topSplitter.OnDragStart = (drag) =>
             {
                 // Store initial height
-                initialSize = TopHeight;
+                initialSize = topHeightPixels;
             };
 
             topSplitter.OnDragging = (drag) =>
             {
                 int newHeight = initialSize + drag.Delta.Y;
-                TopHeight = (int)Math.Max(MinTopHeight, Math.Min(newHeight, ActualHeight - BottomHeight - MinTopHeight));
+                TopHeight = (int)Math.Max(MinTopHeight, Math.Min(newHeight, ActualHeight - bottomHeightPixels - MinTopHeight));
                 StateHasChanged();
             };
 
             bottomSplitter.OnDragStart = (drag) =>
             {
                 // Store initial height
-                initialSize = BottomHeight;
+                initialSize = bottomHeightPixels;
             };
 
             bottomSplitter.OnDragging = (drag) =>
             {
                 int newHeight = initialSize - drag.Delta.Y;
-                BottomHeight = (int)Math.Max(MinBottomHeight, Math.Min(newHeight, ActualHeight - TopHeight - MinBottomHeight));
+                BottomHeight = (int)Math.Max(MinBottomHeight, Math.Min(newHeight, ActualHeight - topHeightPixels - MinBottomHeight));
                 StateHasChanged();
             };
 
@@ -245,12 +309,24 @@ namespace Blade.MG.UI
 
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            base.Arrange(context, layoutBounds, parentLayoutBounds);
+            //base.Arrange(context, layoutBounds, parentLayoutBounds);
+            ArrangeSelf(context, layoutBounds, parentLayoutBounds);
 
-            int lw = LeftWidth;
-            int rw = RightWidth;
-            int th = TopHeight;
-            int bh = BottomHeight;
+            if (firstRender)
+            {
+                firstRender = false;
+
+                LeftWidth = initialLeftWidth;
+                RightWidth = initialRightWidth;
+                TopHeight = initialTopHeight;
+                BottomHeight = initialBottomHeight;
+
+            }
+
+            int lw = leftWidthPixels;
+            int rw = rightWidthPixels;
+            int th = topHeightPixels;
+            int bh = bottomHeightPixels;
 
             if (InsetLeftRightPanels)
             {

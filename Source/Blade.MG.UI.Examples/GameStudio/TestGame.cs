@@ -44,6 +44,7 @@ namespace Examples
             // --- Set to Full Screen Mode
             graphicsDeviceManager.IsFullScreen = false;
             graphicsDeviceManager.HardwareModeSwitch = false;
+            Window.AllowUserResizing = true;
 
             IsFixedTimeStep = false;
 

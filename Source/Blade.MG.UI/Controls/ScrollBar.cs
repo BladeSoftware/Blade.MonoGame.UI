@@ -90,7 +90,7 @@ namespace Blade.MG.UI.Controls
                 return;
             }
 
-            base.RenderControl(context, FinalRect, parentTransform);
+            // base.RenderControl(context, FinalRect, parentTransform);
 
             float scrollFactor = 0f;
 
@@ -116,7 +116,11 @@ namespace Blade.MG.UI.Controls
             {
                 using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
 
-                Rectangle rect = FinalRect;
+                //Rectangle rect = FinalRect;
+                Rectangle rect = Rectangle.Intersect(layoutBounds, FinalRect);
+                context.Renderer.PushState();
+                context.Renderer.ClipToRect(rect);
+
                 if (Orientation == Orientation.Horizontal)
                 {
                     // Horizontal Scrollbar
@@ -125,13 +129,13 @@ namespace Blade.MG.UI.Controls
                     scrollGrabSize = rect.Width - MaxValue - 2 * endcapLength;
                     if (scrollGrabSize < minScrollGrabSize) scrollGrabSize = minScrollGrabSize;
 
-                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Left, rect.Bottom - BarThickness, fullWidth, BarThickness), Background.Value);
+                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Left, rect.Bottom - BarThickness, fullWidth, BarThickness), Background.Value, rect);
                     ////context.Renderer.FillRoundedRect(new Rectangle(rect.Left, rect.Bottom - BarThickness, rect.Width, BarThickness), 5f, Background);
 
 
                     // Draw Triangle endcaps
-                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Left, rect.Bottom - BarThickness, BarThickness, BarThickness), Background.Value);
-                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Right - BarThickness, rect.Bottom - BarThickness, BarThickness, BarThickness), Background.Value);
+                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Left, rect.Bottom - BarThickness, BarThickness, BarThickness), Background.Value, rect);
+                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Right - BarThickness, rect.Bottom - BarThickness, BarThickness, BarThickness), Background.Value, rect);
 
                     //var arrowTexture = Content.Load<Texture2D>("Images/arrow_right_20x20");
                     //var arrowTexture = context.Game.Content.Load<Texture2D>("Images/arrow_right_small");
@@ -155,12 +159,12 @@ namespace Blade.MG.UI.Controls
                     scrollGrabSize = rect.Height - MaxValue - 2 * endcapLength;
                     if (scrollGrabSize < minScrollGrabSize) scrollGrabSize = minScrollGrabSize;
 
-                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Right - BarThickness, rect.Top, BarThickness, fullHeight), Background.Value);
+                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Right - BarThickness, rect.Top, BarThickness, fullHeight), Background.Value, rect);
                     ////context.Renderer.FillRoundedRect(new Rectangle(rect.Right - BarThickness, rect.Top, BarThickness, rect.Height), 5f, Background);
 
                     // Draw Triangle endcaps
-                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Right - BarThickness, rect.Top, BarThickness, endcapLength), Background.Value);
-                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Right - BarThickness, rect.Bottom - endcapLength, BarThickness, endcapLength), Background.Value);
+                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Right - BarThickness, rect.Top, BarThickness, endcapLength), Background.Value, rect);
+                    context.Renderer.FillRect(spriteBatch, new Rectangle(rect.Right - BarThickness, rect.Bottom - endcapLength, BarThickness, endcapLength), Background.Value, rect);
 
                     //var arrowTexture = context.Content.Load<Texture2D>("Images/arrow_up_20x20");
                     //var arrowTexture = context.Game.Content.Load<Texture2D>("Images/arrow_up_small");
@@ -180,9 +184,12 @@ namespace Blade.MG.UI.Controls
                     }
                 }
 
+
             }
             finally
             {
+                context.Renderer.PopState();
+
                 context.Renderer.EndBatch();
 
             }
