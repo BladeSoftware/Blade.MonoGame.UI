@@ -1,6 +1,7 @@
 ﻿using Blade.MG.UI;
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
+using Blade.MG.UI.Examples.GameStudio.UI.HelpPages;
 using Examples.UI.HelpPages;
 using Microsoft.Xna.Framework;
 
@@ -147,6 +148,21 @@ namespace Examples.UI
                 OnPrimaryClick = (sender, uiEvents) =>
                 {
                     content.Content = null;
+                }
+            });
+
+            stackPanel1.AddChild(new Button()
+            {
+                Text = "Dock Panel",
+                Height = 50,
+                Margin = new Thickness(0, verticalMargin, 0, verticalMargin),
+                Padding = new Thickness(20, 0),
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                HorizontalTextAlignment = HorizontalAlignmentType.Center,
+                VerticalTextAlignment = VerticalAlignmentType.Center,
+                OnPrimaryClick = (sender, uiEvents) =>
+                {
+                    content.Content = new HelpPage_DockPanel();
                 }
             });
 

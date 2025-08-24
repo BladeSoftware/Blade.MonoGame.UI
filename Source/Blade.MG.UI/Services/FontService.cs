@@ -67,5 +67,10 @@ namespace Blade.MG.UI.Services
             return GetFont(fontName, size.Value) ?? GetFont(DefaultFontName, size.Value);
         }
 
+        public static SpriteFontBase GetDefaultFont(float? size = null)
+        {
+            return GetFont(DefaultFontName, size ?? DefaultFontSize);
+        }
+
     }
 }

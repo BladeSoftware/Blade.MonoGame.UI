@@ -15,6 +15,7 @@ namespace Examples
     public class TestGame : Game
     {
         private GraphicsDeviceManager graphicsDeviceManager;
+        private UIManager uiManager;
 
 
         public TestGame()
@@ -23,6 +24,7 @@ namespace Examples
             Content.RootDirectory = "Content";
         }
 
+  
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
         /// This is where it can query for any required services and load any non-graphic
@@ -31,6 +33,13 @@ namespace Examples
         /// </summary>
         protected override void Initialize()
         {
+            // Register Standard Services
+            //Services.AddService(typeof(SceneManager), sceneManager = new SceneManager(this));
+            Services.AddService(typeof(UIManager), uiManager = new UIManager(this));
+
+            // Inject the services we need
+            //uiManager = this.Services.GetService<UIManager>();
+
 
             // --- Set to Full Screen Mode
             graphicsDeviceManager.IsFullScreen = false;
@@ -77,10 +86,8 @@ namespace Examples
 
             graphicsDeviceManager.ApplyChanges();
 
-            UIManager.Instance.Initialize(this);
-
-
             base.Initialize();
+
         }
 
         /// <summary>
@@ -93,10 +100,9 @@ namespace Examples
 
             //var layerUI = Layers.Add(LayerType.UI);
             //layerUI.AddEntity(UIManager.Instance);
-
-            UIManager.Clear();
-            UIManager.Add(new ComponentTesterUI());
-            UIManager.Add(new FpsUI());
+            uiManager.Clear();
+            uiManager.Add(new ComponentTesterUI());
+            uiManager.Add(new FpsUI());
 
         }
 
@@ -132,7 +138,7 @@ namespace Examples
             try
             {
                 InputManager.Update();
-                await UIManager.Instance.UpdateAsync(gameTime).ConfigureAwait(true);
+                await uiManager.UpdateAsync(gameTime).ConfigureAwait(true);
             }
             catch (Exception ex)
             {
@@ -166,7 +172,7 @@ namespace Examples
             //    sb.End();
             //}
 
-            UIManager.Instance.Draw(null, gameTime);
+            uiManager.Draw(null, gameTime);
         }
 
     }
