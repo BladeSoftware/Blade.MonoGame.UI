@@ -1,39 +1,48 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
+using System.Diagnostics;
 
 namespace Blade.MG.UI.Controls
 {
     public class ScrollPanel : Panel
     {
-        private bool horizontalScrollBarVisible = true;
-        public bool HorizontalScrollBarVisible
+        private bool isHorizontallyScrollable = false;
+        private bool isVerticallyScrollable = false;
+
+        public bool IsHorizontalScrollbarVisible => (horizontalScrollBarVisible == ScrollBarVisibility.Always) || (horizontalScrollBarVisible == ScrollBarVisibility.Auto && isHorizontallyScrollable);
+        public bool IsVerticalScrollbarVisible => (verticalScrollBarVisible == ScrollBarVisibility.Always) || (verticalScrollBarVisible == ScrollBarVisibility.Auto && isVerticallyScrollable);
+
+
+        private ScrollBarVisibility horizontalScrollBarVisible = ScrollBarVisibility.Auto;
+        public ScrollBarVisibility HorizontalScrollBarVisible
         {
             get => horizontalScrollBarVisible;
             set
             {
-                if (value != horizontalScrollBarVisible && VerticalScrollBar != null)
-                {
-                    VerticalScrollBar.Margin.Value = new Thickness(0, 0, 0, value ? 20 : 0);
-                }
-
                 horizontalScrollBarVisible = value;
+
+                if (VerticalScrollBar != null)
+                {
+                    VerticalScrollBar.Margin.Value = new Thickness(0, 0, 0, IsHorizontalScrollbarVisible ? 20 : 0);
+                }
             }
         }
 
-        private bool verticalScrollBarVisible = true;
+        private ScrollBarVisibility verticalScrollBarVisible = ScrollBarVisibility.Auto;
 
-        public bool VerticalScrollBarVisible
+        public ScrollBarVisibility VerticalScrollBarVisible
         {
             get => verticalScrollBarVisible;
             set
             {
-                if (value != verticalScrollBarVisible && HorizontalScrollBar != null)
+                verticalScrollBarVisible = value;
+
+                if (HorizontalScrollBar != null)
                 {
-                    HorizontalScrollBar.Margin.Value = new Thickness(0, 0, value ? 20 : 0, 0);
+                    HorizontalScrollBar.Margin.Value = new Thickness(0, 0, IsVerticalScrollbarVisible ? 20 : 0, 0);
                 }
 
-                verticalScrollBarVisible = value;
             }
         }
 
@@ -55,8 +64,8 @@ namespace Blade.MG.UI.Controls
         {
             base.InitTemplate();
 
-            HorizontalScrollBar = new ScrollBar { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, verticalScrollBarVisible ? 20 : 0, 0), Visible = BoolToVisibility(HorizontalScrollBarVisible), VerticalAlignment = VerticalAlignmentType.Bottom };
-            VerticalScrollBar = new ScrollBar { Orientation = Orientation.Vertical, Margin = new Thickness(0, 0, 0, horizontalScrollBarVisible ? 20 : 0), Visible = BoolToVisibility(VerticalScrollBarVisible), HorizontalAlignment = HorizontalAlignmentType.Right };
+            HorizontalScrollBar = new ScrollBar { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, IsVerticalScrollbarVisible ? 20 : 0, 0), Visible = BoolToVisibility(IsHorizontalScrollbarVisible), VerticalAlignment = VerticalAlignmentType.Bottom };
+            VerticalScrollBar = new ScrollBar { Orientation = Orientation.Vertical, Margin = new Thickness(0, 0, 0, IsHorizontalScrollbarVisible ? 20 : 0), Visible = BoolToVisibility(IsVerticalScrollbarVisible), HorizontalAlignment = HorizontalAlignmentType.Right };
 
             //HorizontalScrollBar.Parent = this;
             //VerticalScrollBar.Parent = this;
@@ -81,8 +90,8 @@ namespace Blade.MG.UI.Controls
 
             var contentAvailableSize = availableSize with
             {
-                Width = availableSize.Width - (VerticalScrollBarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0),
-                Height = availableSize.Height - (HorizontalScrollBarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)
+                Width = availableSize.Width - (IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0),
+                Height = availableSize.Height - (IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)
             };
 
             base.Measure(context, ref contentAvailableSize, ref parentMinMax);
@@ -91,12 +100,12 @@ namespace Blade.MG.UI.Controls
             HorizontalScrollBar.Measure(context, ref availableSize, ref parentMinMax);
             VerticalScrollBar.Measure(context, ref availableSize, ref parentMinMax);
 
-            if (HorizontalScrollBarVisible)
+            if (IsHorizontalScrollbarVisible)
             {
                 AddChildDesiredSizeHorizontal(context, ref availableSize, ref parentMinMax, VerticalScrollBar);
             }
 
-            if (VerticalScrollBarVisible)
+            if (IsVerticalScrollbarVisible)
             {
                 AddChildDesiredSizeVertical(context, ref availableSize, ref parentMinMax, HorizontalScrollBar);
             }
@@ -111,13 +120,13 @@ namespace Blade.MG.UI.Controls
         {
             base.Arrange(context, layoutBounds, parentLayoutBounds);
 
-            int verticalScrollBarWidth = VerticalScrollBarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;
-            int horizontalScrollBarHeight = HorizontalScrollBarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0;
+            int verticalScrollBarWidth = IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;
+            int horizontalScrollBarHeight = IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0;
 
             // base.Arrange(context, layoutBounds, contentLayoutBounds);
 
-            if (HorizontalScrollBarVisible) HorizontalScrollBar.Arrange(context, FinalRect, parentLayoutBounds);
-            if (VerticalScrollBarVisible) VerticalScrollBar.Arrange(context, FinalRect, parentLayoutBounds);
+            if (IsHorizontalScrollbarVisible) HorizontalScrollBar.Arrange(context, FinalRect, parentLayoutBounds);
+            if (IsVerticalScrollbarVisible) VerticalScrollBar.Arrange(context, FinalRect, parentLayoutBounds);
 
 
             int contentWidth = FinalRect.Width - Padding.Value.Horizontal - verticalScrollBarWidth;
@@ -172,6 +181,12 @@ namespace Blade.MG.UI.Controls
             HorizontalScrollBar.MaxValue = w;
             VerticalScrollBar.MaxValue = h;
 
+            isHorizontallyScrollable = (FinalContentRect.Width < childBounds.Width);
+            isVerticallyScrollable = (FinalContentRect.Height < childBounds.Height);
+
+            HorizontalScrollBar.Visible = BoolToVisibility(IsHorizontalScrollbarVisible);
+            VerticalScrollBar.Visible = BoolToVisibility(IsVerticalScrollbarVisible);
+
             //HorizontalScrollBar.MaxValue = w < -verticalScrollBarWidth ? w : (w + verticalScrollBarWidth);
             //VerticalScrollBar.MaxValue = h < -horizontalScrollBarHeight ? h : (h + horizontalScrollBarHeight);
 
@@ -196,8 +211,8 @@ namespace Blade.MG.UI.Controls
                 X = rect.X - HorizontalScrollBar.ScrollOfset,
                 Y = rect.Y - VerticalScrollBar.ScrollOfset,
 
-                Width = rect.Width - (VerticalScrollBarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0),
-                Height = rect.Height - (HorizontalScrollBarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)
+                Width = rect.Width - (IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0),
+                Height = rect.Height - (IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)
             };
 
             return rect;
@@ -214,7 +229,7 @@ namespace Blade.MG.UI.Controls
 
             // If both scrollbars are visible, then there's a small rectangle gap where they meet.
             // This fills that gap
-            if (HorizontalScrollBarVisible && VerticalScrollBarVisible)
+            if (IsHorizontalScrollbarVisible && IsVerticalScrollbarVisible)
             {
                 try
                 {
@@ -231,8 +246,8 @@ namespace Blade.MG.UI.Controls
 
             }
 
-            if (HorizontalScrollBarVisible) HorizontalScrollBar.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
-            if (VerticalScrollBarVisible) VerticalScrollBar.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
+            if (IsHorizontalScrollbarVisible) HorizontalScrollBar.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
+            if (IsVerticalScrollbarVisible) VerticalScrollBar.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
         }
 
 
@@ -240,10 +255,10 @@ namespace Blade.MG.UI.Controls
 
         public override async Task HandleMouseDownEventAsync(UIWindow uiWindow, UIMouseDownEvent uiEvent)
         {
-            if (HorizontalScrollBarVisible && HorizontalScrollBar != null) await HorizontalScrollBar.HandleMouseDownEventAsync(uiWindow, uiEvent);
+            if (IsHorizontalScrollbarVisible && HorizontalScrollBar != null) await HorizontalScrollBar.HandleMouseDownEventAsync(uiWindow, uiEvent);
             if (uiEvent.Handled) return;
 
-            if (VerticalScrollBarVisible && VerticalScrollBar != null) await VerticalScrollBar.HandleMouseDownEventAsync(uiWindow, uiEvent);
+            if (IsVerticalScrollbarVisible && VerticalScrollBar != null) await VerticalScrollBar.HandleMouseDownEventAsync(uiWindow, uiEvent);
             if (uiEvent.Handled) return;
 
             await base.HandleMouseDownEventAsync(uiWindow, uiEvent);
@@ -251,10 +266,10 @@ namespace Blade.MG.UI.Controls
 
         public override async Task HandleMouseUpEventAsync(UIWindow uiWindow, UIMouseUpEvent uiEvent)
         {
-            if (HorizontalScrollBarVisible && HorizontalScrollBar != null) await HorizontalScrollBar.HandleMouseUpEventAsync(uiWindow, uiEvent);
+            if (IsHorizontalScrollbarVisible && HorizontalScrollBar != null) await HorizontalScrollBar.HandleMouseUpEventAsync(uiWindow, uiEvent);
             if (uiEvent.Handled) return;
 
-            if (VerticalScrollBarVisible && VerticalScrollBar != null) await VerticalScrollBar.HandleMouseUpEventAsync(uiWindow, uiEvent);
+            if (IsVerticalScrollbarVisible && VerticalScrollBar != null) await VerticalScrollBar.HandleMouseUpEventAsync(uiWindow, uiEvent);
             if (uiEvent.Handled) return;
 
             await base.HandleMouseUpEventAsync(uiWindow, uiEvent);
@@ -262,10 +277,10 @@ namespace Blade.MG.UI.Controls
 
         public override async Task HandleMouseMoveEventAsync(UIWindow uiWindow, UIMouseMoveEvent uiEvent)
         {
-            if (HorizontalScrollBarVisible && HorizontalScrollBar != null) await HorizontalScrollBar.HandleMouseMoveEventAsync(uiWindow, uiEvent);
+            if (IsHorizontalScrollbarVisible && HorizontalScrollBar != null) await HorizontalScrollBar.HandleMouseMoveEventAsync(uiWindow, uiEvent);
             if (uiEvent.Handled) return;
 
-            if (VerticalScrollBarVisible && VerticalScrollBar != null) await VerticalScrollBar.HandleMouseMoveEventAsync(uiWindow, uiEvent);
+            if (IsVerticalScrollbarVisible && VerticalScrollBar != null) await VerticalScrollBar.HandleMouseMoveEventAsync(uiWindow, uiEvent);
             if (uiEvent.Handled) return;
 
             await base.HandleMouseMoveEventAsync(uiWindow, uiEvent);
@@ -277,8 +292,8 @@ namespace Blade.MG.UI.Controls
 
             if (uiEvent.Handled) return;
 
-            if (HorizontalScrollBarVisible && HorizontalScrollBar != null) await HorizontalScrollBar.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent);
-            if (VerticalScrollBarVisible && VerticalScrollBar != null) await VerticalScrollBar.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent);
+            if (IsHorizontalScrollbarVisible && HorizontalScrollBar != null) await HorizontalScrollBar.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent);
+            if (IsVerticalScrollbarVisible && VerticalScrollBar != null) await VerticalScrollBar.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent);
 
         }
 

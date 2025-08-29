@@ -95,8 +95,8 @@ namespace Blade.MG.UI.Controls.Templates
             var container = new StackPanel()
             {
                 IsHitTestVisible = false,
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden
             };
 
             container.AddChild(label1);

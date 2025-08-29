@@ -58,8 +58,8 @@ namespace Blade.MG.UI.Controls
                 IsHitTestVisible = true,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Top,
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false,
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
                 Padding = new Thickness(2, 2, 2, 2),
                 Background = Theme.SecondaryContainer, //Color.DimGray,
                 Parent = this

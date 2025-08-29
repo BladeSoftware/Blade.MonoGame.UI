@@ -51,8 +51,8 @@ namespace Blade.MG.UI.Controls
             var optionsStackPanel = new StackPanel()
             {
                 Orientation = Orientation.Vertical,
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false,
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
             };
 
             border1.Content = optionsStackPanel;

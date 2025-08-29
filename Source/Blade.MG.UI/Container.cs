@@ -46,6 +46,7 @@ namespace Blade.MG.UI
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
             base.Arrange(context, layoutBounds, parentLayoutBounds);
+            
 
             if (Children != null)
             {

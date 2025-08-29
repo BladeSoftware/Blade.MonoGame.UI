@@ -135,8 +135,8 @@ namespace Blade.MG.UI.Controls.Dialogs
             var stackButtons = new StackPanel()
             {
                 Orientation = Orientation.Horizontal,
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false,
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
                 HorizontalAlignment = HorizontalAlignmentType.Center,
                 Height = 50,
                 Margin = new Thickness(0, 20),

@@ -130,8 +130,8 @@ namespace Blade.MG.UI.Controls.Templates
             //stackPanel.AddChild(label0, this);
             stackPanel.AddChild(button1, this);
             stackPanel.AddChild(label1, this);
-            stackPanel.HorizontalScrollBarVisible = false;
-            stackPanel.VerticalScrollBarVisible = false;
+            stackPanel.HorizontalScrollBarVisible = ScrollBarVisibility.Hidden;
+            stackPanel.VerticalScrollBarVisible = ScrollBarVisibility.Hidden;
             stackPanel.Margin = new Thickness(4, 0);
             stackPanel.Padding = new Thickness(0, 4);
 

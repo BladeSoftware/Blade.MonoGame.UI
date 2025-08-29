@@ -41,8 +41,8 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Top,
                 Margin = new Thickness(20, 10, 20, 10),
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false,
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
             };
 
             layoutPanel.AddChild(horizStack);

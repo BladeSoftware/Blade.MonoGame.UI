@@ -11,15 +11,11 @@ namespace Blade.MG.UI.Controls
 {
     public class PropertyEditor : Panel
     {
+        private StackPanel stackPanel;
         private Grid grid;
         private TextBox searchBox;
         private object targetObject;
         private List<PropertyInfo> properties = new();
-
-        public PropertyEditor()
-        {
-            InitTemplate();
-        }
 
         public object TargetObject
         {
@@ -27,36 +23,102 @@ namespace Blade.MG.UI.Controls
             set
             {
                 targetObject = value;
-                RefreshProperties();
+
+                if (grid != null)
+                {
+                    RefreshProperties();
+                }
             }
+        }
+
+        public PropertyEditor()
+        {
         }
 
         protected override void InitTemplate()
         {
             base.InitTemplate();
 
-            grid = new Grid
+
+            RemoveAllChildren();
+
+
+            stackPanel = new StackPanel
             {
-                Margin = new Thickness(4),
-                Padding = new Thickness(4)
+                Name = "PropertyEditor_StackPanel",
+                Orientation = Orientation.Vertical,
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                VerticalAlignment = VerticalAlignmentType.Stretch,
+
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
+
+
+                //Width = 600,+-*
+                Height = 400,
+                StretchLastChild = false
             };
 
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Auto) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1f) });
+            AddChild(stackPanel);
 
             // Search box at the top
             searchBox = new TextBox
             {
                 HelperText = "Search properties...",
-                Margin = new Thickness(0, 0, 0, 8)
+                Margin = new Thickness(0, 0, 0, 8),
+                Height = 30,
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
             };
             //searchBox.OnTextChanged = (sender, args) => RefreshProperties(); // TODO: OnTextChanged event
+            //stackPanel.AddChild(searchBox);
 
-            AddChild(searchBox);
-            AddChild(grid);
 
-            // Initial refresh
-            RefreshProperties();
+            grid = new Grid
+            {
+                Name = "PropertyEditor_Grid",
+                Margin = new Thickness(4),
+                Padding = new Thickness(4),
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                VerticalAlignment = VerticalAlignmentType.Top,
+
+                Background = Color.HotPink,
+
+            };
+
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1f) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1f) });
+
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
+
+            stackPanel.AddChild(grid);
+
+            grid.AddChild(new Panel
+            {
+                Background = Color.AliceBlue,
+            }, 0, 0);
+
+            grid.AddChild(new Panel
+            {
+                Background = Color.CornflowerBlue,
+            }, 1, 0);
+
+            grid.AddChild(new Panel
+            {
+                Background = Color.YellowGreen,
+            }, 0, 1);
+
+            grid.AddChild(new Panel
+            {
+                Background = Color.Orange,
+            }, 1, 1);
+
+
+
+            //// Initial refresh
+            //RefreshProperties();
+
         }
 
         private void RefreshProperties()
@@ -65,7 +127,9 @@ namespace Blade.MG.UI.Controls
             grid.RemoveAllChildren();
 
             if (targetObject == null)
+            {
                 return;
+            }
 
             string filter = searchBox.Text?.Value.ToLowerInvariant() ?? "";
 

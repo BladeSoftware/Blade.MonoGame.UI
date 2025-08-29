@@ -18,7 +18,6 @@ namespace Examples.UI.HelpPages
 
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-
             };
 
 
@@ -37,8 +36,8 @@ namespace Examples.UI.HelpPages
                 Name = "A2",
                 Orientation = Orientation.Vertical,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = true,
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Auto,
 
                 Background = Color.PeachPuff,
                 Height = "350px",
@@ -67,8 +66,8 @@ namespace Examples.UI.HelpPages
                 Orientation = Orientation.Horizontal,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
                 HorizontalAlignment = HorizontalAlignmentType.Left,
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false,
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
 
                 //Background = Color.Blue,
                 Height = "200px",
@@ -112,8 +111,8 @@ namespace Examples.UI.HelpPages
 
                 Orientation = Orientation.Horizontal,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false,
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
 
                 Background = Color.PeachPuff,
                 Height = "200px",
@@ -172,8 +171,8 @@ namespace Examples.UI.HelpPages
 
                 Orientation = Orientation.Horizontal,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false,
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
 
                 Background = Color.PeachPuff,
                 Height = "200px",
@@ -251,8 +250,8 @@ namespace Examples.UI.HelpPages
 
                 Orientation = Orientation.Horizontal,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false,
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
 
                 Background = Color.PeachPuff,
                 Height = "200px",

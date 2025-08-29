@@ -48,7 +48,6 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
 
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-
             };
 
 
@@ -62,17 +61,17 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
                 });
 
 
-            var horizStack = new StackPanel()
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignmentType.Stretch,
-                VerticalAlignment = VerticalAlignmentType.Top,
-                Margin = new Thickness(20, 10, 20, 10),
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false,
-            };
+            //var horizStack = new StackPanel()
+            //{
+            //    Orientation = Orientation.Horizontal,
+            //    HorizontalAlignment = HorizontalAlignmentType.Stretch,
+            //    VerticalAlignment = VerticalAlignmentType.Top,
+            //    Margin = new Thickness(20, 10, 20, 10),
+            //    HorizontalScrollBarVisible = false,
+            //    VerticalScrollBarVisible = false,
+            //};
 
-            layoutPanel.AddChild(horizStack);
+            //layoutPanel.AddChild(horizStack);
 
 
 
@@ -84,17 +83,22 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
                 Padding = new Thickness(10),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
+                //Background = Color.HotPink,
+                //Width = 800,
+                Height = 600
             };
 
             layoutPanel.AddChild(border);
 
+
+
             var propertyEditor = new PropertyEditor
             {
                 TargetObject = exampleObject,
-                Margin = new Thickness(20)
+                Margin = new Thickness(20),
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                VerticalAlignment = VerticalAlignmentType.Stretch,
             };
-
-
 
             border.Content = propertyEditor;
         }
