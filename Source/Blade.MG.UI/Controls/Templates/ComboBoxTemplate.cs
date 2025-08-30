@@ -3,6 +3,7 @@ using Blade.MG.UI.Controls;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using System;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace Blade.MG.UI.Controls.Templates
@@ -26,7 +27,7 @@ namespace Blade.MG.UI.Controls.Templates
             RootBorder = new Border()
             {
                 BorderColor = Color.Black,
-                BorderThickness = 1,
+                BorderThickness = 5,
                 CornerRadius = 0,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Top,
@@ -41,7 +42,6 @@ namespace Blade.MG.UI.Controls.Templates
                 Background = Color.Transparent,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Top,
-                Height = "30px",
                 Padding = new Thickness(6, 4, 6, 4)
             };
 
@@ -66,10 +66,10 @@ namespace Blade.MG.UI.Controls.Templates
             // ListView for dropdown items
             ListView = new ListView()
             {
-                ItemTemplateType = typeof(Blade.MG.UI.Controls.Templates.ListViewItemTemplate),
+                ItemTemplateType = typeof(ListViewItemTemplate),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
-                VerticalAlignment = VerticalAlignmentType.Top,
-                // MinHeight maybe
+                VerticalAlignment = VerticalAlignmentType.Stretch,
+                Height = combo.DropDownHeight,
             };
 
             // Compose header: if editable use EditBox else DisplayLabel.
@@ -78,7 +78,8 @@ namespace Blade.MG.UI.Controls.Templates
             {
                 Orientation = Orientation.Vertical,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
-                VerticalAlignment = VerticalAlignmentType.Top
+                VerticalAlignment = VerticalAlignmentType.Top,
+                //Height = 120, // Temporary fixed height for testing
             };
 
             HeaderBorder.Content = combo.IsEditable.Value ? (UIComponent)EditBox : (UIComponent)DisplayLabel;
@@ -87,10 +88,36 @@ namespace Blade.MG.UI.Controls.Templates
 
             RootBorder.Content = container;
             Content = RootBorder;
+            Content.Padding = new Thickness(4);
         }
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
+            var combo = ParentAs<ComboBox>();
+
+            // Set the ListView data context to the filtered items (or full list if not editable)
+            if (ListView != null)
+            {
+                var items = combo.GetFilteredItems();
+                ListView.DataContext = items.Cast<object>().ToList();
+            }
+
+            // Control visibility of the list based on IsDropDownOpen
+            if (ListView != null)
+            {
+                ListView.Visible.Value = combo.IsDropDownOpen ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (ListView.Visible.Value == Visibility.Visible)
+            {
+                // Limit available height for the list when open (e.g. max 200px)
+                //var maxListHeight = 200;
+                //if (availableSize.Height > maxListHeight)
+                //{
+                //    availableSize.Height = maxListHeight;
+                //}
+            }
+
             base.Measure(context, ref availableSize, ref parentMinMax);
 
             // nothing special - children will measure themselves
@@ -120,19 +147,6 @@ namespace Blade.MG.UI.Controls.Templates
             {
                 DisplayLabel.Text = combo.Text;
             }
-
-            // Set the ListView data context to the filtered items (or full list if not editable)
-            if (ListView != null)
-            {
-                var items = combo.GetFilteredItems();
-                ListView.DataContext = items.Cast<object>().ToList();
-            }
-
-            // Control visibility of the list based on IsDropDownOpen
-            if (ListView != null)
-            {
-                ListView.Visible.Value = combo.IsDropDownOpen ? Visibility.Visible : Visibility.Collapsed;
-            }
         }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
@@ -157,6 +171,8 @@ namespace Blade.MG.UI.Controls.Templates
             }
 
             base.RenderControl(context, layoutBounds, parentTransform);
+            //base.RenderControl(context, FinalContentRect, parentTransform);
+            //base.RenderControl(context, ParentWindow.FinalContentRect, parentTransform);
         }
 
         // Forward hover/focus/selection state changes if needed (optional)

@@ -588,6 +588,7 @@ namespace Blade.MG.UI
             float desiredWidth = DesiredSize.Width;
             float desiredHeight = DesiredSize.Height;
 
+
             child.Measure(context, ref availableSize, ref parentMinMax);
 
 

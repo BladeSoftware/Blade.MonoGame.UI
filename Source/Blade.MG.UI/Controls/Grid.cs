@@ -278,8 +278,8 @@ namespace Blade.MG.UI.Controls
             }
 
             // Protect available size for star allocation
-            float availableWidthForStars = float.IsNaN(availableSize.Width) ? 0f : availableSize.Width;
-            float availableHeightForStars = float.IsNaN(availableSize.Height) ? 0f : availableSize.Height;
+            float availableWidthForStars = float.IsNaN(availableSize.Width) ? 0f : availableSize.Width - Padding.Value.Horizontal;
+            float availableHeightForStars = float.IsNaN(availableSize.Height) ? 0f : availableSize.Height - Padding.Value.Vertical;
 
             columnMeasurer.MeasureStar(Math.Max(availableWidthForStars - usedWidth, 0));
             rowMeasurer.MeasureStar(Math.Max(availableHeightForStars - usedHeight, 0));
@@ -338,8 +338,8 @@ namespace Blade.MG.UI.Controls
             //ActualWidth = layoutBounds.Width;
             //ActualHeight = layoutBounds.Height;
 
-            //// Set layout bounds for children to the grid's final content rectangle
-            //layoutBounds = FinalContentRect;
+            // Set layout bounds for children to the grid's final content rectangle
+            layoutBounds = FinalContentRect;
 
             //-------------------   
 
@@ -398,11 +398,17 @@ namespace Blade.MG.UI.Controls
 
             FinalRect = new Rectangle((int)Left, (int)Top, (int)ActualWidth, (int)ActualHeight);
 
-            // Add padding to get content area
-            int left = FinalRect.Left + Padding.Value.Left;
-            int top = FinalRect.Top + Padding.Value.Top;
-            int right = FinalRect.Right - Padding.Value.Right;
-            int bottom = FinalRect.Bottom - Padding.Value.Bottom;
+            // TODO: Removed padding as it appears to be doubling up - needs investigation
+            // Add padding to get content area 
+            //int left = FinalRect.Left + Padding.Value.Left;
+            //int top = FinalRect.Top + Padding.Value.Top;
+            //int right = FinalRect.Right - Padding.Value.Right;
+            //int bottom = FinalRect.Bottom - Padding.Value.Bottom;
+
+            int left = FinalRect.Left;
+            int top = FinalRect.Top;
+            int right = FinalRect.Right;
+            int bottom = FinalRect.Bottom;
 
             if (left < FinalRect.Left) left = FinalRect.Left;
             if (left > FinalRect.Right) left = FinalRect.Right;
@@ -440,9 +446,9 @@ namespace Blade.MG.UI.Controls
             int row = GetRow(child);
             int rowSpan = GetRowSpan(child);
 
-            float x = Padding.Value.Left;
+            float x = 0; // Padding.Value.Left;
             float w = 0;
-            float y = Padding.Value.Top;
+            float y = 0; // Padding.Value.Top;
             float h = 0;
 
             for (int i = 0; i < col; i++)

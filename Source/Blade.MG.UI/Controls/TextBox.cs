@@ -88,7 +88,8 @@ namespace Blade.MG.UI.Controls
         {
             base.InitTemplate();
 
-            Content = new TextBoxTemplate();
+            //Content = new TextBoxTemplate();
+            Content = Activator.CreateInstance(TemplateType) as UIComponent;
         }
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)

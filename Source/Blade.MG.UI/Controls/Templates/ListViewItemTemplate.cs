@@ -94,7 +94,9 @@ namespace Blade.MG.UI.Controls.Templates
             //await base.HandleStateChangeAsync();
 
             // Normal State
-            ((Grid)Content).Background = Color.Transparent;
+            ((UIComponentDrawable)Content).Background = Color.Transparent;
+            //((Grid)Content).Background = Color.Transparent;
+
             //label1.TextColor.Value = textColorNormal;
             //border1.Background.Value = backgroundNormal;
             //border1.BorderThickness.Value = borderThicknessNormal;
@@ -119,7 +121,8 @@ namespace Blade.MG.UI.Controls.Templates
                 //border1.BorderThickness.Value = borderThicknessHover;
                 //border1.BorderColor.Value = borderColorHover;
 
-                ((Grid)Content).Background = Color.LightBlue;
+                ((UIComponentDrawable)Content).Background = Color.LightBlue;
+                //((Grid)Content).Background = Color.LightBlue;
             }
         }
 

@@ -28,6 +28,8 @@ namespace Blade.MG.UI.Controls
         // Currently selected item
         public Binding<object> SelectedItem { get; set; } = new Binding<object>(null);
 
+        public Binding<Length> DropDownHeight { get; set; } = new Binding<Length>("250px");
+
         // Text shown in the editable textbox (or selected item text when not editable)
         private Binding<string> text = new Binding<string>("");
         public Binding<string> Text
@@ -57,7 +59,8 @@ namespace Blade.MG.UI.Controls
             base.InitTemplate();
 
             // Ensure template is created
-            Content = new ComboBoxTemplate();
+            //Content = new ComboBoxTemplate();
+            Content = Activator.CreateInstance(TemplateType) as UIComponent;
 
             // Initialize text from selected item if present
             if (SelectedItem.Value != null)
@@ -238,5 +241,11 @@ namespace Blade.MG.UI.Controls
                 uiEvent.Handled = true;
             }
         }
+
+        override public void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
+        {
+            base.RenderControl(context, layoutBounds, parentTransform);
+        }
     }
+
 }
