@@ -76,6 +76,10 @@ namespace Blade.MG.UI.Controls
             AddInternalChild(HorizontalScrollBar);
             AddInternalChild(VerticalScrollBar);
 
+
+            IsWidthVirtual = true;
+            IsHeightVirtual = true;
+
         }
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
@@ -85,8 +89,8 @@ namespace Blade.MG.UI.Controls
             //if (string.Equals(Name, "ProjectExplorerTree")) { }
             //if (string.Equals(Name, "AnimationCellStackPanel")) { }
 
-            IsWidthVirtual = true;
-            IsHeightVirtual = true;
+            //IsWidthVirtual = true;
+            //IsHeightVirtual = true;
 
             var contentAvailableSize = availableSize with
             {
