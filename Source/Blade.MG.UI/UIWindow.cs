@@ -54,6 +54,9 @@ namespace Blade.MG.UI
         [XmlIgnore]
         public ResourceDict ResourceDict { get; set; } = new ResourceDict(); // Component Resource Dictionary
 
+        public int DefaultZIndex { get; set; } = 100;
+        public int ZIndex { get; internal set; }
+
 
         public virtual void Initialize(Game game)
         {

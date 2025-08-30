@@ -26,5 +26,15 @@
             return node;
         }
 
+        public void AddRange<T>(IEnumerable<T> nodes) where T : TreeNode
+        {
+            if (Children == null)
+            {
+                Children = new List<ITreeNode>();
+            }
+
+            Children.AddRange(nodes);
+        }
+
     }
 }

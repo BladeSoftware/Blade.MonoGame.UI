@@ -14,6 +14,7 @@ namespace Blade.MG.UI.Common
         public override void Initialize(Game game)
         {
             IsHitTestVisible = true;
+            DefaultZIndex = 9990; // Ensure we're on top of everything else
 
             base.Initialize(game);
         }
@@ -62,7 +63,7 @@ namespace Blade.MG.UI.Common
                 {
                     var windowNode = new TreeNode
                     {
-                        Text = window.Name ?? window.GetType().Name,
+                        Text = (window.Name ?? window.GetType().Name) + $" : Priority = {window.ZIndex}",
                         IsExpanded = true
                     };
                     BuildControlTree(window, windowNode);

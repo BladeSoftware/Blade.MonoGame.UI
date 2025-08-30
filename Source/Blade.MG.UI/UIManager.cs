@@ -21,12 +21,14 @@ namespace Blade.MG.UI
     {
         public UITaskType TaskType;
         public UIWindow Window;
-        public int Priority;
+        public int ZIndex;
     }
 
     public partial class UIManager : GameEntity //,UIManagerBase
     {
         public static bool RenderControlHitBoxes = false;
+
+        public static readonly int MaxZIndex = 9999;
 
         //private static SemaphoreSlim uiSemaphore = new SemaphoreSlim(1);
 
@@ -41,6 +43,7 @@ namespace Blade.MG.UI
         // List of Windows sorted by Priority
         // Windows with a higher priority are on top of windows with lower priorities
         private SortedList<string, UIWindow> uiWindows { get; set; } = new();
+        public IReadOnlyList<UIWindow> GetWindows => uiWindows.Values.AsReadOnly();
 
         private JoinableTaskFactory joinableTaskFactory;
 
@@ -65,7 +68,11 @@ namespace Blade.MG.UI
             {
                 if (task.TaskType == UITaskType.Add)
                 {
-                    uiWindows.Add(ToPriority(Math.Clamp(task.Priority, 0, 9999)), task.Window);
+                    var priority = ToPriority(Math.Clamp(task.ZIndex, 0, MaxZIndex));
+
+                    task.Window.ZIndex = task.ZIndex;
+
+                    uiWindows.Add(priority, task.Window);
                 }
                 else if (task.TaskType == UITaskType.Remove)
                 {
@@ -100,24 +107,27 @@ namespace Blade.MG.UI
             EnqueTask(new UITask { TaskType = UITaskType.Clear, Window = null });
         }
 
-        public void Add(UIWindow ui, int priority = 100)
-        {
-            EnqueTask(new UITask { TaskType = UITaskType.Add, Window = ui, Priority = priority });
 
+        private void AddWindow(UIWindow ui, int? priority = null)
+        {
             ui.Initialize(game);
             ui.LoadContent();
 
+            var task = new UITask { TaskType = UITaskType.Add, Window = ui, ZIndex = priority ?? ui.DefaultZIndex };
+            EnqueTask(task);
+        }
+
+        public void Add(UIWindow ui, int? priority = null)
+        {
+            AddWindow(ui, priority);
             HandleTaskQueue();
         }
 
-        public void Add(ICollection<UIWindow> ui, int priority = 100)
+        public void Add(ICollection<UIWindow> ui, int? priority = null)
         {
             foreach (var uiWindow in ui)
             {
-                EnqueTask(new UITask { TaskType = UITaskType.Add, Window = uiWindow, Priority = priority });
-
-                uiWindow.Initialize(game);
-                uiWindow.LoadContent();
+                AddWindow(uiWindow, priority);
             }
 
             HandleTaskQueue();

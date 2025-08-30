@@ -21,6 +21,7 @@ namespace Blade.MG.UI.Common
 
         public override void Initialize(Game game)
         {
+            DefaultZIndex = 9991; // Ensure we're on top of everything else
             base.Initialize(game);
         }
 
