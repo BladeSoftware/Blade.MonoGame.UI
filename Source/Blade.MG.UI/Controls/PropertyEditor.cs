@@ -55,7 +55,7 @@ namespace Blade.MG.UI.Controls
 
 
                 //Width = 600,+-*
-                Height = 400,
+                //Height = 400,
                 StretchLastChild = false
             };
 
@@ -70,7 +70,7 @@ namespace Blade.MG.UI.Controls
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
             };
             //searchBox.OnTextChanged = (sender, args) => RefreshProperties(); // TODO: OnTextChanged event
-            //stackPanel.AddChild(searchBox);
+            stackPanel.AddChild(searchBox);
 
 
             grid = new Grid
@@ -81,43 +81,45 @@ namespace Blade.MG.UI.Controls
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Top,
 
-                Background = Color.HotPink,
+                //Background = Color.HotPink,
 
             };
 
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1f) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1f) });
 
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
+            // Testing
+            //grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
+            //grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
+            //grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
 
             stackPanel.AddChild(grid);
 
-            grid.AddChild(new Panel
-            {
-                Background = Color.AliceBlue,
-            }, 0, 0);
 
-            grid.AddChild(new Panel
-            {
-                Background = Color.CornflowerBlue,
-            }, 1, 0);
+            //grid.AddChild(new Panel
+            //{
+            //    Background = Color.AliceBlue,
+            //}, 0, 0);
 
-            grid.AddChild(new Panel
-            {
-                Background = Color.YellowGreen,
-            }, 0, 1);
+            //grid.AddChild(new Panel
+            //{
+            //    Background = Color.CornflowerBlue,
+            //}, 1, 0);
 
-            grid.AddChild(new Panel
-            {
-                Background = Color.Orange,
-            }, 1, 1);
+            //grid.AddChild(new Panel
+            //{
+            //    Background = Color.YellowGreen,
+            //}, 0, 1);
+
+            //grid.AddChild(new Panel
+            //{
+            //    Background = Color.Orange,
+            //}, 1, 1);
 
 
 
-            //// Initial refresh
-            //RefreshProperties();
+            // Initial refresh
+            RefreshProperties();
 
         }
 
@@ -176,19 +178,19 @@ namespace Blade.MG.UI.Controls
                 //};
                 return checkBox;
             }
-            //else if (type.IsEnum)
-            //{
-            //    var comboBox = new ComboBox
-            //    {
-            //        Items = Enum.GetNames(type).ToList(),
-            //        SelectedItem = value?.ToString()
-            //    };
-            //    comboBox.OnSelectionChanged = (sender, args) =>
-            //    {
-            //        prop.SetValue(obj, Enum.Parse(type, comboBox.SelectedItem));
-            //    };
-            //    return comboBox;
-            //}
+            else if (type.IsEnum)
+            {
+                var comboBox = new ComboBox
+                {
+                    ItemsSource = Enum.GetNames(type).ToList(),
+                    SelectedItem = value?.ToString()
+                };
+                //comboBox.OnSelectionChanged = (sender, args) =>
+                //{
+                //    prop.SetValue(obj, Enum.Parse(type, comboBox.SelectedItem));
+                //};
+                return comboBox;
+            }
             else if (type == typeof(int) || type == typeof(float) || type == typeof(double) || type == typeof(string))
             {
                 var textBox = new TextBox
@@ -197,7 +199,7 @@ namespace Blade.MG.UI.Controls
                 };
                 //textBox.OnTextChanged = (sender, args) =>
                 //{
-                //    object newValue = Convert.ChangeType(textBox.Text, type);
+                //    object newValue = Convert.ChangeType(textBox.Text, type); 
                 //    prop.SetValue(obj, newValue);
                 //};
                 return textBox;

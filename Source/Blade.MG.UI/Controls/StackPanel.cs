@@ -20,47 +20,41 @@ namespace Blade.MG.UI.Controls
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
-            //if (string.Equals(Name, "QBC")) { }
-            //IsWidthVirtual = Orientation == Orientation.Horizontal;
-            //IsHeightVirtual = Orientation == Orientation.Vertical;
-
-            //foreach (var child in Children)
-            //{
-            //    // Don't allow Center Alignment types in a stack panel
-            //    if (Orientation == Orientation.Horizontal && child.HorizontalAlignment.Value == HorizontalAlignmentType.Center)
-            //    {
-            //        child.HorizontalAlignment = HorizontalAlignmentType.Left;
-            //    }
-
-            //    if (Orientation == Orientation.Vertical && child.VerticalAlignment.Value == VerticalAlignmentType.Center)
-            //    {
-            //        child.VerticalAlignment = VerticalAlignmentType.Top;
-            //    }
-            //}
+            if (string.Equals(Name, "PropertyEditor_StackPanel")) { }
 
             base.Measure(context, ref availableSize, ref parentMinMax);
 
-            // -- Measure Children ---
+            if (Orientation == Orientation.Horizontal)
+            {
+                IsWidthVirtual = true;
+                IsHeightVirtual = false;
+            }
+            else
+            {
+                IsWidthVirtual = false;
+                IsHeightVirtual = true;
+            }
+
             float desiredWidth = 0f;
             float desiredHeight = 0f;
 
-            var desiredsize = DesiredSize;
-
-            //foreach (var child in CollectionsMarshal.AsSpan(Children))
             foreach (var child in Children)
             {
-                // Don't allow Center Alignment types in a stack panel
-                //if (Orientation == Orientation.Horizontal && child.HorizontalAlignment.Value == HorizontalAlignmentType.Center)
-                //{
-                //    child.HorizontalAlignment = HorizontalAlignmentType.Left;
-                //}
+                // Constrain child measurement based on orientation
+                Size childAvailableSize = availableSize;
+                if (Orientation == Orientation.Vertical)
+                {
+                    // Constrain width, allow height to be unconstrained
+                    childAvailableSize = new Size(availableSize.Width, float.NaN);
+                }
+                else // Horizontal
+                {
+                    // Constrain height, allow width to be unconstrained
+                    childAvailableSize = new Size(float.NaN, availableSize.Height);
+                }
 
-                //if (Orientation == Orientation.Vertical && child.VerticalAlignment.Value == VerticalAlignmentType.Center)
-                //{
-                //    child.VerticalAlignment = VerticalAlignmentType.Top;
-                //}
-
-                //child.Measure(context, ref availableSize, ref parentMinMax);
+                Layout childParentMinMax = parentMinMax;
+                child.Measure(context, ref childAvailableSize, ref childParentMinMax);
 
                 if (Orientation == Orientation.Horizontal)
                 {
@@ -68,40 +62,33 @@ namespace Blade.MG.UI.Controls
                     {
                         desiredWidth += child.DesiredSize.Width;
                     }
-
                     if (!float.IsNaN(child.DesiredSize.Height) && child.DesiredSize.Height > desiredHeight)
                     {
                         desiredHeight = child.DesiredSize.Height;
                     }
-
                 }
-                else
+                else // Vertical
                 {
                     if (!float.IsNaN(child.DesiredSize.Height))
                     {
                         desiredHeight += child.DesiredSize.Height;
                     }
-
                     if (!float.IsNaN(child.DesiredSize.Width) && child.DesiredSize.Width > desiredWidth)
                     {
                         desiredWidth = child.DesiredSize.Width;
                     }
                 }
-
             }
 
-
-            // -- Merge Child Desired Size with this Stack Panel's Desired Size --
+            // Merge Child Desired Size with this Stack Panel's Desired Size
             if (!float.IsNaN(desiredWidth) && !float.IsNaN(DesiredSize.Width) && desiredWidth < DesiredSize.Width)
             {
                 desiredWidth = DesiredSize.Width;
             }
-
             if (!float.IsNaN(desiredHeight) && !float.IsNaN(DesiredSize.Height) && desiredHeight < DesiredSize.Height)
             {
                 desiredHeight = DesiredSize.Height;
             }
-
 
             DesiredSize = new Size(desiredWidth, desiredHeight);
 
@@ -115,6 +102,8 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
+            if (string.Equals(Name, "PropertyEditor_StackPanel")) { }
+
             // Arrange the layout for the inherited scroll panel and it's scrollbars
             //base.Arrange(context, layoutBounds, parentLayoutBounds);
             //base.Arrange(context, layoutBounds, layoutBounds);
@@ -128,6 +117,7 @@ namespace Blade.MG.UI.Controls
                 if (Children != null && Children.Count > 0)
                 {
                     var lastChild = Children[Children.Count - 1];
+
                     if (Orientation == Orientation.Horizontal)
                     {
                         int usedWidth = 0;

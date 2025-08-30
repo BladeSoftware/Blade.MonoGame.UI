@@ -1,4 +1,7 @@
-﻿using Blade.MG.Input;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Blade.MG.Input;
 using Blade.MG.Primitives;
 using Blade.MG.UI.Components;
 using Microsoft.Xna.Framework;
@@ -205,6 +208,11 @@ namespace Blade.MG.UI.Controls
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
+            if (string.Equals(Name, "PropertyEditor_Grid")) { }
+            if (string.Equals(Name, "Example_Grid")) { }
+
+            MeasureSelf(context, ref availableSize, ref parentMinMax);
+
             parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
 
             // If we have no Rows or Columns then add a default Row/Column set to Auto
@@ -269,13 +277,18 @@ namespace Blade.MG.UI.Controls
                 }
             }
 
-            columnMeasurer.MeasureStar(Math.Max(availableSize.Width - usedWidth, 0));
-            rowMeasurer.MeasureStar(Math.Max(availableSize.Height - usedHeight, 0));
+            // Protect available size for star allocation
+            float availableWidthForStars = float.IsNaN(availableSize.Width) ? 0f : availableSize.Width;
+            float availableHeightForStars = float.IsNaN(availableSize.Height) ? 0f : availableSize.Height;
+
+            columnMeasurer.MeasureStar(Math.Max(availableWidthForStars - usedWidth, 0));
+            rowMeasurer.MeasureStar(Math.Max(availableHeightForStars - usedHeight, 0));
 
             // Return result
             float gridWidth = columnMeasurer.Measurables.Sum(p => float.IsNaN(p.CalcSize) ? 0f : p.CalcSize);
             float gridHeight = rowMeasurer.Measurables.Sum(p => float.IsNaN(p.CalcSize) ? 0f : p.CalcSize);
 
+            // If align stretch and grid hasn't determined a size, use available size.
             if (float.IsNaN(gridWidth) && HorizontalAlignment.Value == HorizontalAlignmentType.Stretch)
             {
                 gridWidth = availableSize.Width;
@@ -286,6 +299,16 @@ namespace Blade.MG.UI.Controls
                 gridHeight = availableSize.Height;
             }
 
+            // CLAMP: Prevent growing beyond available space when parent constrained the width/height.
+            if (!float.IsNaN(availableSize.Width) && HorizontalAlignment.Value == HorizontalAlignmentType.Stretch)
+            {
+                gridWidth = Math.Min(gridWidth, availableSize.Width);
+            }
+
+            if (!float.IsNaN(availableSize.Height) && VerticalAlignment.Value == VerticalAlignmentType.Stretch)
+            {
+                gridHeight = Math.Min(gridHeight, availableSize.Height);
+            }
 
             // Cater for Margins and Padding
             gridWidth += Margin.Value.Left + Margin.Value.Right;
@@ -306,12 +329,25 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
+            if (string.Equals(Name, "PropertyEditor_Grid")) { }
+            if (string.Equals(Name, "Example_Grid")) { }
+
             ArrangeSelf(context, layoutBounds, parentLayoutBounds);
 
-            // Set layout bounds for children to the grid's final content rectangle
-            layoutBounds = FinalContentRect;
+            // Use the parent's provided layout bounds for sizing
+            //ActualWidth = layoutBounds.Width;
+            //ActualHeight = layoutBounds.Height;
+
+            //// Set layout bounds for children to the grid's final content rectangle
+            //layoutBounds = FinalContentRect;
 
             //-------------------   
+
+            if (columnMeasurer == null || rowMeasurer == null)
+            {
+                return;
+            }
+
 
             var columns = ColumnDefinitions.Count > 0 ? ColumnDefinitions : defaultColumns;
             var rows = RowDefinitions.Count > 0 ? RowDefinitions : defaultRows;
@@ -337,8 +373,8 @@ namespace Blade.MG.UI.Controls
 
 
             // Divide the remaining space between the Star columns/rows
-            columnMeasurer.MeasureStar(Math.Max(layoutBounds.Width - usedWidth, 0));
-            rowMeasurer.MeasureStar(Math.Max(layoutBounds.Height - usedHeight, 0));
+            columnMeasurer.MeasureStar(Math.Max(ActualWidth - usedWidth, 0));
+            rowMeasurer.MeasureStar(Math.Max(ActualHeight - usedHeight, 0));
 
 
             for (int i = 0; i < columns.Count; i++)
@@ -450,8 +486,12 @@ namespace Blade.MG.UI.Controls
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
-
             base.RenderControl(context, layoutBounds, parentTransform);
+
+            if (columnMeasurer == null || rowMeasurer == null)
+            {
+                return;
+            }
 
             // For debugging, highlight the row and column under the mouse
             if (UIManager.RenderControlHitBoxes)
@@ -520,8 +560,7 @@ namespace Blade.MG.UI.Controls
 
 
         //public override Task HandleFocusChangedEventAsync(UIWindow uiWindow, UIFocusChangedEvent uiEvent)
-        //{
-        //    return base.HandleFocusChangedEventAsync(uiWindow, uiEvent);
+        //{...
         //}
 
     }
