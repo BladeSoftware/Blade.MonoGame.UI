@@ -103,6 +103,7 @@ namespace Examples
             //layerUI.AddEntity(UIManager.Instance);
             uiManager.Clear();
             uiManager.Add(new ComponentTesterUI());
+            uiManager.Add(new UIHierarchyOverlay());
             uiManager.Add(new FpsUI());
 
         }

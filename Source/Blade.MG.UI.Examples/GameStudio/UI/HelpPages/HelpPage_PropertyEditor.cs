@@ -85,7 +85,7 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
                 VerticalAlignment = VerticalAlignmentType.Stretch,
                 //Background = Color.HotPink,
                 //Width = 800,
-                Height = 600
+                Height = 600,
             };
 
             layoutPanel.AddChild(border);
@@ -101,6 +101,52 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
             };
 
             border.Content = propertyEditor;
+            //layoutPanel.AddChild(propertyEditor);
+
+
+            //// Testing
+            //var grid = new Grid
+            //{
+            //    Name = "Example_Grid",
+            //    Margin = new Thickness(4),
+            //    Padding = new Thickness(4),
+            //    HorizontalAlignment = HorizontalAlignmentType.Stretch,
+            //    VerticalAlignment = VerticalAlignmentType.Top,
+
+            //    Background = Color.HotPink,
+
+            //};
+
+            //grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1f) });
+            //grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1f) });
+
+            //grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
+            //grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
+            //grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 30) });
+
+            ////stackPanel.AddChild(grid);
+            //layoutPanel.AddChild(grid);
+
+            //grid.AddChild(new Panel
+            //{
+            //    Background = Color.AliceBlue,
+            //}, 0, 0);
+
+            //grid.AddChild(new Panel
+            //{
+            //    Background = Color.CornflowerBlue,
+            //}, 1, 0);
+
+            //grid.AddChild(new Panel
+            //{
+            //    Background = Color.YellowGreen,
+            //}, 0, 1);
+
+            //grid.AddChild(new Panel
+            //{
+            //    Background = Color.Orange,
+            //}, 1, 1);
+
         }
 
 
