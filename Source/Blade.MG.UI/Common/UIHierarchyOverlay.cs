@@ -13,8 +13,17 @@ namespace Blade.MG.UI.Common
 
         public override void Initialize(Game game)
         {
+            Name = "UIHierarchyOverlay";
             IsHitTestVisible = true;
             DefaultZIndex = 9990; // Ensure we're on top of everything else
+
+            //Width = 500;
+            //Height = 700;
+
+            Width = "33%";
+
+            HorizontalAlignment = HorizontalAlignmentType.Left;
+            VerticalAlignment = VerticalAlignmentType.Stretch;
 
             base.Initialize(game);
         }
@@ -33,7 +42,6 @@ namespace Blade.MG.UI.Common
         {
             var uiManager = Game.Services.GetService<UIManager>();
 
-
             // Create the TreeView
             treeView = new TreeView
             {
@@ -41,10 +49,10 @@ namespace Blade.MG.UI.Common
                 Margin = new Thickness(8),
                 Padding = new Thickness(4),
                 Background = new Color(Color.Gray, 1f),
-                VerticalAlignment = VerticalAlignmentType.Top,
-                HorizontalAlignment = HorizontalAlignmentType.Left,
-                Width = 400,
-                Height = 600,
+                VerticalAlignment = VerticalAlignmentType.Stretch,
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                //Width = 400,
+                //Height = 600,
                 ShowRootNode = false
             };
 

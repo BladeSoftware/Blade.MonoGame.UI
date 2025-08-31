@@ -410,18 +410,28 @@ namespace Blade.MG.UI
 
 
             // Dont allow Stretch if the Width is virtualized i.e. We don't have a defined width
-            if (HorizontalAlignment.Value == HorizontalAlignmentType.Stretch && FloatHelper.IsNaN(Width) && (!parent.IsWidthVirtual || ActualWidth < layoutBounds.Width))
+            if (HorizontalAlignment.Value == HorizontalAlignmentType.Stretch && FloatHelper.IsNaN(Width))
             {
-                Left = layoutBounds.Left;
-                ActualWidth = layoutBounds.Width;
+                bool isParentWidthVirtual = parent?.IsWidthVirtual ?? false;
+
+                if (!isParentWidthVirtual || ActualWidth < layoutBounds.Width)
+                {
+                    Left = layoutBounds.Left;
+                    ActualWidth = layoutBounds.Width;
+                }
 
             }
 
             // Dont allow Stretch if the Height is virtualized i.e. We don't have a defined height
-            if (VerticalAlignment.Value == VerticalAlignmentType.Stretch && FloatHelper.IsNaN(Height) && (!parent.IsHeightVirtual || ActualHeight < layoutBounds.Height))
+            if (VerticalAlignment.Value == VerticalAlignmentType.Stretch && FloatHelper.IsNaN(Height))
             {
-                Top = layoutBounds.Top;
-                ActualHeight = layoutBounds.Height;
+                bool isParentHeightVirtual = parent?.IsHeightVirtual ?? false;
+
+                if (!isParentHeightVirtual || ActualHeight < layoutBounds.Height)
+                {
+                    Top = layoutBounds.Top;
+                    ActualHeight = layoutBounds.Height;
+                }
 
             }
 

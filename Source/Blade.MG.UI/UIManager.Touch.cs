@@ -15,7 +15,6 @@ namespace Blade.MG.UI
         {
             propagateEvents = true;
 
-
             // Is touch enabled ?
             if (!InputManager.Touch.IsConnected)
             {
@@ -29,6 +28,7 @@ namespace Blade.MG.UI
                 // No gesture
                 return;
             }
+
 
 
             // Handle a Tap or Hold / Long Press event
@@ -59,18 +59,18 @@ namespace Blade.MG.UI
                 if (gesture.GestureType == GestureType.Tap)
                 {
                     var uiTapEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
-                    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleTapEventAsync(uiWindow, uiTapEvent); });
+                    await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleTapEventAsync(uiWindow, uiTapEvent); });
 
                     var uiClickEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
-                    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandlePrimaryClickEventAsync(uiWindow, uiClickEvent); });
+                    await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandlePrimaryClickEventAsync(uiWindow, uiClickEvent); });
                 }
                 else if (gesture.GestureType == GestureType.Hold)
                 {
                     var uiLongPressEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
-                    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleLongPressEventAsync(uiWindow, uiLongPressEvent); });
+                    await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleLongPressEventAsync(uiWindow, uiLongPressEvent); });
 
                     var uiClickEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
-                    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleSecondaryClickEventAsync(uiWindow, uiClickEvent); });
+                    await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleSecondaryClickEventAsync(uiWindow, uiClickEvent); });
                 }
 
             }

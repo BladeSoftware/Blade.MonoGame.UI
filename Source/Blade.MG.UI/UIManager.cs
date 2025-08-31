@@ -341,18 +341,24 @@ namespace Blade.MG.UI
         }
 
 
-        internal UIComponent SelectFirst(Func<UIComponent, UIComponent, bool> selector, bool useHitTest, Point point = default)
+        internal UIComponent SelectFirst(Func<UIComponent, UIComponent, bool> selector, bool useHitTest, Point? point = null)
         {
             // Select control at the given X,Y co-ordinate, in reverse order
             for (int i = uiWindows.Count - 1; i >= 0; i--)
             {
                 var ui = uiWindows.Values[i];
 
-                var component = ui.SelectFirst(selector, useHitTest, point);
+                if (point != null && !ui.FinalRect.Contains(point.Value))
+                {
+                    continue;
+                }
+
+                var component = ui.SelectFirst(selector, useHitTest, point ?? default);
                 if (component != null)
                 {
                     return component;
                 }
+
             }
 
             return null;
@@ -378,7 +384,7 @@ namespace Blade.MG.UI
             }
         }
 
-        private async Task DispatchEventAsync(UIWindow eventLockedWindow, Func<UIWindow, Task> action)
+        private async Task DispatchEventAsync(UIWindow eventLockedWindow, Point? point, Func<UIWindow, Task> action)
         {
             if (eventLockedWindow != null)
             {
@@ -390,6 +396,11 @@ namespace Blade.MG.UI
             for (int i = uiWindows.Count - 1; i >= 0; i--)
             {
                 var ui = uiWindows.Values[i];
+
+                if (point != null && !ui.FinalRect.Contains(point.Value))
+                {
+                    continue;
+                }
 
                 await action(ui);
             }

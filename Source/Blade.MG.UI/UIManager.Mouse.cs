@@ -15,6 +15,8 @@ namespace Blade.MG.UI
         // TODO: We should probably sort windows by 'z-index' and stop despatching if the event is handled, for now, just iterate in reverse order
         private async Task HandleMouseInputAsync(UIWindow eventLockedWindow, UIComponent eventLockedControl, bool propagateEvents, GameTime gameTime)
         {
+            Point point = InputManager.Mouse.Position;
+
             propagateEvents = true;
 
             if (eventLockedWindow != null)
@@ -87,7 +89,7 @@ namespace Blade.MG.UI
                     SecondaryButton = InputManager.Mouse.SecondaryButton
                 };
 
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseDownEventAsync(uiWindow, uiEvent); });
+                await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseDownEventAsync(uiWindow, uiEvent); });
 
                 // Select first hover component
                 //UIComponent hoverComponent = HoverIterator.FirstOrDefault();
@@ -133,15 +135,15 @@ namespace Blade.MG.UI
 
                     ForcePropogation = eventLockedWindow != null
                 };
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
+                await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
 
                 var uiClickEvent = new UIClickEvent { X = InputManager.Mouse.X, Y = InputManager.Mouse.Y };
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseClickEventAsync(uiWindow, uiClickEvent); });
+                await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseClickEventAsync(uiWindow, uiClickEvent); });
 
                 if (MouseDoubleClickTime != DateTime.MinValue && (DateTime.Now - MouseDoubleClickTime).TotalMilliseconds < MouseDoubleClickDelay)
                 {
                     uiClickEvent = new UIClickEvent { X = InputManager.Mouse.X, Y = InputManager.Mouse.Y };
-                    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseDoubleClickEventAsync(uiWindow, uiClickEvent); });
+                    await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseDoubleClickEventAsync(uiWindow, uiClickEvent); });
 
                     MouseDoubleClickTime = DateTime.MinValue;
                 }
@@ -165,10 +167,10 @@ namespace Blade.MG.UI
 
                     ForcePropogation = eventLockedWindow != null
                 };
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
+                await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
 
                 var uiClickEvent = new UIClickEvent { X = InputManager.Mouse.X, Y = InputManager.Mouse.Y };
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseRightClickEventAsync(uiWindow, uiClickEvent); });
+                await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseRightClickEventAsync(uiWindow, uiClickEvent); });
             }
 
             // Check if user has released the middle mouse buttons
@@ -185,7 +187,7 @@ namespace Blade.MG.UI
 
                     ForcePropogation = eventLockedWindow != null
                 };
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
+                await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
             }
 
             // Handle Mouse Movement
@@ -201,7 +203,7 @@ namespace Blade.MG.UI
                     DeltaY = InputManager.Mouse.PositionYDelta
                 };
 
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseMoveEventAsync(uiWindow, uiEvent); });
+                await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseMoveEventAsync(uiWindow, uiEvent); });
 
             }
 
@@ -220,7 +222,7 @@ namespace Blade.MG.UI
                     ForcePropogation = false
                 };
 
-                await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent); });
+                await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent); });
             }
 
         }

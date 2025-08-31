@@ -32,7 +32,7 @@ namespace Blade.MG.UI
                 {
                     var uiEvent = new UIKeyEvent(InputManager.Keyboard.KeyboardState) { Key = key, KeyChar = KeyboardMapping.Keyboard.GetChar(key, InputManager.Keyboard.KeyboardState) };
 
-                    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleKeyUpAsync(uiWindow, uiEvent); });
+                    await DispatchEventAsync(eventLockedWindow, null, async (uiWindow) => { await uiWindow.HandleKeyUpAsync(uiWindow, uiEvent); });
 
                     if (key == repeatKey)
                     {
@@ -53,7 +53,7 @@ namespace Blade.MG.UI
                 {
 
                     var uiEvent = new UIKeyEvent(InputManager.Keyboard.KeyboardState) { Key = key, KeyChar = KeyboardMapping.Keyboard.GetChar(key, InputManager.Keyboard.KeyboardState) };
-                    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleKeyDownAsync(uiWindow, uiEvent); });
+                    await DispatchEventAsync(eventLockedWindow, null, async (uiWindow) => { await uiWindow.HandleKeyDownAsync(uiWindow, uiEvent); });
 
                     repeatKey = key;
                     repeatKeyFirst = true;
@@ -62,7 +62,7 @@ namespace Blade.MG.UI
 
                     uiEvent.Handled = false;
 
-                    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleKeyPressAsync(uiWindow, uiEvent); });
+                    await DispatchEventAsync(eventLockedWindow, null, async (uiWindow) => { await uiWindow.HandleKeyPressAsync(uiWindow, uiEvent); });
 
                     //// Handle Special Keys
                     //if (key == Keys.Tab && !uiEvent.Handled)
@@ -82,7 +82,7 @@ namespace Blade.MG.UI
                     if ((DateTime.Now - repeatKeyPressed).TotalMilliseconds > 500)
                     {
                         repeatKeyEvent.Handled = false;
-                        await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleKeyPressAsync(uiWindow, repeatKeyEvent); });
+                        await DispatchEventAsync(eventLockedWindow, null, async (uiWindow) => { await uiWindow.HandleKeyPressAsync(uiWindow, repeatKeyEvent); });
                         repeatKeyFirst = false;
                     }
                 }
@@ -91,7 +91,7 @@ namespace Blade.MG.UI
                     if ((DateTime.Now - repeatKeyPressed).TotalMilliseconds > 200)
                     {
                         repeatKeyEvent.Handled = false;
-                        await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleKeyPressAsync(uiWindow, repeatKeyEvent); });
+                        await DispatchEventAsync(eventLockedWindow, null, async (uiWindow) => { await uiWindow.HandleKeyPressAsync(uiWindow, repeatKeyEvent); });
                     }
                 }
             }

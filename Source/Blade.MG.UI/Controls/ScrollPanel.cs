@@ -7,8 +7,8 @@ namespace Blade.MG.UI.Controls
 {
     public class ScrollPanel : Panel
     {
-        private bool isHorizontallyScrollable = false;
-        private bool isVerticallyScrollable = false;
+        protected bool isHorizontallyScrollable = false;
+        protected bool isVerticallyScrollable = false;
 
         public bool IsHorizontalScrollbarVisible => (horizontalScrollBarVisible == ScrollBarVisibility.Always) || (horizontalScrollBarVisible == ScrollBarVisibility.Auto && isHorizontallyScrollable);
         public bool IsVerticalScrollbarVisible => (verticalScrollBarVisible == ScrollBarVisibility.Always) || (verticalScrollBarVisible == ScrollBarVisibility.Auto && isVerticallyScrollable);
@@ -49,7 +49,7 @@ namespace Blade.MG.UI.Controls
         public ScrollBar HorizontalScrollBar { get; set; }
         public ScrollBar VerticalScrollBar { get; set; }
 
-        private Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+        protected Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
 
         public int HorizontalScrollOffset => HorizontalScrollBar?.ScrollOfset ?? 0;
         public int VerticalScrollOffset => VerticalScrollBar?.ScrollOfset ?? 0;
@@ -153,6 +153,7 @@ namespace Blade.MG.UI.Controls
             //Rectangle childBounds = Children.FirstOrDefault()?.FinalRect ?? Rectangle.Empty;
             Rectangle childBounds = Rectangle.Empty;
             //Rectangle childBounds = Children.FirstOrDefault()?.FinalContentRect ?? Rectangle.Empty;
+
 
             //foreach (var child in CollectionsMarshal.AsSpan(Children))
             foreach (var child in Children)

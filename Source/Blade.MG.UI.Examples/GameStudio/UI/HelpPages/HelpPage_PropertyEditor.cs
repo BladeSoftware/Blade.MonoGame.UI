@@ -1,7 +1,9 @@
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
 using Examples.UI.Components;
+using GameStudio;
 using Microsoft.Xna.Framework;
+using System.ComponentModel.DataAnnotations;
 
 namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
 {
@@ -13,6 +15,7 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
             public int Health { get; set; }
             public bool IsActive { get; set; }
             public DifficultyLevel Difficulty { get; set; }
+            public Country Country { get; set; }
         }
 
         public enum DifficultyLevel

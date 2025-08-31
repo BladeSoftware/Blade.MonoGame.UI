@@ -45,10 +45,10 @@ namespace Blade.MG.UI
         [XmlIgnore]
         public new ContentManager ContentManager => Game?.Content;
 
-        [JsonIgnore]
-        [XmlIgnore]
-        //public Viewport Viewport => Game.GraphicsDevice.Viewport;
-        public Rectangle BackBufferBounds => new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight);
+        //[JsonIgnore]
+        //[XmlIgnore]
+        ////public Viewport Viewport => Game.GraphicsDevice.Viewport;
+        //public Rectangle BackBufferBounds => new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight);
 
         [JsonIgnore]
         [XmlIgnore]
@@ -100,8 +100,7 @@ namespace Blade.MG.UI
         {
             Context.GameTime = gameTime;
 
-            //var layoutRect = Game.GraphicsDevice.PresentationParameters.IsFullScreen ? Viewport.TitleSafeArea : Viewport.Bounds;
-            var layoutRect = GetLayoutRect();
+            var layoutRect = GetBackBufferRect();
 
             PerformLayout(layoutRect);
         }
@@ -111,16 +110,17 @@ namespace Blade.MG.UI
             Context.GameTime = gameTime;
 
             // var layoutRect = Game.GraphicsDevice.PresentationParameters.IsFullScreen ? Viewport.TitleSafeArea : Viewport.Bounds;
-            var layoutRect = GetLayoutRect();
+            var layoutRect = GetBackBufferRect();
 
             RenderLayout(layoutRect);
         }
 
-        private Rectangle GetLayoutRect() => new Rectangle(0, 0, Game.GraphicsDevice.PresentationParameters.BackBufferWidth, Game.GraphicsDevice.PresentationParameters.BackBufferHeight);
+        private Rectangle GetBackBufferRect() => new Rectangle(0, 0, Game.GraphicsDevice.PresentationParameters.BackBufferWidth, Game.GraphicsDevice.PresentationParameters.BackBufferHeight);
 
 
         protected virtual void PerformLayout(Rectangle layoutRect)
         {
+            /*
             int left = layoutRect.Left + Margin.Value.Left;
             int top = layoutRect.Top + Margin.Value.Top;
             int width = layoutRect.Width - (Margin.Value.Left + Margin.Value.Right);
@@ -141,7 +141,16 @@ namespace Blade.MG.UI
             //Size availableSize = new Size(layoutRect.Width, layoutRect.Height);
             Size availableSize = new Size(FinalContentRect.Width, FinalContentRect.Height);
 
+             */
+
+            Size availableSize = new Size(layoutRect.Width, layoutRect.Height);
+
             Layout parentMinMax = new Layout(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
+
+
+            MeasureSelf(Context, ref availableSize, ref parentMinMax);
+
+            ArrangeSelf(Context, layoutRect, layoutRect);
 
             // Have Children determine their Desired Size
             foreach (var child in Children)
