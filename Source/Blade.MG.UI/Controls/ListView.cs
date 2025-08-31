@@ -110,6 +110,8 @@ namespace Blade.MG.UI.Controls
             Size availableSize = new Size(FinalContentRect.Width, FinalContentRect.Height);
             Layout parentMinMax = new Layout(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
 
+            nodeBounds = nodeBounds with { X = nodeBounds.X - HorizontalScrollOffset,  Y = nodeBounds.Y - VerticalScrollOffset };
+
             IEnumerable<object> listItems = DataContext as IEnumerable<object>;
 
             if (listItems != null)
@@ -165,10 +167,13 @@ namespace Blade.MG.UI.Controls
             MeasureOneListItem(context, ref availableSize, ref parentMinMax, ref desiredWidth, ref desiredHeight, nodeTemplate);
 
             nodeBounds.Height = (int)nodeTemplate.DesiredSize.Height;
+
             nodeTemplate.Arrange(context, nodeBounds, nodeBounds);
+
             nodeBounds.Y += nodeBounds.Height;
 
-            if (Rectangle.Intersect(GetChildBoundingBox(context, nodeTemplate), FinalRect) != Rectangle.Empty)
+            //if (Rectangle.Intersect(GetChildBoundingBox(context, nodeTemplate), FinalRect) != Rectangle.Empty)
+            if (Rectangle.Intersect(nodeTemplate.FinalRect, FinalRect) != Rectangle.Empty)
             {
                 if (!isExistingNode)
                 {
@@ -190,7 +195,8 @@ namespace Blade.MG.UI.Controls
         /// <returns></returns>
         public override Rectangle GetChildBoundingBox(UIContext context, UIComponent child)
         {
-            return child.FinalContentRect with { X = child.FinalContentRect.X - HorizontalScrollBar.ScrollOfset, Y = child.FinalContentRect.Y - VerticalScrollBar.ScrollOfset };
+            return child.FinalContentRect;
+            //return child.FinalContentRect with { X = child.FinalContentRect.X - HorizontalScrollBar.ScrollOfset, Y = child.FinalContentRect.Y - VerticalScrollBar.ScrollOfset };
         }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)

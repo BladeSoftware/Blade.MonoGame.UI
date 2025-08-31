@@ -98,8 +98,12 @@ namespace Blade.MG.UI.Controls
             ClampDesiredSize(availableSize, parentMinMax);
         }
 
+        float totalNodeWidth = 0;
+
         private void MeasureTree(UIContext context, Size availableSize, ref Layout parentMinMax, ref float desiredWidth, ref float desiredHeight)
         {
+            totalNodeWidth = 0;
+
             // Arrange the Tree Nodes
             if (RootNode == null)
             {
@@ -108,6 +112,7 @@ namespace Blade.MG.UI.Controls
 
             MeasureNode(context, ref availableSize, ref parentMinMax, RootNode, false, true, 0, ref desiredWidth, ref desiredHeight);
         }
+
 
         private void MeasureNode(UIContext context, ref Size availableSize, ref Layout parentMinMax, ITreeNode node, bool collapsed, bool isRoot, int depth, ref float desiredWidth, ref float desiredHeight)
         {
@@ -133,6 +138,14 @@ namespace Blade.MG.UI.Controls
 
                 desiredHeight += (int)nodeTemplate.DesiredSize.Height;
 
+                //float nodeWidth = Padding.Value.Horizontal + nodeTemplate.DesiredSize.Width + nodeTemplate.Padding.Value.Horizontal + nodeTemplate.Margin.Value.Horizontal;
+                float nodeWidth = nodeTemplate.DesiredSize.Width;
+                if (nodeWidth > totalNodeWidth)
+                {
+                    totalNodeWidth = nodeWidth;
+                }
+
+
                 collapsed = collapsed || !node.IsExpanded;
             }
 
@@ -149,20 +162,23 @@ namespace Blade.MG.UI.Controls
 
         private void MeasureOneNode(UIContext context, ref Size availableSize, ref Layout parentMinMax, ref bool collapsed, ref float desiredWidth, ref float desiredHeight, UIComponent nodeTemplate)
         {
-            nodeTemplate.Measure(context, ref availableSize, ref parentMinMax);
+            var newSize = new Size(float.NaN, float.NaN);
+            nodeTemplate.Measure(context, ref newSize, ref parentMinMax);
+            //nodeTemplate.Measure(context, ref availableSize, ref parentMinMax);
 
             if (!collapsed)
             {
                 desiredHeight += nodeTemplate.DesiredSize.Height;
-
-                if (nodeTemplate.DesiredSize.Width > desiredWidth)
-                {
-                    desiredWidth = nodeTemplate.DesiredSize.Width;
-                }
             }
             else
             {
-                nodeTemplate.DesiredSize = nodeTemplate.DesiredSize with { Width = 0, Height = 0 };
+                //nodeTemplate.DesiredSize = nodeTemplate.DesiredSize with { Width = 0, Height = 0 };
+                nodeTemplate.DesiredSize = nodeTemplate.DesiredSize with { Height = 0 };
+            }
+
+            if (nodeTemplate.DesiredSize.Width > desiredWidth)
+            {
+                desiredWidth = nodeTemplate.DesiredSize.Width;
             }
 
 
@@ -199,8 +215,11 @@ namespace Blade.MG.UI.Controls
 
             int verticalScrollBarWidth = IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;
             int horizontalScrollBarHeight = IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0;
+
             var treeLayoutBounds = parentLayoutBounds with { Width = layoutBounds.Width - verticalScrollBarWidth, Height = layoutBounds.Height - horizontalScrollBarHeight };
+
             ArrangeTree(context, treeLayoutBounds, ref desiredWidth, ref desiredHeight);
+
             //ArrangeTree(context, layoutBounds, ref desiredWidth, ref desiredHeight);
             swArrange.Stop();
 
@@ -214,8 +233,8 @@ namespace Blade.MG.UI.Controls
             // Can't rely on base scroll panel to calculate this as the children are virtualised
 
             // Substract the available parent area, as we don't need to scroll if everything fits in the available space
-            int w = (int)nodesDesiredSize.Width - FinalContentRect.Width;
-            int h = (int)nodesDesiredSize.Height - FinalContentRect.Height;
+            int w = (int)nodesDesiredSize.Width + Padding.Value.Horizontal + Margin.Value.Horizontal - FinalContentRect.Width;
+            int h = (int)nodesDesiredSize.Height + Padding.Value.Vertical + Margin.Value.Vertical - FinalContentRect.Height;
 
             // Make sure things don't go negative
             if (w < 0) w = 0;
@@ -224,6 +243,14 @@ namespace Blade.MG.UI.Controls
 
             HorizontalScrollBar.MaxValue = w;
             VerticalScrollBar.MaxValue = h;
+
+            //isHorizontallyScrollable = (FinalContentRect.Width < nodesDesiredSize.Width);
+            //isVerticallyScrollable = (FinalContentRect.Height < nodesDesiredSize.Height);
+            isHorizontallyScrollable = w > 0;
+            isVerticallyScrollable = h > 0;
+
+            HorizontalScrollBar.Visible = BoolToVisibility(IsHorizontalScrollbarVisible);
+            VerticalScrollBar.Visible = BoolToVisibility(IsVerticalScrollbarVisible);
 
 
             if (swArrange.ElapsedMilliseconds < min) min = swArrange.ElapsedMilliseconds;
@@ -284,7 +311,15 @@ namespace Blade.MG.UI.Controls
 
             nodeBounds.Height = (int)nodeTemplate.DesiredSize.Height;
             //nodeTemplate.Arrange(context, nodeBounds with { X = nodeBounds.X + 20 * depth, Width = nodeBounds.Width - 20 * depth });  // Indent child nodes
+
+            //if (desiredWidth < totalNodeWidth)
+            //{
+            desiredWidth = totalNodeWidth;
+            //}
+
             nodeTemplate.Padding.Value = nodeTemplate.Padding.Value with { Left = 20 * depth };
+
+            nodeBounds.Width = (int)desiredWidth;
             nodeTemplate.Arrange(context, nodeBounds, nodeBounds);
 
             nodeBounds.Y += nodeBounds.Height;

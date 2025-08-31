@@ -52,7 +52,14 @@ namespace Blade.MG.UI
             {
                 foreach (var child in Children)
                 {
+                    //if (this is IItemTemplate && Parent != null)
+                    //{
+                    //    child.Arrange(context, Parent.GetChildBoundingBox(context, child), FinalContentRect);
+                    //}
+                    //else
+                    //{
                     child.Arrange(context, GetChildBoundingBox(context, child), FinalContentRect);
+                    //}
                 }
             }
         }
@@ -70,6 +77,7 @@ namespace Blade.MG.UI
             //foreach (var child in CollectionsMarshal.AsSpan<UIComponent>((List<UIComponent>)Children))
             foreach (var child in Children)
             {
+                //var childBounds = GetChildBoundingBox(context, child);
                 child.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalContentRect), Transform.Combine(parentTransform, child.Transform, child));
             }
         }

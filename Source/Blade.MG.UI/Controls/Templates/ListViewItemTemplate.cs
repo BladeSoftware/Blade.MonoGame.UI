@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls.Templates
 {
-    public class ListViewItemTemplate : Control
+    public class ListViewItemTemplate : Control, IItemTemplate
     {
         public Label label1;
 
@@ -50,13 +50,14 @@ namespace Blade.MG.UI.Controls.Templates
 
             label1 = new Label()
             {
-                Height = "60px",
+                Height = "40px",
                 Text = item,
                 TextColor = Color.Black,
                 Background = Color.Transparent,
                 //Width = 100,
                 //Height = 100,
-                Margin = new Thickness(10, 0, 0, 0)
+                Margin = new Thickness(0, 0, 0, 0),
+                Padding = new Thickness(8, 0, 0, 0),
 
                 //SpriteFont = button.SpriteFont // Use the Button Font
             };

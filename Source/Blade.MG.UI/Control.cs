@@ -30,7 +30,7 @@ namespace Blade.MG.UI
                 //Content.Measure(context, ref availableSize, ref parentMinMax);
                 MergeChildDesiredSize(context, ref availableSize, Content, ref parentMinMax);
             }
-            
+
         }
 
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
@@ -39,7 +39,14 @@ namespace Blade.MG.UI
 
             if (Content != null && Visible.Value != Visibility.Collapsed)
             {
+                //if (this is IItemTemplate && Parent != null)
+                //{
+                //    Content.Arrange(context, Parent.GetChildBoundingBox(context, Content), layoutBounds);
+                //}
+                //else
+                //{
                 Content.Arrange(context, GetChildBoundingBox(context, Content), layoutBounds);
+                //}
             }
         }
 
