@@ -23,6 +23,7 @@ namespace Blade.MG.UI.Controls
         public ITreeNode RootNode { get; set; }  // TODO: Set from DataContext ?
         public bool ShowRootNode { get; set; } = true;
 
+        public float NodeIndentPerLevel { get; set; } = 20f;
 
         private UIComponent TempNodeTemplate = null;
 
@@ -103,6 +104,7 @@ namespace Blade.MG.UI.Controls
 
         private float? _cachedNodeHeight;
         private float? _cachedNodeWidth;
+        private Thickness? _cachedPadding;
 
         private void MeasureTree(UIContext context, Size availableSize, ref Layout parentMinMax, ref float desiredWidth, ref float desiredHeight)
         {
@@ -110,6 +112,7 @@ namespace Blade.MG.UI.Controls
 
             _cachedNodeHeight = null;
             _cachedNodeWidth = null;
+            _cachedPadding = null;
 
             // Arrange the Tree Nodes
             if (RootNode == null)
@@ -183,6 +186,7 @@ namespace Blade.MG.UI.Controls
 
             _cachedNodeHeight = nodeTemplate.DesiredSize.Height;
             _cachedNodeWidth = FinalContentRect.Width; //nodeTemplate.DesiredSize.Width;
+            _cachedPadding = nodeTemplate.Padding.Value;
 
             if (!collapsed)
             {
@@ -304,6 +308,12 @@ namespace Blade.MG.UI.Controls
             Size availableSize = new Size(layoutBounds.Width, layoutBounds.Height);
             Layout parentMinMax = new Layout(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
 
+            nodeBounds = nodeBounds with
+            {
+                X = layoutBounds.X + Parent.Margin.Value.Left + Parent.Padding.Value.Left,
+                Y = layoutBounds.Y + Parent.Margin.Value.Top + Parent.Padding.Value.Top - (int)(_cachedNodeHeight.Value),
+            };
+
             ArrangeNode(context, ref availableSize, ref parentMinMax, ref layoutBounds, ref nodeBounds, RootNode, false, true, 0, ref desiredWidth, ref desiredHeight);
 
             // Remove stale children
@@ -330,38 +340,58 @@ namespace Blade.MG.UI.Controls
                 goto SkipNode;
             }
 
-            var nodeTemplate = GetNodeTemplate(node, out bool isExistingNode);
 
-            nodeTemplate.FrameID = frameID;
+            //nodeBounds.Height = (int)nodeTemplate.DesiredSize.Height;
+            nodeBounds.Height = collapsed ? 0 : (int)_cachedNodeHeight.Value;
 
-            MeasureOneNode(context, ref availableSize, ref parentMinMax, ref collapsed, ref desiredWidth, ref desiredHeight, nodeTemplate);
 
-            nodeBounds.Height = (int)nodeTemplate.DesiredSize.Height;
-            //nodeTemplate.Arrange(context, nodeBounds with { X = nodeBounds.X + 20 * depth, Width = nodeBounds.Width - 20 * depth });  // Indent child nodes
+            desiredHeight += nodeBounds.Height;
+            desiredWidth = nodeBounds.Width;
 
-            //if (desiredWidth < totalNodeWidth)
-            //{
+
+            ////nodeTemplate.Arrange(context, nodeBounds with { X = nodeBounds.X + 20 * depth, Width = nodeBounds.Width - 20 * depth });  // Indent child nodes
+
             desiredWidth = _totalNodeWidth;
-            //}
 
-            nodeTemplate.Padding.Value = nodeTemplate.Padding.Value with { Left = 20 * depth };
+            //nodeTemplate.Padding.Value = nodeTemplate.Padding.Value with { Left = 20 * depth };
 
-            nodeBounds.Width = (int)desiredWidth;
-            nodeTemplate.Arrange(context, nodeBounds, nodeBounds);
+            //nodeBounds.Width = (int)desiredWidth;
+            //nodeTemplate.Arrange(context, nodeBounds, nodeBounds);
 
             nodeBounds.Y += nodeBounds.Height;
 
-            if (!collapsed && Rectangle.Intersect(GetChildBoundingBox(context, nodeTemplate), FinalRect) != Rectangle.Empty)
+            var nodeFinalRect = new Rectangle(nodeBounds.X - HorizontalScrollBar.ScrollOfset, nodeBounds.Y - VerticalScrollBar.ScrollOfset, nodeBounds.Width, nodeBounds.Height);
+
+            //if (!collapsed && Rectangle.Intersect(GetChildBoundingBox(context, nodeTemplate), FinalRect) != Rectangle.Empty)
+            if (!collapsed && Rectangle.Intersect(nodeFinalRect, FinalRect) != Rectangle.Empty)
             {
+                var nodeTemplate = GetNodeTemplate(node, out bool isExistingNode);
+
+                nodeTemplate.FrameID = frameID;
+
+                nodeTemplate.Padding.Value = nodeTemplate.Padding.Value with { Left = (int)(NodeIndentPerLevel * depth) };
+
+                //int leftAdjustment = Parent.Padding.Value.Left; // TODO: We shouldn't need this, investigate why we aren't getting the correct X position otherwise
+                int leftAdjustment = 0; // TODO: We shouldn't need this, investigate why we aren't getting the correct X position otherwise
+                nodeTemplate.Margin.Value = nodeTemplate.Margin.Value with { Left = leftAdjustment };
+
+                //MeasureOneNode(context, ref availableSize, ref parentMinMax, ref collapsed, ref desiredWidth, ref desiredHeight, nodeTemplate);
+
+                nodeTemplate.Arrange(context, nodeBounds, nodeBounds);
+
                 if (!isExistingNode)
                 {
                     AddChild(nodeTemplate, this, node);
                     TempNodeTemplate = null;
                 }
             }
-            else if (isExistingNode)
+            else
             {
-                RemoveChild(nodeTemplate);
+                var nodeTemplate = GetExistingNodeTemplate(node);
+                if (nodeTemplate != null)
+                {
+                    RemoveChild(nodeTemplate);
+                }
             }
 
             collapsed = collapsed || !node.IsExpanded;
@@ -378,6 +408,71 @@ namespace Blade.MG.UI.Controls
             }
 
         }
+
+        //private void ArrangeNode(UIContext context, ref Size availableSize, ref Layout parentMinMax, ref Rectangle layoutBounds, ref Rectangle nodeBounds, ITreeNode node, bool collapsed, bool isRoot, int depth, ref float desiredWidth, ref float desiredHeight)
+        //{
+        //    if (node == null)
+        //    {
+        //        return;
+        //    }
+
+        //    if (isRoot && !ShowRootNode)
+        //    {
+        //        depth = -1;
+        //        goto SkipNode;
+        //    }
+
+        //    var nodeTemplate = GetNodeTemplate(node, out bool isExistingNode);
+
+        //    nodeTemplate.FrameID = frameID;
+
+        //    MeasureOneNode(context, ref availableSize, ref parentMinMax, ref collapsed, ref desiredWidth, ref desiredHeight, nodeTemplate);
+
+        //    //nodeBounds.Height = (int)nodeTemplate.DesiredSize.Height;
+        //    nodeBounds.Height = (int)nodeTemplate.DesiredSize.Height;
+
+
+        //    //nodeTemplate.Arrange(context, nodeBounds with { X = nodeBounds.X + 20 * depth, Width = nodeBounds.Width - 20 * depth });  // Indent child nodes
+
+        //    //if (desiredWidth < totalNodeWidth)
+        //    //{
+        //    desiredWidth = _totalNodeWidth;
+        //    //}
+
+        //    nodeTemplate.Padding.Value = nodeTemplate.Padding.Value with { Left = 20 * depth };
+
+        //    nodeBounds.Width = (int)desiredWidth;
+        //    nodeTemplate.Arrange(context, nodeBounds, nodeBounds);
+
+        //    nodeBounds.Y += nodeBounds.Height;
+
+        //    if (!collapsed && Rectangle.Intersect(GetChildBoundingBox(context, nodeTemplate), FinalRect) != Rectangle.Empty)
+        //    {
+        //        if (!isExistingNode)
+        //        {
+        //            AddChild(nodeTemplate, this, node);
+        //            TempNodeTemplate = null;
+        //        }
+        //    }
+        //    else if (isExistingNode)
+        //    {
+        //        RemoveChild(nodeTemplate);
+        //    }
+
+        //    collapsed = collapsed || !node.IsExpanded;
+
+        //SkipNode:
+
+        //    if (node.Children != null)
+        //    {
+        //        //foreach (var childNode in CollectionsMarshal.AsSpan<ITreeNode>((List<ITreeNode>)node.Nodes))
+        //        foreach (var childNode in node.Children)
+        //        {
+        //            ArrangeNode(context, ref availableSize, ref parentMinMax, ref layoutBounds, ref nodeBounds, childNode, collapsed, false, depth + 1, ref desiredWidth, ref desiredHeight);
+        //        }
+        //    }
+
+        //}
 
         /// <summary>
         /// Calculate Childs layout rectangle

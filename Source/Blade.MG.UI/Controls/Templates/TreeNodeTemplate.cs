@@ -44,6 +44,8 @@ namespace Blade.MG.UI.Controls.Templates
             //HorizontalContentAlignment = HorizontalAlignmentType.Left; //Parent.HorizontalContentAlignment;
             //VerticalContentAlignment = VerticalAlignmentType.Center; //Parent.VerticalContentAlignment;
 
+            //Margin = Margin.Value with { Left = 12 };
+
             button1 = new Button()
             {
                 TemplateType = typeof(ButtonBaseTemplate),
