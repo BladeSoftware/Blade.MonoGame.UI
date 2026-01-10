@@ -33,6 +33,8 @@ namespace Blade.MG.UI.Controls.Templates
 
         public TextBoxTemplate()
         {
+            IsHitTestVisible = false;  // The template itself should not be hit-testable
+            CanFocus = false;           // The template itself should not be focusable
         }
 
         protected override void InitTemplate()
@@ -53,7 +55,11 @@ namespace Blade.MG.UI.Controls.Templates
                 BorderThickness = 1,
                 CornerRadius = 0,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
-                VerticalAlignment = VerticalAlignmentType.Stretch
+                VerticalAlignment = VerticalAlignmentType.Stretch,
+
+                // Prevent child controls from receiving input events
+                IsHitTestVisible = false,
+                CanFocus = false
             };
 
             label1 = new Label()
@@ -66,6 +72,10 @@ namespace Blade.MG.UI.Controls.Templates
                 FontSize = textBox.FontSize, // Use the Button Font
                 HorizontalTextAlignment = textBox.HorizontalTextAlignment,
                 VerticalTextAlignment = textBox.VerticalTextAlignment,
+
+                // Prevent child controls from receiving input events
+                IsHitTestVisible = false,
+                CanFocus = false
             };
 
 

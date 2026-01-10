@@ -187,10 +187,22 @@ namespace Blade.MG.UI.Controls
                 ItemTemplateType = ItemTemplateType,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-                Background = new Color(Color.LightGray, 1f),
+                Background = new Color(Color.LightGray, 1f)
             };
 
             listView.DataContext = GetFilteredItems().Cast<object>().ToList();
+
+            // Wire up selection changed callback
+            listView.OnSelectionChanged = (selected) =>
+            {
+                if (selected != null)
+                {
+                    SelectedItem.Value = selected;
+                    Text.Value = ItemToString(SelectedItem.Value);
+                    OnSelectionChanged?.Invoke(SelectedItem.Value);
+                    CloseDropDown();
+                }
+            };
 
             Border border = new Border()
             {
@@ -263,7 +275,9 @@ namespace Blade.MG.UI.Controls
                     }
 
                     StateHasChanged();
+
                     uiEvent.Handled = true;
+
                     return;
                 }
             }
@@ -308,8 +322,6 @@ namespace Blade.MG.UI.Controls
         // Allow typing when embedded TextBox has focus - template's TextBox is bound to combo.Text
         public override async Task HandleKeyPressAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
         {
-            await base.HandleKeyPressAsync(uiWindow, uiEvent);
-
             // If user presses Escape close dropdown
             if (uiEvent.Key == Keys.Escape && dropdownWindow != null)
             {
@@ -350,6 +362,10 @@ namespace Blade.MG.UI.Controls
                 RefreshPopupItems();
                 StateHasChanged();
             }
+
+
+            // Handle keyboard input if this control has focus
+            await base.HandleKeyPressAsync(uiWindow, uiEvent);
         }
 
         override public void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)

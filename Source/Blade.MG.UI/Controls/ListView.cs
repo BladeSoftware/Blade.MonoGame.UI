@@ -11,7 +11,8 @@ namespace Blade.MG.UI.Controls
     {
         private static int frameID = 0;
 
-        //public Orientation Orientation = Orientation.Vertical;
+        // Callback when selection changes
+        public Action<object> OnSelectionChanged { get; set; }
 
         [JsonIgnore]
         [XmlIgnore]
@@ -238,20 +239,18 @@ namespace Blade.MG.UI.Controls
             itemTemplate.ReInitTemplate(itemDataContext);
         }
 
-
-        private object selectedItem;
         public object SelectedItem
         {
             get
             {
-                return selectedItem;
+                return field;
             }
 
             set
             {
-                if (selectedItem != value)
+                if (field != value)
                 {
-                    selectedItem = value;
+                    field = value;
 
                     foreach (var child in Children)
                     {
@@ -262,8 +261,8 @@ namespace Blade.MG.UI.Controls
                         }
                     }
 
-                    // TODO: Raise Selected Item Changed
-                    // ...
+                    // Raise Selected Item Changed
+                    OnSelectionChanged?.Invoke(field);
                 }
             }
         }

@@ -73,5 +73,9 @@ namespace Blade.MG.UI.Components
                   maxHeight.ToPixels(parentRect.Height));
         }
 
+        public override string ToString()
+        {
+            return $"MinWidth={MinWidth} MinHeight={MinHeight} MaxWidth={MaxWidth} MaxHeight={MaxHeight}";
+        }
     }
 }

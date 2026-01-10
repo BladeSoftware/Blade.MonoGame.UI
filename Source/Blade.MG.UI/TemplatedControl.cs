@@ -37,13 +37,17 @@ namespace Blade.MG.UI
         {
             base.InitTemplate();
 
-            // Leave Hover and Focus to the main Control
-            CanHover = false;
-            CanFocus = false;
+            //// Leave Hover and Focus to the main Control
+            //CanHover = false;
+            //CanFocus = false;
 
             UIComponent templateControl = Activator.CreateInstance(TemplateType) as UIComponent;
             templateControl.HorizontalAlignment = HorizontalAlignmentType.Stretch;
             templateControl.VerticalAlignment = VerticalAlignmentType.Stretch;
+
+            // Leave Hover and Focus to the main Control
+            templateControl.CanHover = false;
+            templateControl.CanFocus = false;
 
             AddInternalChild(templateControl);
         }

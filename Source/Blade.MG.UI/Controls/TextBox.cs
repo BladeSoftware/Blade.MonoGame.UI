@@ -88,6 +88,9 @@ namespace Blade.MG.UI.Controls
         {
             base.InitTemplate();
 
+            //CanHover = true;
+            //CanFocus = true;
+
             //Content = new TextBoxTemplate();
             Content = Activator.CreateInstance(TemplateType) as UIComponent;
         }
@@ -121,14 +124,21 @@ namespace Blade.MG.UI.Controls
 
         // ---=== UI Events ===---
 
+        public override Task HandleFocusChangedEventAsync(UIWindow uiWindow, UIFocusChangedEvent uiEvent)
+        {
+            return base.HandleFocusChangedEventAsync(uiWindow, uiEvent);
+        }
+
         public override async Task HandleKeyPressAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
         {
-            await base.HandleKeyPressAsync(uiWindow, uiEvent);
-
+            // Handle keyboard input if this control has focus
             if (!uiEvent.Handled && HasFocus.Value)
             {
                 HandleKey(uiEvent);
             }
+
+            // Propagate to children
+            await base.HandleKeyPressAsync(uiWindow, uiEvent);
         }
 
         private void HandleKey(UIKeyEvent uiEvent)

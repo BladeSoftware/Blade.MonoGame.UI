@@ -185,10 +185,15 @@ namespace Blade.MG.UI.Controls
                     ItemsSource = Enum.GetNames(type).ToList(),
                     SelectedItem = value?.ToString()
                 };
-                //comboBox.OnSelectionChanged = (sender, args) =>
-                //{
-                //    prop.SetValue(obj, Enum.Parse(type, comboBox.SelectedItem));
-                //};
+
+                comboBox.OnSelectionChanged = (selectedItem) =>
+                {
+                    if (selectedItem != null)
+                    {
+                        prop.SetValue(obj, Enum.Parse(type, selectedItem.ToString()));
+                    }
+                };
+
                 return comboBox;
             }
             else if (type == typeof(int) || type == typeof(float) || type == typeof(double) || type == typeof(string))

@@ -98,11 +98,18 @@ namespace Blade.MG.UI.Controls
             ClampDesiredSize(availableSize, parentMinMax);
         }
 
-        float totalNodeWidth = 0;
+        private float _totalNodeWidth = 0;
+
+
+        private float? _cachedNodeHeight;
+        private float? _cachedNodeWidth;
 
         private void MeasureTree(UIContext context, Size availableSize, ref Layout parentMinMax, ref float desiredWidth, ref float desiredHeight)
         {
-            totalNodeWidth = 0;
+            _totalNodeWidth = 0;
+
+            _cachedNodeHeight = null;
+            _cachedNodeWidth = null;
 
             // Arrange the Tree Nodes
             if (RootNode == null)
@@ -112,7 +119,6 @@ namespace Blade.MG.UI.Controls
 
             MeasureNode(context, ref availableSize, ref parentMinMax, RootNode, false, true, 0, ref desiredWidth, ref desiredHeight);
         }
-
 
         private void MeasureNode(UIContext context, ref Size availableSize, ref Layout parentMinMax, ITreeNode node, bool collapsed, bool isRoot, int depth, ref float desiredWidth, ref float desiredHeight)
         {
@@ -130,19 +136,28 @@ namespace Blade.MG.UI.Controls
 
             if (!skipNode)
             {
-                var nodeTemplate = GetNodeTemplate(node, out bool isExistingNode);
+                if (_cachedNodeHeight == null)
+                {
+                    var nodeTemplate = GetNodeTemplate(node, out bool isExistingNode);
 
-                nodeTemplate.FrameID = frameID;
+                    nodeTemplate.FrameID = frameID;
 
-                MeasureOneNode(context, ref availableSize, ref parentMinMax, ref collapsed, ref desiredWidth, ref desiredHeight, nodeTemplate);
+                    MeasureOneNode(context, ref availableSize, ref parentMinMax, ref collapsed, ref desiredWidth, ref desiredHeight, nodeTemplate);
+                }
 
-                desiredHeight += (int)nodeTemplate.DesiredSize.Height;
+                desiredHeight = _cachedNodeHeight.Value;
+                desiredWidth = _cachedNodeWidth.Value;
+
+
+                //desiredHeight += desiredHeight;
+                //desiredHeight += (int)nodeTemplate.DesiredSize.Height;
 
                 //float nodeWidth = Padding.Value.Horizontal + nodeTemplate.DesiredSize.Width + nodeTemplate.Padding.Value.Horizontal + nodeTemplate.Margin.Value.Horizontal;
-                float nodeWidth = nodeTemplate.DesiredSize.Width;
-                if (nodeWidth > totalNodeWidth)
+                //float nodeWidth = nodeTemplate.DesiredSize.Width;
+                float nodeWidth = desiredWidth; //nodeTemplate.DesiredSize.Width;
+                if (nodeWidth > _totalNodeWidth)
                 {
-                    totalNodeWidth = nodeWidth;
+                    _totalNodeWidth = nodeWidth;
                 }
 
 
@@ -163,39 +178,51 @@ namespace Blade.MG.UI.Controls
         private void MeasureOneNode(UIContext context, ref Size availableSize, ref Layout parentMinMax, ref bool collapsed, ref float desiredWidth, ref float desiredHeight, UIComponent nodeTemplate)
         {
             var newSize = new Size(float.NaN, float.NaN);
+
             nodeTemplate.Measure(context, ref newSize, ref parentMinMax);
-            //nodeTemplate.Measure(context, ref availableSize, ref parentMinMax);
+
+            _cachedNodeHeight = nodeTemplate.DesiredSize.Height;
+            _cachedNodeWidth = FinalContentRect.Width; //nodeTemplate.DesiredSize.Width;
 
             if (!collapsed)
             {
                 desiredHeight += nodeTemplate.DesiredSize.Height;
+                //desiredHeight += _cachedNodeHeight.Value;
             }
             else
             {
-                //nodeTemplate.DesiredSize = nodeTemplate.DesiredSize with { Width = 0, Height = 0 };
                 nodeTemplate.DesiredSize = nodeTemplate.DesiredSize with { Height = 0 };
             }
 
             if (nodeTemplate.DesiredSize.Width > desiredWidth)
             {
                 desiredWidth = nodeTemplate.DesiredSize.Width;
+                //desiredWidth = _cachedNodeWidth.Value;
             }
-
-
-            //nodeTemplate.Visible = collapsed ? Visibility.Hidden : Visibility.Visible;
-
-            //if (collapsed)
-            //{
-            //    nodeTemplate.DesiredSize = nodeTemplate.DesiredSize with { Width = 0, Height = 0 };
-            //}
-
-            //desiredHeight += nodeTemplate.DesiredSize.Height;
-
-            //if (nodeTemplate.DesiredSize.Width > desiredWidth)
-            //{
-            //    desiredWidth = nodeTemplate.DesiredSize.Width;
-            //}
         }
+
+        //private void MeasureOneNode(UIContext context, ref Size availableSize, ref Layout parentMinMax, ref bool collapsed, ref float desiredWidth, ref float desiredHeight, UIComponent nodeTemplate)
+        //{
+        //    var newSize = new Size(float.NaN, float.NaN);
+
+        //    nodeTemplate.Measure(context, ref newSize, ref parentMinMax);
+        //    //nodeTemplate.Measure(context, ref availableSize, ref parentMinMax);
+
+        //    if (!collapsed)
+        //    {
+        //        desiredHeight += nodeTemplate.DesiredSize.Height;
+        //    }
+        //    else
+        //    {
+        //        //nodeTemplate.DesiredSize = nodeTemplate.DesiredSize with { Width = 0, Height = 0 };
+        //        nodeTemplate.DesiredSize = nodeTemplate.DesiredSize with { Height = 0 };
+        //    }
+
+        //    if (nodeTemplate.DesiredSize.Width > desiredWidth)
+        //    {
+        //        desiredWidth = nodeTemplate.DesiredSize.Width;
+        //    }
+        //}
 
         /// <summary>
         /// Layout Children
@@ -314,7 +341,7 @@ namespace Blade.MG.UI.Controls
 
             //if (desiredWidth < totalNodeWidth)
             //{
-            desiredWidth = totalNodeWidth;
+            desiredWidth = _totalNodeWidth;
             //}
 
             nodeTemplate.Padding.Value = nodeTemplate.Padding.Value with { Left = 20 * depth };

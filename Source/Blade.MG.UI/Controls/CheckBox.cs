@@ -73,12 +73,14 @@ namespace Blade.MG.UI.Controls
 
         public override async Task HandleKeyPressAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
         {
-            await base.HandleKeyPressAsync(uiWindow, uiEvent);
-
+            // Handle keyboard input if this control has focus
             if (!uiEvent.Handled && HasFocus.Value)
             {
                 HandleKey(uiEvent);
             }
+
+            // Propagate to children
+            await base.HandleKeyPressAsync(uiWindow, uiEvent);
         }
 
         private void HandleKey(UIKeyEvent uiEvent)
