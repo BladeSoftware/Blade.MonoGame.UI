@@ -1,4 +1,5 @@
 ﻿using Blade.MG.UI.Models;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -34,7 +35,7 @@ namespace Blade.MG.UI
         //public T Value { get { return Getter(); } set { Setter(value); } }
         public T Value { get { return GetValue(); } set { SetValue(value); } }
 
-        private T backingVar;
+        private T _backingVar;
 
         public bool IsImplicitCast { get; init; } // True if this Binding<T> was created from an Implicit Cast
 
@@ -50,9 +51,9 @@ namespace Blade.MG.UI
         /// <param name="initialValue"></param>
         public Binding(T initialValue = default, bool isCast = false)
         {
-            backingVar = initialValue;
-            Getter = () => backingVar;
-            Setter = (value) => backingVar = value;
+            _backingVar = initialValue;
+            Getter = () => _backingVar;
+            Setter = (value) => _backingVar = value;
             IsImplicitCast = isCast;
         }
 

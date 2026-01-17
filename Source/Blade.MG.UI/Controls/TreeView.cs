@@ -158,6 +158,7 @@ namespace Blade.MG.UI.Controls
                 //float nodeWidth = Padding.Value.Horizontal + nodeTemplate.DesiredSize.Width + nodeTemplate.Padding.Value.Horizontal + nodeTemplate.Margin.Value.Horizontal;
                 //float nodeWidth = nodeTemplate.DesiredSize.Width;
                 float nodeWidth = desiredWidth; //nodeTemplate.DesiredSize.Width;
+                //nodeWidth = 800;  // TODO: Remove
                 if (nodeWidth > _totalNodeWidth)
                 {
                     _totalNodeWidth = nodeWidth;
@@ -343,7 +344,7 @@ namespace Blade.MG.UI.Controls
 
             //nodeBounds.Height = (int)nodeTemplate.DesiredSize.Height;
             nodeBounds.Height = collapsed ? 0 : (int)_cachedNodeHeight.Value;
-
+            nodeBounds.Width = (int)_totalNodeWidth; // TODO: Checking
 
             desiredHeight += nodeBounds.Height;
             desiredWidth = nodeBounds.Width;
@@ -371,11 +372,13 @@ namespace Blade.MG.UI.Controls
 
                 nodeTemplate.Padding.Value = nodeTemplate.Padding.Value with { Left = (int)(NodeIndentPerLevel * depth) };
 
-                //int leftAdjustment = Parent.Padding.Value.Left; // TODO: We shouldn't need this, investigate why we aren't getting the correct X position otherwise
-                int leftAdjustment = 0; // TODO: We shouldn't need this, investigate why we aren't getting the correct X position otherwise
-                nodeTemplate.Margin.Value = nodeTemplate.Margin.Value with { Left = leftAdjustment };
+                MeasureOneNode(context, ref availableSize, ref parentMinMax, ref collapsed, ref desiredWidth, ref desiredHeight, nodeTemplate);
+                if (desiredWidth > _totalNodeWidth)
+                {
+                    _totalNodeWidth = (int)desiredWidth;
+                    _cachedNodeWidth = (int)desiredWidth;
+                }
 
-                //MeasureOneNode(context, ref availableSize, ref parentMinMax, ref collapsed, ref desiredWidth, ref desiredHeight, nodeTemplate);
 
                 nodeTemplate.Arrange(context, nodeBounds, nodeBounds);
 

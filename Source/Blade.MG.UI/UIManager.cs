@@ -45,14 +45,21 @@ namespace Blade.MG.UI
         private SortedList<string, UIWindow> uiWindows { get; set; } = new();
         public IReadOnlyList<UIWindow> GetWindows => uiWindows.Values.AsReadOnly();
 
-        private JoinableTaskFactory joinableTaskFactory;
+        // Queue for async continuations to run on the main thread
+        private ConcurrentQueue<Action> mainThreadQueue = new ConcurrentQueue<Action>();
+
+        // Track pending async operations (for debugging/monitoring)
+        //private int pendingAsyncOperations = 0;
+
+
+        //private JoinableTaskFactory joinableTaskFactory;
 
 
         public UIManager(Game game)
         {
             this.game = game;
 
-            joinableTaskFactory = new JoinableTaskFactory(new JoinableTaskContext());
+            // joinableTaskFactory = new JoinableTaskFactory(new JoinableTaskContext());
         }
 
         private string ToPriority(int i) => $"{i.ToString("0000")}.{Stopwatch.GetTimestamp()}";
@@ -61,6 +68,33 @@ namespace Blade.MG.UI
         {
             uiTaskQueue.Enqueue(task);
         }
+
+        /// <summary>
+        /// Queue an action to run on the main game thread (next Update)
+        /// </summary>
+        public void QueueOnMainThread(Action action)
+        {
+            mainThreadQueue.Enqueue(action);
+        }
+
+        /// <summary>
+        /// Process any queued main thread actions
+        /// </summary>
+        private void ProcessMainThreadQueue()
+        {
+            while (mainThreadQueue.TryDequeue(out var action))
+            {
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error processing main thread action: {ex.Message}");
+                }
+            }
+        }
+
 
         protected void HandleTaskQueue()
         {
@@ -76,8 +110,6 @@ namespace Blade.MG.UI
                 }
                 else if (task.TaskType == UITaskType.Remove)
                 {
-
-                    //Instance.UI.Remove(task.Window);
                     int index = uiWindows.IndexOfValue(task.Window);
                     if (index >= 0)
                     {
@@ -97,6 +129,7 @@ namespace Blade.MG.UI
                 }
                 else
                 {
+                    throw new Exception($"Unknown UITaskType : {Enum.GetName(task.TaskType)}");
                 }
             }
 
@@ -243,17 +276,82 @@ namespace Blade.MG.UI
 
         }
 
-        public override void Update(GameTime gameTime)
-        {
-            joinableTaskFactory.Run(async () => await UpdateAsync(gameTime));
+        //public override void Update(GameTime gameTime)
+        //{
+        //    joinableTaskFactory.Run(async () => await UpdateAsync(gameTime));
 
-            //await UpdateAsync(gameTime).ConfigureAwait(true);
+        //    //await UpdateAsync(gameTime).ConfigureAwait(true);
+        //}
+
+        //public async Task UpdateAsync(GameTime gameTime)
+        //{
+        //    //base.Logic(gameTime);
+
+        //    HandleTaskQueue();
+
+        //    UIWindow eventLockedWindow = null;
+        //    UIComponent eventLockedControl = null;
+
+        //    // First check if events are locked to a control in any window
+        //    foreach (var ui in uiWindows)
+        //    {
+        //        if (ui.Value.EventLockedControl != null)
+        //        {
+        //            eventLockedWindow = ui.Value;
+        //            eventLockedControl = ui.Value.EventLockedControl;
+        //            //ui.Logic(gameTime);
+        //            break;
+        //        }
+        //    }
+
+        //    // Check if events are locked to a specific control, e.g. scrollbar
+        //    for (int i = uiWindows.Count - 1; i >= 0; i--)
+        //    {
+        //        var ui = uiWindows.Values[i];
+
+        //        ui.AreEventsLockedToControl = (eventLockedWindow != null);
+        //    }
+
+        //    // Track focused elements and handle keys
+        //    // Converts physical input into 'abstracted' actions
+        //    await HandleKeyboardInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
+        //    await HandleMouseInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
+        //    await HandleTouchInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
+        //    await HandleGamePadInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
+
+        //    // Arrange layout
+        //    foreach (var ui in uiWindows)
+        //    {
+        //        if (ui.Value.Visible.Value == Visibility.Visible)
+        //        {
+        //            ui.Value.PerformLayout(gameTime);
+        //        }
+        //    }
+
+        //}
+
+        // Helper method to handle fire-and-forget with exception logging
+        private void FireAndForget(Task task)
+        {
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    Debug.WriteLine($"Async error: {t.Exception?.InnerException?.Message}");
+                }
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
-        public async Task UpdateAsync(GameTime gameTime)
-        {
-            //base.Logic(gameTime);
 
+        /// <summary>
+        /// SYNCHRONOUS Update - never blocks, async operations are fire-and-forget
+        /// </summary>
+        public override void Update(GameTime gameTime)
+        {
+            // Process any queued main thread actions
+            ProcessMainThreadQueue();
+
+            // Handle window add/remove queue
             HandleTaskQueue();
 
             UIWindow eventLockedWindow = null;
@@ -266,27 +364,25 @@ namespace Blade.MG.UI
                 {
                     eventLockedWindow = ui.Value;
                     eventLockedControl = ui.Value.EventLockedControl;
-                    //ui.Logic(gameTime);
                     break;
                 }
             }
 
-            // Check if events are locked to a specific control, e.g. scrollbar
+            // Check if events are locked to a specific control
             for (int i = uiWindows.Count - 1; i >= 0; i--)
             {
                 var ui = uiWindows.Values[i];
-
                 ui.AreEventsLockedToControl = (eventLockedWindow != null);
             }
 
-            // Track focused elements and handle keys
-            // Converts physical input into 'abstracted' actions
-            await HandleKeyboardInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
-            await HandleMouseInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
-            await HandleTouchInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
-            await HandleGamePadInputAsync(eventLockedWindow, eventLockedControl, true, gameTime);
+            // Handle input - fire-and-forget async operations
+            // These methods should NOT be awaited in the game loop
+            FireAndForget(HandleKeyboardInputAsync(eventLockedWindow, eventLockedControl, true, gameTime));
+            FireAndForget(HandleMouseInputAsync(eventLockedWindow, eventLockedControl, true, gameTime));
+            FireAndForget(HandleTouchInputAsync(eventLockedWindow, eventLockedControl, true, gameTime));
+            FireAndForget(HandleGamePadInputAsync(eventLockedWindow, eventLockedControl, true, gameTime));
 
-            // Arrange layout
+            // Arrange layout (synchronous)
             foreach (var ui in uiWindows)
             {
                 if (ui.Value.Visible.Value == Visibility.Visible)
@@ -294,7 +390,6 @@ namespace Blade.MG.UI
                     ui.Value.PerformLayout(gameTime);
                 }
             }
-
         }
 
         public override void Draw(SpriteBatch spriteBatch, GameTime gameTime)

@@ -11,8 +11,8 @@
     <Content Include=".config\dotnet-tools.json" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.1.303" />
-    <PackageReference Include="MonoGame.Framework.Android" Version="3.8.1.303" />
+    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.4.1" />
+    <PackageReference Include="MonoGame.Framework.Android" Version="3.8.4.1" />
   </ItemGroup>
   <ItemGroup>
     <!--<ProjectReference Include="..\..\Blade.MG.UI\Blade.MG.UI.csproj" />-->
