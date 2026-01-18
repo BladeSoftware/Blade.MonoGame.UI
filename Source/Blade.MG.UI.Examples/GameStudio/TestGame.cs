@@ -140,7 +140,9 @@ namespace Examples
             try
             {
                 InputManager.Update();
-                await uiManager.UpdateAsync(gameTime).ConfigureAwait(true);
+                uiManager.Update(gameTime);
+
+                //await uiManager.UpdateAsync(gameTime).ConfigureAwait(true);
             }
             catch (Exception ex)
             {

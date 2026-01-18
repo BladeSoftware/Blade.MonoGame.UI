@@ -45,9 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Blade.MG.Core">
-      <HintPath>..\..\..\Blade.MonoGame.Core\Source\Blade.MG.Core\bin\Debug\net8.0\Blade.MG.Core.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\..\Blade.MonoGame.Core\Source\Blade.MG.Core\Blade.MG.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -52,8 +52,8 @@ namespace Blade.MG.UI.Controls.Templates
             border1 = new Border
             {
                 BorderColor = Color.Black,
-                BorderThickness = 1,
-                CornerRadius = 0,
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(0),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
 

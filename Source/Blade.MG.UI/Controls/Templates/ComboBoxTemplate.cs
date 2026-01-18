@@ -23,8 +23,8 @@ public class ComboBoxTemplate : Control
         RootBorder = new Border()
         {
             BorderColor = Color.Black,
-            BorderThickness = 1,
-            CornerRadius = 0,
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(0),
             HorizontalAlignment = HorizontalAlignmentType.Stretch,
             VerticalAlignment = VerticalAlignmentType.Top,
             Padding = new Thickness(4)
@@ -34,7 +34,7 @@ public class ComboBoxTemplate : Control
         HeaderBorder = new Border()
         {
             BorderColor = Color.Transparent,
-            BorderThickness = 0,
+            BorderThickness = new Thickness(0),
             Background = Color.Transparent,
             HorizontalAlignment = HorizontalAlignmentType.Stretch,
             VerticalAlignment = VerticalAlignmentType.Top,

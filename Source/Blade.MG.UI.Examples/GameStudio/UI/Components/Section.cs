@@ -55,8 +55,8 @@ namespace Examples.UI.Components
 
             var border = new Border()
             {
-                BorderThickness = 1,
-                CornerRadius = 10,
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(10),
                 BorderColor = Color.SlateBlue,
                 Background = Color.White,
                 Margin = new Thickness(5, 5, 5, 5),

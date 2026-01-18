@@ -42,7 +42,7 @@ namespace Blade.MG.UI.Controls
             var border1 = new Border
             {
                 BorderColor = Color.DarkBlue,
-                BorderThickness = 2f,
+                BorderThickness = new Thickness(2f),
 
                 Background = Color.White,
 

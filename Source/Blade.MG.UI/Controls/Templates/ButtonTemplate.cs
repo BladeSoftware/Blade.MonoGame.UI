@@ -49,7 +49,7 @@ namespace Blade.MG.UI.Controls.Templates
             //button.Border = new Border()
             border1 = new Border()
             {
-                CornerRadius = 9f,
+                CornerRadius = new CornerRadius(9f),
                 Background = Theme.Outline, //backgroundNormal,
                 //HorizontalAlignment = this.HorizontalAlignment, //HorizontalAlignmentType.Center,
                 //VerticalAlignment = this.VerticalAlignment, //VerticalAlignmentType.Center,

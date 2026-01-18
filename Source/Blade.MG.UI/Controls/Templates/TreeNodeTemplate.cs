@@ -235,9 +235,9 @@ namespace Blade.MG.UI.Controls.Templates
             //    this.Background = Color.Transparent;
             //}
 
-            BorderThickness = 0;
+            BorderThickness = new Thickness(0);
             BorderColor = Theme.Outline; // Color.MidnightBlue;
-            CornerRadius = 5;
+            CornerRadius = new CornerRadius(5);
 
             label1.TextColor = Theme.OnPrimaryContainer;
 
@@ -245,21 +245,21 @@ namespace Blade.MG.UI.Controls.Templates
             {
                 Background = Theme.SecondaryContainer; //Color.SlateBlue;
                 BorderColor = Theme.Tertiary; // Color.MidnightBlue;
-                BorderThickness = 2;
+                BorderThickness = new Thickness(2);
 
                 label1.TextColor = Theme.OnSecondaryContainer;
             }
             else if (treeNode.IsSelected)
             {
                 Background = Theme.SecondaryContainer; // Color.MediumSlateBlue;
-                BorderThickness = 2;
+                BorderThickness = new Thickness(2);
                 label1.TextColor = Theme.OnSecondaryContainer;
 
             }
             else if (MouseHover.Value)
             {
                 BorderColor = Theme.Tertiary; // Color.MidnightBlue;
-                BorderThickness = 2;
+                BorderThickness = new Thickness(2);
             }
 
         }

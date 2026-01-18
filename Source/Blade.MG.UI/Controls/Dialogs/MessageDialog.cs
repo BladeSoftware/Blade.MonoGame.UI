@@ -96,7 +96,7 @@ namespace Blade.MG.UI.Controls.Dialogs
             var border1 = new Border
             {
                 BorderColor = Color.DarkBlue,
-                BorderThickness = 2f,
+                BorderThickness = new Thickness(2f),
                 //Width = 800,
                 //Height = 600,
 

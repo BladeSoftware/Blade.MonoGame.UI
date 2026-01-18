@@ -45,7 +45,7 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
 
             var border = new Border()
             {
-                BorderThickness = 2,
+                BorderThickness = new Thickness(2),
                 BorderColor = Color.Gray,
                 Margin = new Thickness(20),
                 Padding = new Thickness(10),

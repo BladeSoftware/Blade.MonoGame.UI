@@ -47,7 +47,7 @@ namespace Examples.UI.HelpPages
 
             Border border = new Border
             {
-                CornerRadius = 10,
+                CornerRadius = new CornerRadius(10),
                 //BorderColor = Color.Red,
                 HorizontalAlignment = HorizontalAlignmentType.Center,
                 VerticalAlignment = VerticalAlignmentType.Center,

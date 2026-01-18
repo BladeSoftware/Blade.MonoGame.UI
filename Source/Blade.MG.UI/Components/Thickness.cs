@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using Blade.MG.UI;
+using Blade.MG.UI.Components;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Components
@@ -12,12 +14,23 @@ namespace Blade.MG.UI.Components
         public int Top { get; set; }
         public int Bottom { get; set; }
 
+        [JsonIgnore][XmlIgnore] public bool HasThickness => Left > 0 || Top > 0 || Right > 0 || Bottom > 0;
+        [JsonIgnore][XmlIgnore] public bool IsUniform => Left == Top && Top == Right && Right == Bottom;
+        [JsonIgnore][XmlIgnore] public float Uniform => IsUniform ? Left : 0f;
+
+
+
         [JsonIgnore][XmlIgnore] public int Horizontal => Left + Right;
         [JsonIgnore][XmlIgnore] public int Vertical => Top + Bottom;
 
         public Thickness(int uniformLength)
         {
             Left = Right = Top = Bottom = uniformLength;
+        }
+
+        public Thickness(float uniformLength)
+        {
+            Left = Right = Top = Bottom = (int)uniformLength;
         }
 
         public Thickness(int left, int top, int right, int bottom)
@@ -112,3 +125,4 @@ namespace Blade.MG.UI.Components
         }
     }
 }
+
