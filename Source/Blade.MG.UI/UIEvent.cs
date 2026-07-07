@@ -2,9 +2,9 @@
 {
     public class UIEvent
     {
-        public static readonly UIEvent Empty = new UIEvent { Handled = false, ForcePropogation = false };
+        public static readonly UIEvent Empty = new UIEvent { Handled = false, ForcePropagation = false };
 
         public bool Handled { get; set; }
-        public bool ForcePropogation { get; set; }
+        public bool ForcePropagation { get; set; }
     }
 }

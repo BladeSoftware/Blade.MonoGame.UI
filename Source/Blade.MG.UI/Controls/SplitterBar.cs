@@ -117,7 +117,7 @@ namespace Blade.MG.UI.Controls
 
             try
             {
-                using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+                var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
 
                 Color barColor = isDragging ? Color.DarkGray : Background.Value;
                 context.Renderer.FillRect(spriteBatch, FinalRect, barColor, layoutBounds);

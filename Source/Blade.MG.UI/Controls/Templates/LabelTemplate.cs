@@ -46,7 +46,7 @@ namespace Blade.MG.UI.Controls.Templates
 
             try
             {
-                using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform); // Transform.Combine(parentTransform, Transform)
+                var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform); // Transform.Combine(parentTransform, Transform)
 
                 if (Background.Value != Color.Transparent)
                 {

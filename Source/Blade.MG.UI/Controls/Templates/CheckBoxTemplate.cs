@@ -192,7 +192,7 @@ namespace Blade.MG.UI.Controls.Templates
 
             try
             {
-                using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+                var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
                 context.Renderer.ClipToRect(layoutBounds);
 
                 //context.Renderer.FillRoundedRect(spriteBatch, boxRect, boxRect.Width / 4, Color.LightGray);

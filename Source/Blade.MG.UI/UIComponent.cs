@@ -701,8 +701,8 @@ namespace Blade.MG.UI
             {
                 if (child.Visible.Value == Visibility.Collapsed)
                 {
-                    desiredWidth = 0;
-                    desiredHeight = 0;
+                    // A collapsed child contributes nothing to the accumulated desired size,
+                    // but must not wipe out the max already accumulated from prior siblings.
                     return;
                 }
 
@@ -758,7 +758,7 @@ namespace Blade.MG.UI
             //{
             //    dw = Width;
             //}
-            if (!FloatHelper.IsNaN(MaxWidth) && (!float.IsNaN(dw) || dw > MaxWidth.ToPixels(availableSize.Width)))
+            if (!FloatHelper.IsNaN(MaxWidth) && (dw > MaxWidth.ToPixels(availableSize.Width) || float.IsNaN(dw)))
             {
                 dw = MaxWidth.ToPixels(availableSize.Width);
             }
@@ -767,7 +767,7 @@ namespace Blade.MG.UI
                 dw = maxW;
             }
 
-            if (!FloatHelper.IsNaN(MinWidth) && (!float.IsNaN(dw) || dw < MinWidth.ToPixels(availableSize.Width)))
+            if (!FloatHelper.IsNaN(MinWidth) && (dw < MinWidth.ToPixels(availableSize.Width) || float.IsNaN(dw)))
             {
                 dw = MinWidth.ToPixels(availableSize.Width);
             }
@@ -1045,7 +1045,7 @@ namespace Blade.MG.UI
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandlePrimaryClickEventAsync(uiWindow, uiEvent);
                     }
@@ -1063,7 +1063,7 @@ namespace Blade.MG.UI
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandleMultiClickEventAsync(uiWindow, uiEvent);
                     }
@@ -1081,7 +1081,7 @@ namespace Blade.MG.UI
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandleSecondaryClickEventAsync(uiWindow, uiEvent);
                     }
@@ -1101,7 +1101,7 @@ namespace Blade.MG.UI
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandleTapEventAsync(uiWindow, uiEvent);
                     }
@@ -1119,7 +1119,7 @@ namespace Blade.MG.UI
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandleLongPressEventAsync(uiWindow, uiEvent);
                     }
@@ -1148,7 +1148,7 @@ namespace Blade.MG.UI
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandleMouseDownEventAsync(uiWindow, uiEvent);
                     }
@@ -1162,11 +1162,11 @@ namespace Blade.MG.UI
         public virtual async Task HandleMouseUpEventAsync(UIWindow uiWindow, UIMouseUpEvent uiEvent)
         {
             // Limit Mouse Events to the component layout window
-            if (uiEvent.ForcePropogation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandleMouseUpEventAsync(uiWindow, uiEvent);
                     }
@@ -1184,7 +1184,7 @@ namespace Blade.MG.UI
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent);
                     }
@@ -1203,7 +1203,7 @@ namespace Blade.MG.UI
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandleMouseClickEventAsync(uiWindow, uiEvent);
                     }
@@ -1221,7 +1221,7 @@ namespace Blade.MG.UI
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandleMouseDoubleClickEventAsync(uiWindow, uiEvent);
                     }
@@ -1239,7 +1239,7 @@ namespace Blade.MG.UI
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropogation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
                         await component?.HandleMouseRightClickEventAsync(uiWindow, uiEvent);
                     }
@@ -1274,14 +1274,14 @@ namespace Blade.MG.UI
 
         public virtual async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
-            if (uiEvent.ForcePropogation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
                     if (component != null)
                     {
                         // Always propogate event if Hover = False as we've aleady moved off that control
-                        if (uiEvent.ForcePropogation || component.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+                        if (uiEvent.ForcePropagation || component.FinalRect.Contains(uiEvent.X, uiEvent.Y))
                         {
                             await component.HandleHoverChangedAsync(uiWindow, uiEvent);
                             MouseHover = uiEvent.Hover;

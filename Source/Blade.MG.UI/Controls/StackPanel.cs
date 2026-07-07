@@ -8,6 +8,11 @@ namespace Blade.MG.UI.Controls
         public Orientation Orientation = Orientation.Horizontal;
         public bool StretchLastChild = false;
 
+        // Running offset along the stacking axis, advanced once per child during Arrange
+        // instead of being recomputed by rescanning all prior siblings on every call to
+        // GetChildBoundingBox (which was O(n) per child, O(n^2) per layout pass).
+        private int stackOffset;
+
         public StackPanel()
         {
             IsHitTestVisible = false;
@@ -20,8 +25,6 @@ namespace Blade.MG.UI.Controls
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
-            if (string.Equals(Name, "PropertyEditor_StackPanel")) { }
-
             base.Measure(context, ref availableSize, ref parentMinMax);
 
             if (Orientation == Orientation.Horizontal)
@@ -102,12 +105,6 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            if (string.Equals(Name, "PropertyEditor_StackPanel")) { }
-
-            // Arrange the layout for the inherited scroll panel and it's scrollbars
-            //base.Arrange(context, layoutBounds, parentLayoutBounds);
-            //base.Arrange(context, layoutBounds, layoutBounds);
-
             // Arrange the scroll panel first to setup the scrollbars and content area
             base.ArrangeSelf(context, layoutBounds, layoutBounds);
 
@@ -154,6 +151,7 @@ namespace Blade.MG.UI.Controls
             }
 
             // Arrange all the children within the content area of the scroll panel
+            stackOffset = 0;
             base.Arrange(context, layoutBounds, layoutBounds);
         }
 
@@ -164,83 +162,49 @@ namespace Blade.MG.UI.Controls
         /// <returns></returns>
         public override Rectangle GetChildBoundingBox(UIContext context, UIComponent child)
         {
-
             var rect = base.GetChildBoundingBox(context, child);
 
-            //if (string.Equals(Name, "AnimationCellStackPanel"))
-            //{
-            //    rect = rect with { X = 240, Width = 0, Height = 0 };
-            //}
+            // Position this child using the running offset accumulated from prior siblings
+            // in this Arrange pass (see stackOffset), rather than rescanning all prior
+            // siblings on every call.
+            int left = Orientation == Orientation.Horizontal ? stackOffset : 0;
+            int top = Orientation == Orientation.Vertical ? stackOffset : 0;
 
-
-            // Adjust the child control layout to stack them
-            int left = 0;
-            int top = 0;
-
-            foreach (var childCtrl in Children)
-            //foreach (var childCtrl in CollectionsMarshal.AsSpan<UIComponent>((List<UIComponent>)Children))
+            var childLayoutBounds = rect with
             {
-                if (childCtrl == child)
+                X = rect.X + left,
+                Y = rect.Y + top,
+                Width = Orientation == Orientation.Horizontal ? (int)child.DesiredSize.Width : rect.Width,
+                Height = Orientation == Orientation.Vertical ? (int)child.DesiredSize.Height : rect.Height
+            };
+
+            child.Arrange(context, childLayoutBounds, rect);
+
+            if (Orientation == Orientation.Horizontal)
+            {
+                if (child.Visible.Value == Visibility.Collapsed)
                 {
-                    // Only arrange the current child as we would already have called arranged on the previous children in the list
-                    //var childLayoutBounds = rect with { X = rect.X + left, Y = rect.Y + top};
-                    var childLayoutBounds = rect with
-                    {
-                        X = rect.X + left,
-                        Y = rect.Y + top,
-                        Width = Orientation == Orientation.Horizontal ? (int)child.DesiredSize.Width : rect.Width,
-                        Height = Orientation == Orientation.Vertical ? (int)child.DesiredSize.Height : rect.Height
-                    };
-
-                    childCtrl.Arrange(context, childLayoutBounds, rect);
-                    //childCtrl.Arrange(context, rect, rect);
-
-
-                    if (Orientation == Orientation.Horizontal)
-                    {
-                        if (childCtrl.Visible.Value == Visibility.Collapsed)
-                        {
-                            childCtrl.FinalRect = childCtrl.FinalRect with { X = rect.Left + left };
-                            childCtrl.FinalContentRect = childCtrl.FinalContentRect with { X = childCtrl.FinalRect.Left };
-                        }
-                        else
-                        {
-                            childCtrl.FinalRect = childCtrl.FinalRect with { X = rect.Left + left + child.Margin.Value.Left };
-                            childCtrl.FinalContentRect = childCtrl.FinalContentRect with { X = childCtrl.FinalRect.Left + childCtrl.Padding.Value.Left };
-                        }
-                    }
-                    else
-                    {
-                        if (childCtrl.Visible.Value == Visibility.Collapsed)
-                        {
-                            childCtrl.FinalRect = childCtrl.FinalRect with { Y = rect.Top + top };
-                            childCtrl.FinalContentRect = childCtrl.FinalContentRect with { Y = childCtrl.FinalRect.Top };
-                        }
-                        else
-                        {
-                            childCtrl.FinalRect = childCtrl.FinalRect with { Y = rect.Top + top + child.Margin.Value.Top };
-                            childCtrl.FinalContentRect = childCtrl.FinalContentRect with { Y = childCtrl.FinalRect.Top + childCtrl.Padding.Value.Top };
-                        }
-                    }
-
-                    break;
+                    child.FinalRect = child.FinalRect with { X = rect.Left + left };
+                    child.FinalContentRect = child.FinalContentRect with { X = child.FinalRect.Left };
                 }
-
-
-                if (childCtrl.Visible.Value != Visibility.Collapsed)
+                else
                 {
-                    if (Orientation == Orientation.Horizontal)
-                    {
-                        int cw = childCtrl.FinalRect.Width + childCtrl.Margin.Value.Left + childCtrl.Margin.Value.Right;
-                        left += cw;
-                    }
-                    else
-                    {
-                        int ch = childCtrl.FinalRect.Height + childCtrl.Margin.Value.Top + childCtrl.Margin.Value.Bottom;
-                        top += ch;
-                    }
+                    child.FinalRect = child.FinalRect with { X = rect.Left + left + child.Margin.Value.Left };
+                    child.FinalContentRect = child.FinalContentRect with { X = child.FinalRect.Left + child.Padding.Value.Left };
                 }
-
+            }
+            else
+            {
+                if (child.Visible.Value == Visibility.Collapsed)
+                {
+                    child.FinalRect = child.FinalRect with { Y = rect.Top + top };
+                    child.FinalContentRect = child.FinalContentRect with { Y = child.FinalRect.Top };
+                }
+                else
+                {
+                    child.FinalRect = child.FinalRect with { Y = rect.Top + top + child.Margin.Value.Top };
+                    child.FinalContentRect = child.FinalContentRect with { Y = child.FinalRect.Top + child.Padding.Value.Top };
+                }
             }
 
             // Add the Margin back in
@@ -261,6 +225,16 @@ namespace Blade.MG.UI.Controls
                     Width = child.FinalRect.Width + child.Margin.Value.Left + child.Margin.Value.Right,
                     Height = child.FinalRect.Height + child.Margin.Value.Top + child.Margin.Value.Bottom,
                 };
+
+                // Advance the running offset for the next sibling.
+                if (Orientation == Orientation.Horizontal)
+                {
+                    stackOffset += child.FinalRect.Width + child.Margin.Value.Left + child.Margin.Value.Right;
+                }
+                else
+                {
+                    stackOffset += child.FinalRect.Height + child.Margin.Value.Top + child.Margin.Value.Bottom;
+                }
             }
 
             return child.FinalRect;
@@ -272,8 +246,6 @@ namespace Blade.MG.UI.Controls
             {
                 return;
             }
-
-            //if (string.Equals(Name, "AnimationCellStackPanel")) { }
 
             base.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
         }

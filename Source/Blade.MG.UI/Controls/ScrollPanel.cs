@@ -51,8 +51,8 @@ namespace Blade.MG.UI.Controls
 
         protected Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
 
-        public int HorizontalScrollOffset => HorizontalScrollBar?.ScrollOfset ?? 0;
-        public int VerticalScrollOffset => VerticalScrollBar?.ScrollOfset ?? 0;
+        public int HorizontalScrollOffset => HorizontalScrollBar?.ScrollOffset ?? 0;
+        public int VerticalScrollOffset => VerticalScrollBar?.ScrollOffset ?? 0;
 
 
         public ScrollPanel()
@@ -85,9 +85,6 @@ namespace Blade.MG.UI.Controls
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
             //base.Measure(context, ref availableSize, ref parentMinMax);
-
-            //if (string.Equals(Name, "ProjectExplorerTree")) { }
-            //if (string.Equals(Name, "AnimationCellStackPanel")) { }
 
             //IsWidthVirtual = true;
             //IsHeightVirtual = true;
@@ -213,8 +210,8 @@ namespace Blade.MG.UI.Controls
 
             rect = rect with
             {
-                X = rect.X - HorizontalScrollBar.ScrollOfset,
-                Y = rect.Y - VerticalScrollBar.ScrollOfset,
+                X = rect.X - HorizontalScrollBar.ScrollOffset,
+                Y = rect.Y - VerticalScrollBar.ScrollOffset,
 
                 Width = rect.Width - (IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0),
                 Height = rect.Height - (IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)
@@ -238,7 +235,7 @@ namespace Blade.MG.UI.Controls
             {
                 try
                 {
-                    using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+                    var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
 
                     // context.Renderer.FillRect(new Rectangle(finalRect.Left, finalRect.Bottom - HorizontalScrollBar.BarThickness, finalRect.Width, HorizontalScrollBar.BarThickness), HorizontalScrollBar.Background);
                     context.Renderer.FillRect(spriteBatch, new Rectangle(FinalRect.Right - VerticalScrollBar.BarThickness, FinalRect.Bottom - HorizontalScrollBar.BarThickness, VerticalScrollBar.BarThickness, HorizontalScrollBar.BarThickness), HorizontalScrollBar.Background.Value, Rectangle.Intersect(layoutBounds, FinalRect));

@@ -91,7 +91,7 @@ namespace Blade.MG.UI.Controls
             // If we have rounded corners, then we need to restore the stencil mask
             if (hasCornerRadius)
             {
-                using var spriteBatch = context.Renderer.BeginBatch(
+                var spriteBatch = context.Renderer.BeginBatch(
                     depthStencilState: UIRenderer.stencilStateReplaceAlways,
                     blendState: UIRenderer.blendStateStencilOnly,
                     transform: null);
@@ -110,7 +110,7 @@ namespace Blade.MG.UI.Controls
 
         private void RenderShadow(UIContext context, Rectangle layoutBounds, Transform parentTransform, CornerRadius cornerRadius)
         {
-            using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+            var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
             context.Renderer.ClipToRect(layoutBounds);
 
             var shadowRect = FinalRect with
@@ -126,7 +126,7 @@ namespace Blade.MG.UI.Controls
 
         private void RenderBorder(UIContext context, Rectangle layoutBounds, Transform parentTransform, CornerRadius cornerRadius, Thickness borderThickness)
         {
-            using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+            var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
             context.Renderer.ClipToRect(layoutBounds);
 
             if (!cornerRadius.HasRadius)
@@ -244,7 +244,7 @@ namespace Blade.MG.UI.Controls
         /// </summary>
         private void DrawStencil(UIContext context, Rectangle rectangle, CornerRadius cornerRadius)
         {
-            using var spriteBatch = context.Renderer.BeginBatch(
+            var spriteBatch = context.Renderer.BeginBatch(
                 depthStencilState: UIRenderer.stencilStateZeroAlways,
                 blendState: UIRenderer.blendStateStencilOnly,
                 transform: null);

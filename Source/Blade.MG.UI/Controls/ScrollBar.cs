@@ -12,7 +12,7 @@ namespace Blade.MG.UI.Controls
         private int maxValue = 100;
         public int MaxValue { get => maxValue; set => maxValue = Math.Max(0, value); }
 
-        public int ScrollOfset { get; set; } = 0;
+        public int ScrollOffset { get; set; } = 0;
 
         public int BarThickness { get; set; } = 20;
 
@@ -40,9 +40,9 @@ namespace Blade.MG.UI.Controls
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
-            if (ScrollOfset > MaxValue)
+            if (ScrollOffset > MaxValue)
             {
-                ScrollOfset = MaxValue;
+                ScrollOffset = MaxValue;
             }
 
             if (Orientation == Orientation.Horizontal)
@@ -96,7 +96,7 @@ namespace Blade.MG.UI.Controls
 
             if (MaxValue > 0)
             {
-                scrollFactor = ScrollOfset / (float)MaxValue;
+                scrollFactor = ScrollOffset / (float)MaxValue;
             }
 
             if (scrollFactor < 0)
@@ -114,7 +114,7 @@ namespace Blade.MG.UI.Controls
 
             try
             {
-                using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+                var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
 
                 //Rectangle rect = FinalRect;
                 Rectangle rect = Rectangle.Intersect(layoutBounds, FinalRect);
@@ -281,18 +281,18 @@ namespace Blade.MG.UI.Controls
             // Handle mouse scroll event
             if (Visible.Value == Visibility.Visible && Orientation == Orientation.Horizontal && uiEvent.HorizontalScroll != 0)
             {
-                ScrollOfset += uiEvent.HorizontalScroll / 2;  // Control direction and scroll speed
+                ScrollOffset += uiEvent.HorizontalScroll / 2;  // Control direction and scroll speed
                 uiEvent.Handled = true;
             }
             else if (Visible.Value == Visibility.Visible && Orientation == Orientation.Vertical && uiEvent.VerticalScroll != 0)
             {
-                ScrollOfset -= uiEvent.VerticalScroll / 2;   // Control direction and scroll speed
+                ScrollOffset -= uiEvent.VerticalScroll / 2;   // Control direction and scroll speed
                 uiEvent.Handled = true;
             }
 
             // Make sure we don't exceed the limits
-            if (ScrollOfset < 0) ScrollOfset = 0;
-            if (ScrollOfset > MaxValue) ScrollOfset = MaxValue;
+            if (ScrollOffset < 0) ScrollOffset = 0;
+            if (ScrollOffset > MaxValue) ScrollOffset = MaxValue;
 
 
             await base.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent);
@@ -330,10 +330,10 @@ namespace Blade.MG.UI.Controls
                 factor = (mouseY - FinalRect.Top) / (float)(FinalRect.Bottom - FinalRect.Top);
             }
 
-            ScrollOfset = (int)(MaxValue * factor);
+            ScrollOffset = (int)(MaxValue * factor);
 
-            if (ScrollOfset < 0) ScrollOfset = 0;
-            if (ScrollOfset > MaxValue) ScrollOfset = MaxValue;
+            if (ScrollOffset < 0) ScrollOffset = 0;
+            if (ScrollOffset > MaxValue) ScrollOffset = MaxValue;
 
         }
 

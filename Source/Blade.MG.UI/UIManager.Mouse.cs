@@ -133,7 +133,7 @@ namespace Blade.MG.UI
                     MiddleButton = InputManager.Mouse.MiddleButton,
                     SecondaryButton = InputManager.Mouse.SecondaryButton,
 
-                    ForcePropogation = eventLockedWindow != null
+                    ForcePropagation = eventLockedWindow != null
                 };
                 await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
 
@@ -165,7 +165,7 @@ namespace Blade.MG.UI
                     MiddleButton = InputManager.Mouse.MiddleButton,
                     SecondaryButton = InputManager.Mouse.SecondaryButton,
 
-                    ForcePropogation = eventLockedWindow != null
+                    ForcePropagation = eventLockedWindow != null
                 };
                 await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
 
@@ -185,7 +185,7 @@ namespace Blade.MG.UI
                     MiddleButton = InputManager.Mouse.MiddleButton,
                     SecondaryButton = InputManager.Mouse.SecondaryButton,
 
-                    ForcePropogation = eventLockedWindow != null
+                    ForcePropagation = eventLockedWindow != null
                 };
                 await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseUpEventAsync(uiWindow, uiEvent); });
             }
@@ -219,7 +219,7 @@ namespace Blade.MG.UI
                     Y = InputManager.Mouse.Y,
                     VerticalScroll = scrollVertical,
                     HorizontalScroll = scrollHorizontal,
-                    ForcePropogation = false
+                    ForcePropagation = false
                 };
 
                 await DispatchEventAsync(eventLockedWindow, point, async (uiWindow) => { await uiWindow.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent); });

@@ -236,8 +236,8 @@ namespace Blade.MG.UI.Controls
         /// <returns></returns>
         public override Rectangle GetChildBoundingBox(UIContext context, UIComponent child)
         {
-            return child.FinalRect with { X = child.FinalRect.X - HorizontalScrollBar.ScrollOfset, Y = child.FinalRect.Y - VerticalScrollBar.ScrollOfset };
-            //return child.finalContentRect with { X = child.finalContentRect.X - HorizontalScrollBar.ScrollOfset, Y = child.finalContentRect.Y - VerticalScrollBar.ScrollOfset };
+            return child.FinalRect with { X = child.FinalRect.X - HorizontalScrollBar.ScrollOffset, Y = child.FinalRect.Y - VerticalScrollBar.ScrollOffset };
+            //return child.finalContentRect with { X = child.finalContentRect.X - HorizontalScrollBar.ScrollOffset, Y = child.finalContentRect.Y - VerticalScrollBar.ScrollOffset };
         }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)

@@ -304,7 +304,7 @@ namespace Blade.MG.UI.Controls
             // Draw the dividing line between the tab headers and tab body
             try
             {
-                using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+                var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
 
                 Rectangle dividerRect = new Rectangle(tabsStackPanel.FinalRect.Left, tabsStackPanel.FinalRect.Bottom - 2, tabsStackPanel.FinalRect.Width, 2);
                 context.Renderer.FillRect(spriteBatch, dividerRect, DividerColor, layoutBounds);
@@ -412,7 +412,7 @@ namespace Blade.MG.UI.Controls
             // Handle click event on Tab Headers
             foreach (var item in tabsStackPanel.Children)
             {
-                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropogation))
+                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropagation))
                 {
                     await item.HandleMouseClickEventAsync(uiWindow, uiEvent);
 
@@ -437,7 +437,7 @@ namespace Blade.MG.UI.Controls
             // Handle double click event on Tab Headers
             foreach (var item in tabsStackPanel.Children)
             {
-                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropogation))
+                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropagation))
                 {
                     await item.HandleMouseDoubleClickEventAsync(uiWindow, uiEvent);
 
@@ -462,7 +462,7 @@ namespace Blade.MG.UI.Controls
             // Handle right click event on Tab Headers
             foreach (var item in tabsStackPanel.Children)
             {
-                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropogation))
+                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropagation))
                 {
                     await item.HandleMouseRightClickEventAsync(uiWindow, uiEvent);
 
@@ -487,7 +487,7 @@ namespace Blade.MG.UI.Controls
             // Handle mouse down event on Tab Headers
             foreach (var item in tabsStackPanel.Children)
             {
-                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropogation))
+                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropagation))
                 {
                     await item.HandleMouseDownEventAsync(uiWindow, uiEvent);
 
@@ -512,7 +512,7 @@ namespace Blade.MG.UI.Controls
             // Handle mouse up event on Tab Headers
             foreach (var item in tabsStackPanel.Children)
             {
-                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropogation))
+                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropagation))
                 {
                     await item.HandleMouseUpEventAsync(uiWindow, uiEvent);
 
@@ -537,7 +537,7 @@ namespace Blade.MG.UI.Controls
             // Handle mouse wheel scroll event on Tab Headers
             foreach (var item in tabsStackPanel.Children)
             {
-                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropogation))
+                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropagation))
                 {
                     await item.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent);
 

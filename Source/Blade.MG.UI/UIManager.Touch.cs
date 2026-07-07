@@ -90,7 +90,7 @@ namespace Blade.MG.UI
             //        Y = InputManager.Mouse.Y,
             //        VerticalScroll = scrollVertical,
             //        HorizontalScroll = scrollHorizontal,
-            //        ForcePropogation = false
+            //        ForcePropagation = false
             //    };
 
             //    await DispatchEventAsync(eventLockedWindow, async (uiWindow) => { await uiWindow.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent); });

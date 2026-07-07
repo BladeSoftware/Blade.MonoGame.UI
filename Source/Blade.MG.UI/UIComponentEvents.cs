@@ -150,7 +150,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleMouseUpEventAsync(UIWindow uiWindow, UIMouseUpEvent uiEvent)
         {
-            if (uiEvent.ForcePropogation || (FinalRect.Contains(uiEvent.X, uiEvent.Y) && Visible.Value == Visibility.Visible))
+            if (uiEvent.ForcePropagation || (FinalRect.Contains(uiEvent.X, uiEvent.Y) && Visible.Value == Visibility.Visible))
             {
                 await base.HandleMouseUpEventAsync(uiWindow, uiEvent);
                 OnMouseUp?.Invoke(this, uiEvent);
@@ -171,7 +171,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleFocusChangedEventAsync(UIWindow uiWindow, UIFocusChangedEvent uiEvent)
         {
-            //if (uiEvent.ForcePropogation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            //if (uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             //{
             await base.HandleFocusChangedEventAsync(uiWindow, uiEvent);
             OnFocusChanged?.Invoke(this, uiEvent);
@@ -183,7 +183,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
-            if (uiEvent.ForcePropogation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await base.HandleHoverChangedAsync(uiWindow, uiEvent);
                 OnHoverChanged?.Invoke(uiEvent);

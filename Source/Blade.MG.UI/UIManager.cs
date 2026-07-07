@@ -30,6 +30,12 @@ namespace Blade.MG.UI
 
         public static readonly int MaxZIndex = 9999;
 
+        /// <summary>
+        /// Gets or sets whether control caching is enabled globally.
+        /// </summary>
+        public static bool EnableControlCaching { get; set; } = true;
+
+
         //private static SemaphoreSlim uiSemaphore = new SemaphoreSlim(1);
 
         public static UITheme DefaultTheme { get; set; } = DefaultThemes.LightTheme();
@@ -48,18 +54,17 @@ namespace Blade.MG.UI
         // Queue for async continuations to run on the main thread
         private ConcurrentQueue<Action> mainThreadQueue = new ConcurrentQueue<Action>();
 
-        // Track pending async operations (for debugging/monitoring)
-        //private int pendingAsyncOperations = 0;
-
-
-        //private JoinableTaskFactory joinableTaskFactory;
+        // Used to run input handlers to completion synchronously each frame (see
+        // RunInputHandlerSync). JoinableTaskFactory avoids the deadlock risk of raw
+        // GetAwaiter().GetResult() sync-over-async.
+        private readonly JoinableTaskFactory joinableTaskFactory;
 
 
         public UIManager(Game game)
         {
             this.game = game;
 
-            // joinableTaskFactory = new JoinableTaskFactory(new JoinableTaskContext());
+            joinableTaskFactory = new JoinableTaskFactory(new JoinableTaskContext());
         }
 
         private string ToPriority(int i) => $"{i.ToString("0000")}.{Stopwatch.GetTimestamp()}";
@@ -330,21 +335,26 @@ namespace Blade.MG.UI
 
         //}
 
-        // Helper method to handle fire-and-forget with exception logging
-        private void FireAndForget(Task task)
+        // Input handlers are async for API consistency (so control event handlers can await
+        // things like dialogs), but perform no real asynchronous I/O in the framework itself.
+        // Running them to completion here - in a fixed order, before layout - keeps each
+        // frame's input handling and layout deterministic. Each handler is isolated so a
+        // fault in one (e.g. keyboard) doesn't prevent the others from running this frame.
+        private void RunInputHandlerSync(Func<Task> taskFactory, string handlerName)
         {
-            task.ContinueWith(t =>
+            try
             {
-                if (t.IsFaulted)
-                {
-                    Debug.WriteLine($"Async error: {t.Exception?.InnerException?.Message}");
-                }
-            }, TaskContinuationOptions.OnlyOnFaulted);
+                joinableTaskFactory.Run(taskFactory);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error processing {handlerName} input: {ex}");
+            }
         }
 
 
         /// <summary>
-        /// SYNCHRONOUS Update - never blocks, async operations are fire-and-forget
+        /// SYNCHRONOUS Update - input is handled to completion, in order, before layout runs.
         /// </summary>
         public override void Update(GameTime gameTime)
         {
@@ -375,12 +385,12 @@ namespace Blade.MG.UI
                 ui.AreEventsLockedToControl = (eventLockedWindow != null);
             }
 
-            // Handle input - fire-and-forget async operations
-            // These methods should NOT be awaited in the game loop
-            FireAndForget(HandleKeyboardInputAsync(eventLockedWindow, eventLockedControl, true, gameTime));
-            FireAndForget(HandleMouseInputAsync(eventLockedWindow, eventLockedControl, true, gameTime));
-            FireAndForget(HandleTouchInputAsync(eventLockedWindow, eventLockedControl, true, gameTime));
-            FireAndForget(HandleGamePadInputAsync(eventLockedWindow, eventLockedControl, true, gameTime));
+            // Handle input synchronously and in order, so layout below always sees this
+            // frame's fully up-to-date input state (hover, focus, scroll offsets, etc.)
+            RunInputHandlerSync(() => HandleKeyboardInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "keyboard");
+            RunInputHandlerSync(() => HandleMouseInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "mouse");
+            RunInputHandlerSync(() => HandleTouchInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "touch");
+            RunInputHandlerSync(() => HandleGamePadInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "gamepad");
 
             // Arrange layout (synchronous)
             foreach (var ui in uiWindows)
@@ -392,46 +402,59 @@ namespace Blade.MG.UI
             }
         }
 
-        public override void Draw(SpriteBatch spriteBatch, GameTime gameTime)
+        ///// <summary>
+        ///// Performs pre-rendering for all windows that support caching.
+        ///// This should be called before Draw when caching is enabled.
+        ///// </summary>
+        //public void PreRender(GameTime gameTime)
+        //{
+        //    if (!EnableControlCaching)
+        //        return;
+
+        //    foreach (var ui in uiWindows)
+        //    {
+        //        if (ui.Value.Visible.Value == Components.Visibility.Visible && ui.Value.EnableControlCaching)
+        //        {
+        //            ui.Value.PreRenderLayout(gameTime);
+        //        }
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Draw with automatic pre-render support.
+        ///// </summary>
+        //public void DrawWithCaching(SpriteBatch spriteBatch, GameTime gameTime)
+        //{
+        //    // First, perform pre-render phase for all cacheable controls
+        //    PreRender(gameTime);
+
+        //    // Then perform normal draw
+        //    Draw(spriteBatch, gameTime);
+        //}
+
+        public override void Draw(SpriteBatch spriteBatch, GameTime gameTime, RenderTarget2D renderTarget)
         {
-            //base.Render(spriteBatch, gameTime);
-
-            using (SpriteBatch sb = new SpriteBatch(graphicsDevice))
+            foreach (var ui in uiWindows)
             {
-                try
+                if (ui.Value.Visible.Value == Visibility.Visible)
                 {
-                    //uiSemaphore.Wait();
-
-                    foreach (var ui in uiWindows)
-                    {
-                        if (ui.Value.Visible.Value == Visibility.Visible)
-                        {
-                            ui.Value.RenderLayout(gameTime);
-                            //ui.RenderLayout(graphicsDevice.Viewport.Bounds);
-                        }
-                    }
+                    ui.Value.RenderLayout(gameTime);
                 }
-                finally
+            }
+
+            // Outline control we're hovering over. Only allocate a SpriteBatch for this when
+            // the debug overlay is actually enabled, rather than every frame regardless.
+            if (RenderControlHitBoxes)
+            {
+                using SpriteBatch sb = new SpriteBatch(graphicsDevice);
+
+                sb.Begin();
+                foreach (var control in HoverIterator)
                 {
-                    //uiSemaphore.Release();
+                    Primitives2D.DrawRect(sb, control.FinalContentRect, Color.Blue);
+                    Primitives2D.DrawRect(sb, control.FinalRect, Color.Red);
                 }
-
-                // Outline control we're hovering over
-                if (RenderControlHitBoxes)
-                {
-                    sb.Begin();
-                    foreach (var control in HoverIterator)
-                    {
-                        //Primitives2D.DrawRect(sb, control.clippingRect, Color.Green);
-                        Primitives2D.DrawRect(sb, control.FinalContentRect, Color.Blue);
-                        Primitives2D.DrawRect(sb, control.FinalRect, Color.Red);
-
-                        //if (control.MouseHover.Value) { Primitives2D.DrawCircle(sb, control.FinalRect.Left, control.FinalRect.Top, 7, Color.Yellow); }
-                        //if (control.HasFocus.Value) { Primitives2D.FillCircle(sb, control.FinalRect.Left, control.FinalRect.Top, 5, Color.White); } 
-                    }
-                    sb.End();
-                }
-
+                sb.End();
             }
         }
 

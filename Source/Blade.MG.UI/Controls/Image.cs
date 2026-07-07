@@ -109,7 +109,6 @@ namespace Blade.MG.UI.Controls
 
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            //if (string.Equals(Name, "ZYX")) { }
             base.Arrange(context, layoutBounds, parentLayoutBounds);
 
             //var tmpDesiredSize = DesiredSize;
@@ -135,8 +134,6 @@ namespace Blade.MG.UI.Controls
             {
                 return;
             }
-
-            if (string.Equals(Name, "ZYX")) { }
 
             var renderBounds = Rectangle.Intersect(layoutBounds, FinalContentRect);
             //base.RenderControl(context, renderBounds, parentTransform);

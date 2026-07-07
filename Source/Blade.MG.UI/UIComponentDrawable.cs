@@ -133,7 +133,7 @@ namespace Blade.MG.UI
             {
                 try
                 {
-                    using var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+                    var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
                     context.Renderer.FillRect(spriteBatch, FinalRect, Background.Value, layoutBounds);
                 }
                 finally

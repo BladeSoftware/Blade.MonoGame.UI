@@ -361,7 +361,7 @@ namespace Blade.MG.UI.Controls
 
             nodeBounds.Y += nodeBounds.Height;
 
-            var nodeFinalRect = new Rectangle(nodeBounds.X - HorizontalScrollBar.ScrollOfset, nodeBounds.Y - VerticalScrollBar.ScrollOfset, nodeBounds.Width, nodeBounds.Height);
+            var nodeFinalRect = new Rectangle(nodeBounds.X - HorizontalScrollBar.ScrollOffset, nodeBounds.Y - VerticalScrollBar.ScrollOffset, nodeBounds.Width, nodeBounds.Height);
 
             //if (!collapsed && Rectangle.Intersect(GetChildBoundingBox(context, nodeTemplate), FinalRect) != Rectangle.Empty)
             if (!collapsed && Rectangle.Intersect(nodeFinalRect, FinalRect) != Rectangle.Empty)
@@ -487,8 +487,8 @@ namespace Blade.MG.UI.Controls
             //var childText = ((dynamic)child)?.label1?.Text;
             //if (string.Equals(childText, "FreeFall")) { };
 
-            return child.FinalRect with { X = child.FinalRect.X - HorizontalScrollBar.ScrollOfset, Y = child.FinalRect.Y - VerticalScrollBar.ScrollOfset };
-            //return child.finalContentRect with { X = child.finalContentRect.X - HorizontalScrollBar.ScrollOfset, Y = child.finalContentRect.Y - VerticalScrollBar.ScrollOfset };
+            return child.FinalRect with { X = child.FinalRect.X - HorizontalScrollBar.ScrollOffset, Y = child.FinalRect.Y - VerticalScrollBar.ScrollOffset };
+            //return child.finalContentRect with { X = child.finalContentRect.X - HorizontalScrollBar.ScrollOffset, Y = child.finalContentRect.Y - VerticalScrollBar.ScrollOffset };
         }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
@@ -605,9 +605,9 @@ namespace Blade.MG.UI.Controls
                 //TempNodeTemplate.HasFocus = hasFocus;
                 ParentWindow.focusedComponent = TempNodeTemplate;
 
-                joinableTaskFactory.Run(async () => await TempNodeTemplate.HandleFocusChangedEventAsync(ParentWindow, new UIFocusChangedEvent { Focused = hasFocus, ForcePropogation = false, Handled = false }));
+                joinableTaskFactory.Run(async () => await TempNodeTemplate.HandleFocusChangedEventAsync(ParentWindow, new UIFocusChangedEvent { Focused = hasFocus, ForcePropagation = false, Handled = false }));
 
-                //TempNodeTemplate.HandleFocusChangedEventAsync(ParentWindow, new UIFocusChangedEvent { Focused = hasFocus, ForcePropogation = false, Handled = false });
+                //TempNodeTemplate.HandleFocusChangedEventAsync(ParentWindow, new UIFocusChangedEvent { Focused = hasFocus, ForcePropagation = false, Handled = false });
             }
 
             //TempNodeTemplate.HasFocus = (focusedNode == TempNodeTemplate.DataContext.GetHashCode());

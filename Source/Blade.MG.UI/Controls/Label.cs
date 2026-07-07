@@ -32,7 +32,7 @@ namespace Blade.MG.UI.Controls
             Text = null;
             FontName = null; // Use default font
             FontSize = null;
-            TextColor = Color.Black;
+            TextColor = UIManager.DefaultTheme.OnSurface;
 
             Background = Color.Transparent;
 

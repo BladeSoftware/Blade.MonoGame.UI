@@ -8,14 +8,21 @@ namespace Blade.MG.UI.Controls
 {
     public class TextBox : TemplatedControl
     {
-        private Binding<string> text;
+        private Binding<string> text = new Binding<string>();
 
         public Binding<string> Text
         {
-            get { return text; }
+            get => text;
             set
             {
-                text.Value = value.Value == null || value.Value.Length <= MaxLength ? value.Value : value.Value.Substring(0, MaxLength);
+                // Adopt the assigned binding (e.g. a two-way binding to a view model property)
+                // instead of only copying its current value into our own backing binding.
+                SetField(ref text, value);
+
+                if (text.Value != null && text.Value.Length > MaxLength)
+                {
+                    text.Value = text.Value.Substring(0, MaxLength);
+                }
             }
         }
 
@@ -55,7 +62,7 @@ namespace Blade.MG.UI.Controls
             HorizontalTextAlignment = HorizontalAlignmentType.Left;
             VerticalTextAlignment = VerticalAlignmentType.Bottom;
 
-            TextColor = Color.Black;
+            TextColor = UIManager.DefaultTheme.OnSurface;
 
             IsTabStop = true;
             IsHitTestVisible = true;

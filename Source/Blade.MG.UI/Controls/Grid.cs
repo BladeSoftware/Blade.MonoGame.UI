@@ -208,9 +208,6 @@ namespace Blade.MG.UI.Controls
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
-            if (string.Equals(Name, "PropertyEditor_Grid")) { }
-            if (string.Equals(Name, "Example_Grid")) { }
-
             MeasureSelf(context, ref availableSize, ref parentMinMax);
 
             parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
@@ -329,9 +326,6 @@ namespace Blade.MG.UI.Controls
         /// <param name="layoutBounds">Size of Parent Container</param>
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
-            if (string.Equals(Name, "PropertyEditor_Grid")) { }
-            if (string.Equals(Name, "Example_Grid")) { }
-
             ArrangeSelf(context, layoutBounds, parentLayoutBounds);
 
             // Use the parent's provided layout bounds for sizing

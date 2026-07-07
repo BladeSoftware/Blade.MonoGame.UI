@@ -10,7 +10,7 @@ using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Renderer
 {
-    public class UIRenderer
+    public class UIRenderer : IDisposable
     {
         private class State
         {
@@ -28,7 +28,14 @@ namespace Blade.MG.UI.Renderer
         [JsonIgnore]
         [XmlIgnore]
         public GraphicsDevice GraphicsDevice { get; set; }
-        //private SpriteBatch spriteBatch { get; set; }
+
+        // Single SpriteBatch reused for every BeginBatch/EndBatch pair instead of allocating
+        // a new one per control per frame. BeginBatch/EndBatch calls are never nested (each
+        // control begins and ends its own batch before the next one starts), so one shared
+        // instance is safe.
+        [JsonIgnore]
+        [XmlIgnore]
+        private SpriteBatch spriteBatch;
 
         [JsonIgnore]
         [XmlIgnore]
@@ -54,7 +61,7 @@ namespace Blade.MG.UI.Renderer
         {
             Context = context;
             GraphicsDevice = Context?.GraphicsDevice;
-            //spriteBatch = context.SpriteBatch;
+            spriteBatch = new SpriteBatch(GraphicsDevice);
 
             rasterizerState = new RasterizerState
             {
@@ -166,15 +173,11 @@ namespace Blade.MG.UI.Renderer
         {
             PushState();
 
-            //BlendState currentBlendState = blendState ?? BlendState.AlphaBlend;
             BlendState currentBlendState = blendState ?? BlendState.NonPremultiplied;
-            //DepthStencilState currentDepthStencilState = depthStencilState ?? stencilStateKeepLessEqual;
-            //DepthStencilState currentDepthStencilState = depthStencilState ?? DepthStencilState.None;
             DepthStencilState currentDepthStencilState = depthStencilState ?? stencilState2;
 
             Effect currentEffect = effect;
 
-            SpriteBatch spriteBatch = new SpriteBatch(GraphicsDevice);
             spriteBatch.Begin(spriteSortMode, currentBlendState, SamplerState.LinearClamp, currentDepthStencilState, rasterizerState, currentEffect, transform?.GetMatrix());
 
             return spriteBatch;
@@ -182,13 +185,9 @@ namespace Blade.MG.UI.Renderer
 
         public void EndBatch()
         {
-            //spriteBatch.End();
+            spriteBatch.End();
 
             PopState();
-
-            //var state = clippingRect.Pop();
-            //spriteBatch.GraphicsDevice.ScissorRectangle = state.ClipRect;
-            //lastDepthStencilState = state.DepthStencilState;
         }
 
         public void PushState()
@@ -220,24 +219,17 @@ namespace Blade.MG.UI.Renderer
 
         public void ClearStencilBuffer()
         {
-            //GraphicsDevice.Clear(ClearOptions.Stencil, Color.Black, 0f, 0);
-
-            //GraphicsDevice.Clear(Color.Red);
-            //var v = GraphicsDevice.Viewport.Bounds;
-            //GraphicsDevice.ScissorRectangle = new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth + v.Left, GraphicsDevice.PresentationParameters.BackBufferHeight + v.Top);
-            //GraphicsDevice.Clear(ClearOptions.Stencil, Color.Transparent, 0f, -1);
-
-            //Rectangle viewport = GraphicsDevice.Viewport.Bounds;
-
-            using var spriteBatch = BeginBatch(depthStencilState: stencilStateReplaceAlways, effect: null, blendState: blendStateStencilOnly, transform: null);
-            //Primitives2D.FillRect(Context.Game, spriteBatch, ViewportBounds, Color.White);
-            //Primitives2D.FillRect(spriteBatch, ViewportBounds, Color.White);
-            //Primitives2D.FillRect(spriteBatch, BackBufferBounds, Color.White);
+            var spriteBatch = BeginBatch(depthStencilState: stencilStateReplaceAlways, effect: null, blendState: blendStateStencilOnly, transform: null);
 
             spriteBatch.Draw(Primitives2D.PixelTexture(GraphicsDevice), BackBufferBounds, Color.White);
 
             EndBatch();
 
+        }
+
+        public void Dispose()
+        {
+            spriteBatch?.Dispose();
         }
 
         public void ClipToRect(Rectangle rect)

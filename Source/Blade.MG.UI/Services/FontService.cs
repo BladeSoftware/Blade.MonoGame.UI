@@ -16,6 +16,13 @@ namespace Blade.MG.UI.Services
         [XmlIgnore]
         private static Dictionary<string, FontSystem> Fonts = new Dictionary<string, FontSystem>(StringComparer.InvariantCultureIgnoreCase);
 
+        // Tracks which font data has already been added to each named FontSystem, so that
+        // registering the same font twice (e.g. every UIWindow registering "Default" on
+        // Initialize) is a no-op instead of adding duplicate font faces to the atlas.
+        [JsonIgnore]
+        [XmlIgnore]
+        private static Dictionary<string, List<byte[]>> RegisteredFontData = new Dictionary<string, List<byte[]>>(StringComparer.InvariantCultureIgnoreCase);
+
         /// <summary>
         /// Load a font from a file name
         /// e.g. RegisterFont("GameFont-Bold", @"Content/Fonts/GameFont-Bold.ttf");
@@ -30,6 +37,8 @@ namespace Blade.MG.UI.Services
         /// <summary>
         /// Load a font from a Byte[]
         /// e.g. RegisterFont("GameFont-Bold", File.ReadAllBytes(@"Content/Fonts/GameFont-Bold.ttf"));
+        /// Registering identical font data under the same name more than once (e.g. from
+        /// multiple UIWindows) is safe and will not add duplicate font faces.
         /// </summary>
         /// <param name="fontName"></param>
         /// <param name="fontFile"></param>
@@ -39,9 +48,17 @@ namespace Blade.MG.UI.Services
             {
                 fontSystem = new FontSystem();
                 Fonts.Add(fontName, fontSystem);
+                RegisteredFontData.Add(fontName, new List<byte[]>());
             }
 
-            fontSystem.AddFont(fontFile);
+            List<byte[]> registered = RegisteredFontData[fontName];
+            bool alreadyRegistered = registered.Any(existing => existing.AsSpan().SequenceEqual(fontFile));
+
+            if (!alreadyRegistered)
+            {
+                fontSystem.AddFont(fontFile);
+                registered.Add(fontFile);
+            }
 
             if (makeDefaultFont)
             {

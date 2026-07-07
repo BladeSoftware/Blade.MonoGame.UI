@@ -60,36 +60,16 @@ namespace Blade.MG.UI
 
         public virtual void Initialize(Game game)
         {
-            //ContentManager content = new ContentManager(game.Services, "Content");
-
             Context = new UIContext
             {
                 Game = game,
-                //Content = content,
-                //Pixel = content.Load<Texture2D>("UI/pixel"),
                 Pixel = Primitives2D.PixelTexture(game.GraphicsDevice),
-                //DefaultFont = content.Load<SpriteFont>("Fonts/Arial-12"),
-                //DefaultFont = content.Load<SpriteFont>("SpriteFonts/Default"),
-                //SpriteBatch = new SpriteBatch(game.GraphicsDevice),
-                //Theme = new UITheme()
-
-                Theme = DefaultThemes.LightTheme()
-                //Theme = DefaultThemes.DarkTheme()
+                Theme = UIManager.DefaultTheme
             };
 
             Context.Renderer = new UIRenderer(Context);
 
-
             FontService.RegisterFont("Default", DefaultFont.Data);
-            //Context.FontService.RegisterFont("Default", File.ReadAllBytes(@"Content/Fonts/Poppins-SemiBold.ttf"));
-            //Context.FontService.RegisterFont("Poppins-SemiBold", File.ReadAllBytes(@"Content/Fonts/Poppins-SemiBold.ttf"));
-
-            //Context.FontSystem = new FontSystem();
-            //Context.FontSystem.AddFont(File.ReadAllBytes(@"Content/Fonts/Raleway-Regular.ttf"));
-            //Context.FontSystem.AddFont(File.ReadAllBytes(@"Content/Fonts/Poppins-SemiBold.ttf"));
-
-            //Context.DefaultFont = Context.FontService.GetFont("Default", 48);
-
         }
 
         public virtual void LoadContent()
@@ -355,7 +335,7 @@ namespace Blade.MG.UI
             if (ctrl != null)
             {
                 // Always propogate Hover Leave event as we've aleady moved off that control
-                await ctrl.HandleHoverChangedAsync(uiWindow, new UIHoverChangedEvent { Hover = false, X = InputManager.Mouse.X, Y = InputManager.Mouse.Y, ForcePropogation = true });
+                await ctrl.HandleHoverChangedAsync(uiWindow, new UIHoverChangedEvent { Hover = false, X = InputManager.Mouse.X, Y = InputManager.Mouse.Y, ForcePropagation = true });
             }
         }
 
@@ -395,7 +375,7 @@ namespace Blade.MG.UI
         {
             hover.Clear();
 
-            //Context?.SpriteBatch?.Dispose();
+            Context?.Renderer?.Dispose();
             Context = null;
 
             base.Dispose();
