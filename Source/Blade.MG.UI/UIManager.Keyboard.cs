@@ -64,11 +64,20 @@ namespace Blade.MG.UI
 
                     await DispatchEventAsync(eventLockedWindow, null, async (uiWindow) => { await uiWindow.HandleKeyPressAsync(uiWindow, uiEvent); });
 
-                    //// Handle Special Keys
-                    //if (key == Keys.Tab && !uiEvent.Handled)
-                    //{
-                    //    HandleTabNext();  // TODO: Have a focused window and stay within that ??
-                    //}
+                    // Handle Special Keys
+                    if (key == Keys.Tab && !uiEvent.Handled)
+                    {
+                        bool shiftHeld = InputManager.Keyboard.IsKeyDown(Keys.LeftShift) || InputManager.Keyboard.IsKeyDown(Keys.RightShift);
+
+                        if (shiftHeld)
+                        {
+                            await DispatchEventAsync(eventLockedWindow, null, async (uiWindow) => { await uiWindow.HandleTabPrevious(); });
+                        }
+                        else
+                        {
+                            await DispatchEventAsync(eventLockedWindow, null, async (uiWindow) => { await uiWindow.HandleTabNext(); });
+                        }
+                    }
 
                 }
 

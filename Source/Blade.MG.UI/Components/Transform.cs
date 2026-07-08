@@ -25,6 +25,12 @@ namespace Blade.MG.UI.Components
         public Vector3 Rotation { get; set; } = Vector3.Zero;
         public Vector3 Scale { get; set; } = Vector3.One;
 
+        // Cheap fast-path check so untransformed controls (the overwhelming majority) can skip
+        // all matrix/hit-test math entirely, both here and in ancestor-chain propagation.
+        [JsonIgnore]
+        [XmlIgnore]
+        public bool IsIdentity => Translation == Vector3.Zero && Rotation == Vector3.Zero && Scale == Vector3.One;
+
         //private Vector3 CenterPointAbsolute {get; set;} = Vector3.Zero;
 
         public Transform()

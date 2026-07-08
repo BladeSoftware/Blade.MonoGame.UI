@@ -1,7 +1,8 @@
-﻿using Blade.MG.UI.Components;
+using Blade.MG.UI;
+using Microsoft.Xna.Framework;
+using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
 using Examples.UI.Components;
-using Microsoft.Xna.Framework;
 
 namespace Examples.UI.HelpPages
 {
@@ -14,185 +15,62 @@ namespace Examples.UI.HelpPages
             var layoutPanel = new StackPanel()
             {
                 Orientation = Orientation.Vertical,
-
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-
             };
 
-
             base.AddChild(layoutPanel);
-
-
 
             layoutPanel.AddChild(
                 new PageHeader()
                 {
                     Padding = new Thickness(30, 0, 0, 0),
-                    Title = "Labels"
+                    Title = "Labels",
+                    Description = "Static, non-interactive text, positioned the same way as any other control."
                 });
 
-
-            // Vertical Alignment = Top
-            var alignTopGrid = new Grid()
+            var alignmentGrid = new Grid()
             {
-                Name = "TEST",
                 Width = "80%",
                 HorizontalAlignment = HorizontalAlignmentType.Center
             };
 
-            alignTopGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1) });
-            alignTopGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1) });
-            alignTopGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1) });
+            alignmentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1) });
+            alignmentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1) });
+            alignmentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1) });
 
-            alignTopGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 150) });
-            alignTopGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 150) });
-            alignTopGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 150) });
+            alignmentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 150) });
+            alignmentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 150) });
+            alignmentGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Pixel, 150) });
 
-            layoutPanel.AddChild(alignTopGrid);
+            layoutPanel.AddChild(alignmentGrid);
 
-            // Vertical Align = Top
-            alignTopGrid.AddChild(
-                new Section()
+            var verticalAligns = new[] { VerticalAlignmentType.Top, VerticalAlignmentType.Center, VerticalAlignmentType.Bottom };
+            var horizontalAligns = new[] { HorizontalAlignmentType.Left, HorizontalAlignmentType.Center, HorizontalAlignmentType.Right };
+
+            for (int row = 0; row < verticalAligns.Length; row++)
+            {
+                for (int col = 0; col < horizontalAligns.Length; col++)
                 {
-                    Content = new Label()
-                    {
-                        Text = "This is a label",
-                        TextColor = Color.Black,
-                        Width = "60%",
-                        Height = "40%",
-                        HorizontalAlignment = HorizontalAlignmentType.Left,
-                        VerticalAlignment = VerticalAlignmentType.Top
-                    }
-                },
-                0, 0);
+                    var vAlign = verticalAligns[row];
+                    var hAlign = horizontalAligns[col];
 
-            alignTopGrid.AddChild(
-                new Section()
-                {
-                    Content = new Label()
-                    {
-                        Text = "This is a label",
-                        TextColor = Color.Black,
-                        Width = "60%",
-                        Height = "40%",
-                        HorizontalAlignment = HorizontalAlignmentType.Center,
-                        VerticalAlignment = VerticalAlignmentType.Top
-                    }
-                },
-                1, 0);
-
-            alignTopGrid.AddChild(
-                new Section()
-                {
-                    Content = new Label()
-                    {
-                        Text = "This is a label",
-                        TextColor = Color.Black,
-                        Width = "60%",
-                        Height = "40%",
-                        HorizontalAlignment = HorizontalAlignmentType.Right,
-                        VerticalAlignment = VerticalAlignmentType.Top
-                    }
-                },
-                2, 0);
-
-
-            // Vertical Align = Center
-            alignTopGrid.AddChild(
-                new Section()
-                {
-                    Content = new Label()
-                    {
-                        Text = "This is a label",
-                        TextColor = Color.Black,
-                        Width = "60%",
-                        Height = "40%",
-                        HorizontalAlignment = HorizontalAlignmentType.Left,
-                        VerticalAlignment = VerticalAlignmentType.Center
-                    }
-                },
-                0, 1);
-
-            alignTopGrid.AddChild(
-                new Section()
-                {
-                    Content = new Label()
-                    {
-                        Text = "This is a label",
-                        TextColor = Color.Black,
-                        Width = "60%",
-                        Height = "40%",
-                        HorizontalAlignment = HorizontalAlignmentType.Center,
-                        VerticalAlignment = VerticalAlignmentType.Center
-                    }
-                },
-                1, 1);
-
-            alignTopGrid.AddChild(
-                new Section()
-                {
-                    Content = new Label()
-                    {
-                        Text = "This is a label",
-                        TextColor = Color.Black,
-                        Width = "60%",
-                        Height = "40%",
-                        HorizontalAlignment = HorizontalAlignmentType.Right,
-                        VerticalAlignment = VerticalAlignmentType.Center
-                    }
-                },
-                2, 1);
-
-
-            // Vertical Align = Bottom
-            alignTopGrid.AddChild(
-                new Section()
-                {
-                    Content = new Label()
-                    {
-                        Text = "This is a label",
-                        TextColor = Color.Black,
-                        Width = "60%",
-                        Height = "40%",
-                        HorizontalAlignment = HorizontalAlignmentType.Left,
-                        VerticalAlignment = VerticalAlignmentType.Bottom
-                    }
-                },
-                0, 2);
-
-            alignTopGrid.AddChild(
-                new Section()
-                {
-                    Content = new Label()
-                    {
-                        Text = "This is a label",
-                        TextColor = Color.Black,
-                        Width = "60%",
-                        Height = "40%",
-                        HorizontalAlignment = HorizontalAlignmentType.Center,
-                        VerticalAlignment = VerticalAlignmentType.Bottom
-                    }
-                },
-                1, 2);
-
-            alignTopGrid.AddChild(
-                new Section()
-                {
-                    Content = new Label()
-                    {
-                        Text = "This is a label",
-                        TextColor = Color.Black,
-                        Width = "60%",
-                        Height = "40%",
-                        HorizontalAlignment = HorizontalAlignmentType.Right,
-                        VerticalAlignment = VerticalAlignmentType.Bottom
-                    }
-                },
-                2, 2);
-
-
-
+                    alignmentGrid.AddChild(
+                        new Section()
+                        {
+                            Content = new Label()
+                            {
+                                Text = $"{hAlign} / {vAlign}",
+                                TextColor = new Binding<Color>(() => Theme.OnSurface),
+                                Width = "60%",
+                                Height = "40%",
+                                HorizontalAlignment = hAlign,
+                                VerticalAlignment = vAlign,
+                            }
+                        },
+                        col, row);
+                }
+            }
         }
 
     }

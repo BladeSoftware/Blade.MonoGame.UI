@@ -32,6 +32,10 @@ namespace Blade.MG.UI
 
         [JsonIgnore]
         [XmlIgnore]
+        internal UIComponent FocusedComponent => focusedComponent;
+
+        [JsonIgnore]
+        [XmlIgnore]
         internal List<UIComponent> hover = new List<UIComponent>();
 
         [JsonIgnore]
@@ -267,6 +271,10 @@ namespace Blade.MG.UI
 
             Transform.CalcCenterPoint(this);
 
+            // Root of the ancestor-clip chain used by shadow rendering (see
+            // UIContext.AncestorClipBounds) - the window's own visible area.
+            Context.AncestorClipBounds = layoutRect;
+
             // Clear Stencil Buffer
             Context.Renderer.ClearStencilBuffer();
 
@@ -326,7 +334,12 @@ namespace Blade.MG.UI
                 {
                     if (child != null)
                     {
-                        if (!useHitTest || Rectangle.Intersect(current.FinalRect, child.FinalRect).Contains(point))
+                        // Clip against the ancestor's own plain rect - rendering clips via an
+                        // axis-aligned GPU scissor rect regardless of a control's rotation, so
+                        // this half of the check intentionally stays untransformed to match what
+                        // actually ends up on screen. Only the target's own containment test
+                        // needs to account for its (or its ancestors') rotation/scale.
+                        if (!useHitTest || (current.FinalRect.Contains(point) && child.ContainsScreenPoint(point)))
                         {
                             SelectComponentsInternal(child, current);
 
@@ -342,7 +355,7 @@ namespace Blade.MG.UI
                 {
                     if (((Control)current).Content != null)
                     {
-                        if (!useHitTest || Rectangle.Intersect(current.FinalRect, ((Control)current).Content.FinalRect).Contains(point))
+                        if (!useHitTest || (current.FinalRect.Contains(point) && ((Control)current).Content.ContainsScreenPoint(point)))
                         {
                             SelectComponentsInternal(((Control)current).Content, current);
 
@@ -357,7 +370,7 @@ namespace Blade.MG.UI
                 {
                     foreach (UIComponent child in ((Container)current).Children)
                     {
-                        if (!useHitTest || Rectangle.Intersect(current.FinalRect, child.FinalRect).Contains(point))
+                        if (!useHitTest || (current.FinalRect.Contains(point) && child.ContainsScreenPoint(point)))
                         {
                             SelectComponentsInternal(child, current);
 
@@ -372,7 +385,7 @@ namespace Blade.MG.UI
                 {
                 }
 
-                if (!useHitTest || Rectangle.Intersect(parent.FinalRect, current.FinalRect).Contains(point))
+                if (!useHitTest || (parent.FinalRect.Contains(point) && current.ContainsScreenPoint(point)))
                 {
                     if (selector(current, parent))
                     {
@@ -450,7 +463,7 @@ namespace Blade.MG.UI
         }
 
 
-        private async Task HandleTabNext()
+        internal async Task HandleTabNext()
         {
             int lastTabOrder = -1;
 
@@ -459,20 +472,49 @@ namespace Blade.MG.UI
                 lastTabOrder = focusedComponent.TabIndex;
             }
 
-            //Func<UIComponent, bool> selector = (p) => (p.TabIndex > lastTabOrder) && (p.IsTabStop == true);
             bool selector(UIComponent p) => p.TabIndex > lastTabOrder && p.IsTabStop.Value == true;
 
-            IEnumerable<UIComponent> selected = SelectAny(selector);
-            if (lastTabOrder > 0 && selected.Count() == 0)
+            // SelectAny doesn't return controls in TabIndex order (it's whatever order the
+            // tree happens to be walked in), so this needs an explicit sort to reliably find
+            // the *closest* next stop rather than just any qualifying one.
+            IEnumerable<UIComponent> selected = SelectAny(selector).OrderBy(p => p.TabIndex);
+            if (lastTabOrder > -1 && !selected.Any())
             {
+                // Wrap around to the first tab stop in the window.
                 lastTabOrder = -1;
-                selected = SelectAny(selector);
+                selected = SelectAny(selector).OrderBy(p => p.TabIndex);
             }
 
             UIComponent nextControl = selected.FirstOrDefault();
             if (nextControl != null)
             {
                 await RaiseFocusChangedEventAsync(nextControl, this);
+            }
+        }
+
+        internal async Task HandleTabPrevious()
+        {
+            int lastTabOrder = int.MaxValue;
+
+            if (focusedComponent != null)
+            {
+                lastTabOrder = focusedComponent.TabIndex;
+            }
+
+            bool selector(UIComponent p) => p.TabIndex < lastTabOrder && p.IsTabStop.Value == true;
+
+            IEnumerable<UIComponent> selected = SelectAny(selector).OrderByDescending(p => p.TabIndex);
+            if (lastTabOrder < int.MaxValue && !selected.Any())
+            {
+                // Wrap around to the last tab stop in the window.
+                lastTabOrder = int.MaxValue;
+                selected = SelectAny(selector).OrderByDescending(p => p.TabIndex);
+            }
+
+            UIComponent previousControl = selected.FirstOrDefault();
+            if (previousControl != null)
+            {
+                await RaiseFocusChangedEventAsync(previousControl, this);
             }
         }
 

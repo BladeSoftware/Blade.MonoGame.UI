@@ -250,6 +250,8 @@ namespace Blade.MG.UI.Controls
                 return;
             }
 
+            // ScrollPanel.RenderControl (base) already tracks this panel's own bounds as a
+            // genuine viewport-clip ancestor (see UIContext.AncestorClipBounds).
             base.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
         }
 

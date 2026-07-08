@@ -194,6 +194,23 @@ namespace Blade.MG.UI
         protected internal Rectangle FinalContentRect; // Final Layout Rectangle for Control's Content, including Padding
         //protected internal Rectangle visibleRect;     // Final Layout Rectangle for Control clipped to parent control's layout bounds
 
+        // Cascaded (self + all ancestors) render transform, recomputed once per layout pass in
+        // ArrangeSelf - the single choke point every Arrange path already funnels through - so
+        // it's always in sync with FinalRect and available to hit-testing without redoing any
+        // matrix work per input event. Kept separate from the Transform.Combine(...) chain the
+        // render pass threads through RenderControl calls: duplicating a couple of cheap matrix
+        // multiplies (only for the rare transformed subtree) is far cheaper and lower-risk than
+        // rewiring every RenderControl override to consume a shared cached value.
+        public bool HasEffectiveTransform { get; private set; } = false;
+        public Matrix EffectiveTransform { get; private set; } = Matrix.Identity;
+        private Matrix effectiveTransformInverse = Matrix.Identity;
+
+        // World-space axis-aligned bounding box of FinalRect after EffectiveTransform is
+        // applied (equals FinalRect when untransformed). Used as a cheap reject before the
+        // precise per-point hit test, and available to callers that need a transformed
+        // control's true on-screen extents (e.g. invalidation, custom clip regions).
+        public Rectangle EffectiveExtents { get; private set; }
+
         internal float ActualWidth { get; set; }
         internal float ActualHeight { get; set; }
         internal float Left { get; set; }
@@ -331,6 +348,8 @@ namespace Blade.MG.UI
                 FinalRect = new Rectangle(layoutBounds.Left, layoutBounds.Top, 0, 0);
                 FinalContentRect = new Rectangle(layoutBounds.Left, layoutBounds.Top, 0, 0);
 
+                UpdateEffectiveTransform();
+
                 return;
             }
 
@@ -443,29 +462,29 @@ namespace Blade.MG.UI
 
             //--------------
 
-            if (ActualWidth != layoutBounds.Width)
+            // Every branch below resolves to the same Left/Top when Actual == layoutBounds
+            // (the (layoutBounds.Size - Actual) term is zero), so it's always safe to run this
+            // unconditionally. Gating it on ActualWidth/Height != layoutBounds.Width/Height (as
+            // this used to) skips it whenever a control has an explicit fixed Width/Height that
+            // happens to exactly match its available bounds (e.g. Stretch + a fixed size sized
+            // to fit by an auto-sized parent) - since the earlier "virtualized stretch" fast
+            // path above only fires for Width/Height == NaN, that combination left Left/Top
+            // completely unset for this pass, rendering at whatever stale position they last
+            // held.
+            switch (HorizontalAlignment.Value)
             {
-                switch (HorizontalAlignment.Value)
-                {
-                    case HorizontalAlignmentType.Left: Left = layoutBounds.Left; break;
-                    case HorizontalAlignmentType.Right: Left = layoutBounds.Left + layoutBounds.Width - ActualWidth; break;
-                    case HorizontalAlignmentType.Center: Left = layoutBounds.Left + (layoutBounds.Width - ActualWidth) / 2; break;
-                    case HorizontalAlignmentType.Stretch: Left = layoutBounds.Left + (layoutBounds.Width - ActualWidth) / 2; break;  // Handle Stretch like Center if we have a Width Constraint
-                        //case HorizontalAlignmentType.Stretch: Left = finalRect.Left; ActualWidth = finalRect.Width; break;
-                }
+                case HorizontalAlignmentType.Left: Left = layoutBounds.Left; break;
+                case HorizontalAlignmentType.Right: Left = layoutBounds.Left + layoutBounds.Width - ActualWidth; break;
+                case HorizontalAlignmentType.Center: Left = layoutBounds.Left + (layoutBounds.Width - ActualWidth) / 2; break;
+                case HorizontalAlignmentType.Stretch: Left = layoutBounds.Left + (layoutBounds.Width - ActualWidth) / 2; break;  // Handle Stretch like Center if we have a Width Constraint
             }
 
-            if (ActualHeight != layoutBounds.Height)
+            switch (VerticalAlignment.Value)
             {
-                switch (VerticalAlignment.Value)
-                {
-                    case VerticalAlignmentType.Top: Top = layoutBounds.Top; break;
-                    case VerticalAlignmentType.Bottom: Top = layoutBounds.Top + layoutBounds.Height - ActualHeight; break;
-                    case VerticalAlignmentType.Center: Top = layoutBounds.Top + (layoutBounds.Height - ActualHeight) / 2; break;
-                    case VerticalAlignmentType.Stretch: Top = layoutBounds.Top + (layoutBounds.Height - ActualHeight) / 2; break; // Handle Stretch like Center if we have a Height Constraint
-                        //case VerticalAlignmentType.Stretch: Top = finalRect.Top; ActualHeight = finalRect.Height; break;
-                }
-
+                case VerticalAlignmentType.Top: Top = layoutBounds.Top; break;
+                case VerticalAlignmentType.Bottom: Top = layoutBounds.Top + layoutBounds.Height - ActualHeight; break;
+                case VerticalAlignmentType.Center: Top = layoutBounds.Top + (layoutBounds.Height - ActualHeight) / 2; break;
+                case VerticalAlignmentType.Stretch: Top = layoutBounds.Top + (layoutBounds.Height - ActualHeight) / 2; break; // Handle Stretch like Center if we have a Height Constraint
             }
 
             FinalRect = new Rectangle((int)Left, (int)Top, (int)ActualWidth, (int)ActualHeight);
@@ -495,6 +514,7 @@ namespace Blade.MG.UI
 
             //clippingRect = Rectangle.Intersect(parent.finalRect, finalRect);
 
+            UpdateEffectiveTransform();
 
             // Arrange the Internal Components
             foreach (var child in internalChildren)
@@ -504,6 +524,87 @@ namespace Blade.MG.UI
 
         }
 
+        /// <summary>
+        /// Recomputes the cascaded (self + ancestors) render transform, its inverse, and the
+        /// resulting world-space extents. Must run after FinalRect/CalcCenterPoint inputs are
+        /// current for this node, and after the parent's own ArrangeSelf has already run (which
+        /// is always true here, since Arrange always visits parents before children).
+        /// </summary>
+        private void UpdateEffectiveTransform()
+        {
+            bool parentHasTransform = parent?.HasEffectiveTransform ?? false;
+            HasEffectiveTransform = parentHasTransform || !Transform.IsIdentity;
+
+            if (!HasEffectiveTransform)
+            {
+                // Fast path: no rotation/scale/translation anywhere from this node up to the
+                // root, so skip all matrix math - hit-testing and extents just fall back to
+                // FinalRect directly, exactly like before this feature existed.
+                EffectiveTransform = Matrix.Identity;
+                effectiveTransformInverse = Matrix.Identity;
+                EffectiveExtents = FinalRect;
+                return;
+            }
+
+            var t = Transform with { ParentMatrix = parent?.EffectiveTransform ?? Matrix.Identity };
+            t.CalcCenterPoint(this);
+            EffectiveTransform = t.GetMatrix();
+
+            // Guard against degenerate transforms (e.g. a zero Scale component) where the
+            // matrix has no inverse - such a control has no visible area, so it should simply
+            // never be hit-testable rather than risk NaN/Infinity propagating through.
+            if (Math.Abs(EffectiveTransform.Determinant()) < 1e-6f)
+            {
+                effectiveTransformInverse = Matrix.Identity;
+                EffectiveExtents = Rectangle.Empty;
+                return;
+            }
+
+            effectiveTransformInverse = Matrix.Invert(EffectiveTransform);
+            EffectiveExtents = CalculateTransformedExtents(FinalRect, EffectiveTransform);
+        }
+
+        private static Rectangle CalculateTransformedExtents(Rectangle rect, Matrix matrix)
+        {
+            Vector2 p0 = Vector2.Transform(new Vector2(rect.Left, rect.Top), matrix);
+            Vector2 p1 = Vector2.Transform(new Vector2(rect.Right, rect.Top), matrix);
+            Vector2 p2 = Vector2.Transform(new Vector2(rect.Right, rect.Bottom), matrix);
+            Vector2 p3 = Vector2.Transform(new Vector2(rect.Left, rect.Bottom), matrix);
+
+            float minX = MathF.Min(MathF.Min(p0.X, p1.X), MathF.Min(p2.X, p3.X));
+            float maxX = MathF.Max(MathF.Max(p0.X, p1.X), MathF.Max(p2.X, p3.X));
+            float minY = MathF.Min(MathF.Min(p0.Y, p1.Y), MathF.Min(p2.Y, p3.Y));
+            float maxY = MathF.Max(MathF.Max(p0.Y, p1.Y), MathF.Max(p2.Y, p3.Y));
+
+            return new Rectangle((int)MathF.Floor(minX), (int)MathF.Floor(minY), (int)MathF.Ceiling(maxX - minX), (int)MathF.Ceiling(maxY - minY));
+        }
+
+        /// <summary>
+        /// Hit-tests a screen-space point against this control, accounting for any
+        /// rotation/scale/translation applied to it or any of its ancestors. Untransformed
+        /// controls (the common case) take the exact same fast path as a plain
+        /// FinalRect.Contains check. Transformed controls get a cheap AABB reject against
+        /// EffectiveExtents before the precise test, which transforms the point into the
+        /// control's local (pre-transform) space via the cached inverse matrix and checks it
+        /// against the untransformed FinalRect - equivalent to a rotated point-in-rect test,
+        /// without needing to build/test a quad every call.
+        /// </summary>
+        public bool ContainsScreenPoint(Point point)
+        {
+            if (!HasEffectiveTransform)
+            {
+                return FinalRect.Contains(point);
+            }
+
+            if (!EffectiveExtents.Contains(point))
+            {
+                return false;
+            }
+
+            Vector2 local = Vector2.Transform(new Vector2(point.X, point.Y), effectiveTransformInverse);
+
+            return FinalRect.Contains((int)MathF.Round(local.X), (int)MathF.Round(local.Y));
+        }
 
         public virtual Rectangle GetChildBoundingBox(UIContext context, UIComponent child)
         {
@@ -1049,11 +1150,11 @@ namespace Blade.MG.UI
         protected async Task DispatchPositionedEventAsync<TEvent>(UIWindow uiWindow, TEvent uiEvent, Func<UIComponent, UIWindow, TEvent, Task> handler)
             where TEvent : UIEvent, IPositionedEvent
         {
-            if (uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.ForcePropagation || ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
+                    if (uiEvent.ForcePropagation || (component.ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)) && component.Visible.Value == Visibility.Visible))
                     {
                         await handler(component, uiWindow, uiEvent);
                     }
@@ -1125,7 +1226,7 @@ namespace Blade.MG.UI
 
         public virtual async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
-            bool outerGate = uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y);
+            bool outerGate = uiEvent.ForcePropagation || ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y));
 
             if (outerGate)
             {
@@ -1133,7 +1234,7 @@ namespace Blade.MG.UI
                 {
                     if (component != null)
                     {
-                        bool innerGate = uiEvent.ForcePropagation || component.FinalRect.Contains(uiEvent.X, uiEvent.Y);
+                        bool innerGate = uiEvent.ForcePropagation || component.ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y));
 
                         // Always propogate event if Hover = False as we've aleady moved off that control
                         if (innerGate)

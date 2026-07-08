@@ -292,11 +292,11 @@ namespace Blade.MG.UI.Controls
         public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // If we've clicked on a list item, then update SelectedItem
-            if (FinalRect.Contains(uiEvent.X, FinalRect.Y))
+            if (ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)))
             {
                 foreach (var child in Children)
                 {
-                    if (child.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+                    if (child.ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)))
                     {
                         SelectedItem = child?.DataContext;
                         SelectedItemTemplate = child;

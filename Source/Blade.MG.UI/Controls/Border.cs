@@ -65,7 +65,7 @@ namespace Blade.MG.UI.Controls
             // Draw the shadow if Elevation is > 0
             if (Elevation.Value > 0)
             {
-                RenderShadow(context, layoutBounds, parentTransform, cornerRadius);
+                RenderShadow(context, parentTransform, cornerRadius);
             }
 
             // If we have rounded corners, then we need to draw the stencil mask
@@ -122,7 +122,7 @@ namespace Blade.MG.UI.Controls
 
 
 
-        private void RenderShadow(UIContext context, Rectangle layoutBounds, Transform parentTransform, CornerRadius cornerRadius)
+        private void RenderShadow(UIContext context, Transform parentTransform, CornerRadius cornerRadius)
         {
             var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
 
@@ -132,13 +132,18 @@ namespace Blade.MG.UI.Controls
                 Y = FinalRect.Y + Elevation.Value
             };
 
-            // The shadow is deliberately offset past the control's own edge, so clipping to
-            // layoutBounds alone (the control's own footprint) would cut it off exactly where
-            // it's meant to be visible. Clip to the union of the two instead, so the shadow can
-            // extend into the space beyond the control while everything still respects any
-            // tighter clip an ancestor (e.g. a scroll viewport) may have set via layoutBounds.
-            var shadowClipRect = Rectangle.Union(layoutBounds, shadowRect);
-            context.Renderer.ClipToRect(shadowClipRect);
+            // layoutBounds has already been narrowed all the way down to (at most) this
+            // control's own FinalRect by the routine parent-to-child "don't draw outside your
+            // own box" clipping every level of the tree applies - so it can no longer tell
+            // "this edge is just my own box" apart from "this edge is a real ancestor's
+            // boundary", and clipping to it directly would always cut the shadow off exactly
+            // at this control's own edge. Clip to AncestorClipBounds instead: it's maintained
+            // separately (see UIContext.AncestorClipBounds) and only tightens at genuine
+            // viewport containers (ScrollPanel/StackPanel/ListView/TreeView/Panel/
+            // ExpansionPanel), so a free-floating control's shadow renders fully, while a
+            // control flush against its scroll/stack panel's true edge still gets clipped
+            // there.
+            context.Renderer.ClipToRect(context.AncestorClipBounds);
 
             // Use max corner radius for shadow (simplified)
             context.Renderer.FillRoundedRect(spriteBatch, shadowRect, cornerRadius.MaxRadius, new Color(Theme.Shadow, 0.35f));

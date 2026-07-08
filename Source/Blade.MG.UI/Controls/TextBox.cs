@@ -280,17 +280,42 @@ namespace Blade.MG.UI.Controls
 
         private async Task HandleKeyAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
         {
-            // Enter/Tab commit the edit the same way clicking away does: give up focus,
-            // which triggers whatever the app wired up to react to losing focus (e.g. a
-            // rename box committing its new value on HandleFocusChangedEventAsync). Only
-            // for single-line boxes - a MultiLine box should get a literal newline instead.
-            if (!MultiLine && (uiEvent.Key == Keys.Enter || uiEvent.Key == Keys.Tab))
+            // Enter commits the edit the same way clicking away does: give up focus, which
+            // triggers whatever the app wired up to react to losing focus (e.g. a rename box
+            // committing its new value on HandleFocusChangedEventAsync). Only for single-line
+            // boxes - a MultiLine box should get a literal newline instead.
+            if (!MultiLine && uiEvent.Key == Keys.Enter)
             {
                 uiEvent.Handled = true;
 
                 if (uiWindow != null)
                 {
                     await uiWindow.SetFocusAsync(null);
+                }
+
+                return;
+            }
+
+            // Tab also commits the edit (same as clicking away), but - unlike Enter - moves on
+            // to the next/previous tab stop instead of dropping focus entirely, matching
+            // standard Tab-between-fields behavior. Without this, tabbing into any TextBox was
+            // a dead end: the previous "just defocus" behavior consumed the keypress before
+            // UIManager.Keyboard.cs's own Tab handling ever saw it, so navigation could never
+            // continue past a text field.
+            if (uiEvent.Key == Keys.Tab)
+            {
+                uiEvent.Handled = true;
+
+                if (uiWindow != null)
+                {
+                    if (uiEvent.Shift)
+                    {
+                        await uiWindow.HandleTabPrevious();
+                    }
+                    else
+                    {
+                        await uiWindow.HandleTabNext();
+                    }
                 }
 
                 return;
@@ -490,7 +515,7 @@ namespace Blade.MG.UI.Controls
 
         public override async Task HandleMouseDownEventAsync(UIWindow uiWindow, UIMouseDownEvent uiEvent)
         {
-            if (!uiEvent.Handled && uiEvent.PrimaryButton.Pressed && FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (!uiEvent.Handled && uiEvent.PrimaryButton.Pressed && ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)))
             {
                 int index = (Content as TextBoxTemplate)?.GetCharacterIndexAtX(uiEvent.X) ?? Value.Length;
                 SetCursorPosition(index, false);

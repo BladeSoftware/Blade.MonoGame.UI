@@ -1,5 +1,6 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
+using Microsoft.Xna.Framework;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
@@ -64,7 +65,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleTapEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y) && Visible.Value == Visibility.Visible)
+            if (ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)) && Visible.Value == Visibility.Visible)
             {
                 await base.HandleTapEventAsync(uiWindow, uiEvent);
 
@@ -80,7 +81,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleLongPressEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y) && Visible.Value == Visibility.Visible)
+            if (ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)) && Visible.Value == Visibility.Visible)
             {
                 await base.HandleLongPressEventAsync(uiWindow, uiEvent);
 
@@ -96,7 +97,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y) && Visible.Value == Visibility.Visible)
+            if (ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)) && Visible.Value == Visibility.Visible)
             {
                 await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
 
@@ -112,7 +113,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleMouseDoubleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y) && Visible.Value == Visibility.Visible)
+            if (ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)) && Visible.Value == Visibility.Visible)
             {
                 await base.HandleMouseDoubleClickEventAsync(uiWindow, uiEvent);
 
@@ -126,7 +127,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleMouseRightClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y) && Visible.Value == Visibility.Visible)
+            if (ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)) && Visible.Value == Visibility.Visible)
             {
                 await base.HandleMouseRightClickEventAsync(uiWindow, uiEvent);
 
@@ -140,7 +141,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleMouseDownEventAsync(UIWindow uiWindow, UIMouseDownEvent uiEvent)
         {
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y) && Visible.Value == Visibility.Visible)
+            if (ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)) && Visible.Value == Visibility.Visible)
             {
                 await base.HandleMouseDownEventAsync(uiWindow, uiEvent);
                 OnMouseDown?.Invoke(this, uiEvent);
@@ -150,7 +151,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleMouseUpEventAsync(UIWindow uiWindow, UIMouseUpEvent uiEvent)
         {
-            if (uiEvent.ForcePropagation || (FinalRect.Contains(uiEvent.X, uiEvent.Y) && Visible.Value == Visibility.Visible))
+            if (uiEvent.ForcePropagation || (ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)) && Visible.Value == Visibility.Visible))
             {
                 await base.HandleMouseUpEventAsync(uiWindow, uiEvent);
                 OnMouseUp?.Invoke(this, uiEvent);
@@ -160,7 +161,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleMouseWheelScrollEventAsync(UIWindow uiWindow, UIMouseWheelScrollEvent uiEvent)
         {
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y) && Visible.Value == Visibility.Visible)
+            if (ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)) && Visible.Value == Visibility.Visible)
             {
                 await base.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent);
                 OnMouseWheelScroll?.Invoke(this, uiEvent);
@@ -171,7 +172,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleFocusChangedEventAsync(UIWindow uiWindow, UIFocusChangedEvent uiEvent)
         {
-            //if (uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            //if (uiEvent.ForcePropagation || ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)))
             //{
             await base.HandleFocusChangedEventAsync(uiWindow, uiEvent);
             OnFocusChanged?.Invoke(this, uiEvent);
@@ -183,7 +184,7 @@ namespace Blade.MG.UI
 
         public override async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
-            if (uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.ForcePropagation || ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)))
             {
                 await base.HandleHoverChangedAsync(uiWindow, uiEvent);
                 OnHoverChanged?.Invoke(uiEvent);

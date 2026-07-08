@@ -1,16 +1,13 @@
+using Blade.MG.UI;
+using Microsoft.Xna.Framework;
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
 using Examples.UI.Components;
-using Microsoft.Xna.Framework;
 
-namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
+namespace Examples.UI.HelpPages
 {
     public class HelpPage_DockPanel : Panel
     {
-        public HelpPage_DockPanel()
-        {
-        }
-
         protected override void InitTemplate()
         {
             base.InitTemplate();
@@ -18,12 +15,9 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
             var layoutPanel = new StackPanel()
             {
                 Orientation = Orientation.Vertical,
-
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-
             };
-
 
             base.AddChild(layoutPanel);
 
@@ -31,103 +25,97 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
                 new PageHeader()
                 {
                     Padding = new Thickness(30, 0, 0, 0),
-                    Title = "Dock Panel"
+                    Title = "Dock Panel",
+                    Description = "Left/Right/Top/Bottom/Center regions with draggable splitters between them."
                 });
 
+            var dockPanel = new DockPanel();
 
-            var horizStack = new StackPanel()
+            var toggles = new StackPanel()
             {
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Top,
-                Margin = new Thickness(20, 10, 20, 10),
+                Margin = new Thickness(30, 10, 30, 10),
                 HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
                 VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
             };
 
-            layoutPanel.AddChild(horizStack);
+            layoutPanel.AddChild(toggles);
 
-
-            var dockPanel = new DockPanel();
-
-            horizStack.AddChild(new CheckBox()
+            toggles.AddChild(new CheckBox()
             {
                 IsChecked = true,
                 Margin = new Thickness(0, 0, 20, 0),
                 Text = "Left Panel",
-                OnValueChanged = (value) => { dockPanel.IsLeftPanelVisible = value ?? false; }
+                OnValueChanged = value => dockPanel.IsLeftPanelVisible = value ?? false,
             });
 
-            horizStack.AddChild(new CheckBox()
+            toggles.AddChild(new CheckBox()
             {
                 IsChecked = true,
                 Margin = new Thickness(0, 0, 20, 0),
                 Text = "Right Panel",
-                OnValueChanged = (value) => { dockPanel.IsRightPanelVisible = value ?? false; }
+                OnValueChanged = value => dockPanel.IsRightPanelVisible = value ?? false,
             });
 
-            horizStack.AddChild(new CheckBox()
+            toggles.AddChild(new CheckBox()
             {
                 IsChecked = true,
                 Margin = new Thickness(0, 0, 20, 0),
                 Text = "Top Panel",
-                OnValueChanged = (value) => { dockPanel.IsTopPanelVisible = value ?? false; }
+                OnValueChanged = value => dockPanel.IsTopPanelVisible = value ?? false,
             });
 
-            horizStack.AddChild(new CheckBox()
+            toggles.AddChild(new CheckBox()
             {
                 IsChecked = true,
                 Margin = new Thickness(0, 0, 20, 0),
                 Text = "Bottom Panel",
-                OnValueChanged = (value) => { dockPanel.IsBottomPanelVisible = value ?? false; }
+                OnValueChanged = value => dockPanel.IsBottomPanelVisible = value ?? false,
             });
 
-            layoutPanel.AddChild(new CheckBox()
+            toggles.AddChild(new CheckBox()
             {
                 IsChecked = true,
-                Margin = new Thickness(0, 0, 20, 0),
-                Text = "Inset Lef/Right",
-                OnValueChanged = (value) => { dockPanel.InsetLeftRightPanels = value ?? false; }
+                Text = "Inset Left/Right",
+                OnValueChanged = value => dockPanel.InsetLeftRightPanels = value ?? false,
             });
-
 
             var border = new Border()
             {
-                BorderThickness = new Thickness(2),
-                BorderColor = Color.Gray,
-                Margin = new Thickness(20),
+                BorderThickness = new Thickness(1),
+                BorderColor = new Binding<Color>(() => Theme.Outline),
+                Margin = new Thickness(30, 10, 30, 20),
                 Padding = new Thickness(10),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
+                Height = 420,
             };
 
             layoutPanel.AddChild(border);
+            layoutPanel.StretchLastChild = true;
 
+            dockPanel.LeftPanel.Background = new Binding<Color>(() => Theme.PrimaryContainer);
+            dockPanel.LeftPanel.AddChild(new Label { Text = "Left", TextColor = new Binding<Color>(() => Theme.OnPrimaryContainer), HorizontalAlignment = HorizontalAlignmentType.Center, VerticalAlignment = VerticalAlignmentType.Center });
 
-            dockPanel.LeftPanel.Background = Color.LightBlue;
-            dockPanel.LeftPanel.AddChild(new Label { Text = "Left Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
+            dockPanel.RightPanel.Background = new Binding<Color>(() => Theme.SecondaryContainer);
+            dockPanel.RightPanel.AddChild(new Label { Text = "Right", TextColor = new Binding<Color>(() => Theme.OnSecondaryContainer), HorizontalAlignment = HorizontalAlignmentType.Center, VerticalAlignment = VerticalAlignmentType.Center });
 
-            dockPanel.RightPanel.Background = Color.LightGreen;
-            dockPanel.RightPanel.AddChild(new Label { Text = "Right Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
+            dockPanel.TopPanel.Background = new Binding<Color>(() => Theme.TertiaryContainer);
+            dockPanel.TopPanel.AddChild(new Label { Text = "Top", TextColor = new Binding<Color>(() => Theme.OnTertiaryContainer), HorizontalAlignment = HorizontalAlignmentType.Center, VerticalAlignment = VerticalAlignmentType.Center });
 
-            dockPanel.TopPanel.Background = Color.LightYellow;
-            dockPanel.TopPanel.AddChild(new Label { Text = "Top Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
+            dockPanel.BottomPanel.Background = new Binding<Color>(() => Theme.ErrorContainer);
+            dockPanel.BottomPanel.AddChild(new Label { Text = "Bottom", TextColor = new Binding<Color>(() => Theme.OnErrorContainer), HorizontalAlignment = HorizontalAlignmentType.Center, VerticalAlignment = VerticalAlignmentType.Center });
 
-            dockPanel.BottomPanel.Background = Color.LightCoral;
-            dockPanel.BottomPanel.AddChild(new Label { Text = "Bottom Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
+            dockPanel.CenterPanel.Background = new Binding<Color>(() => Theme.Surface);
+            dockPanel.CenterPanel.AddChild(new Label { Text = "Center", TextColor = new Binding<Color>(() => Theme.OnSurface), HorizontalAlignment = HorizontalAlignmentType.Center, VerticalAlignment = VerticalAlignmentType.Center });
 
-            dockPanel.CenterPanel.Background = Color.White;
-            dockPanel.CenterPanel.AddChild(new Label { Text = "Center Panel", HorizontalAlignment = HorizontalAlignmentType.Center });
-
-            //dockPanel.Background = Color.Red;
-            dockPanel.Width = 800; // "100%";
-            dockPanel.Height = 400;
-            dockPanel.LeftWidth = "25%";
-            dockPanel.RightWidth = "25%";
+            dockPanel.LeftWidth = "20%";
+            dockPanel.RightWidth = "20%";
 
             border.Content = dockPanel;
         }
-
 
     }
 }

@@ -26,7 +26,7 @@ namespace Blade.MG.UI
                 if (component == null ||
                     component.Visible.Value != Components.Visibility.Visible ||
                     component.ParentWindow?.Visible?.Value != Components.Visibility.Visible ||
-                    !component.FinalRect.Contains(InputManager.Mouse.Position))
+                    !component.ContainsScreenPoint(InputManager.Mouse.Position))
                 {
                     eventLockedWindow.hover.Remove(component);
                     await eventLockedWindow.RaiseHoverLeaveEventAsync(component, eventLockedWindow);
@@ -42,7 +42,7 @@ namespace Blade.MG.UI
                       component.CanHover &&
                       component.Visible.Value == Components.Visibility.Visible &&
                       component.ParentWindow?.Visible?.Value == Components.Visibility.Visible &&
-                      component.FinalRect.Contains(InputManager.Mouse.Position)
+                      component.ContainsScreenPoint(InputManager.Mouse.Position)
                     );
 
                 UIComponent selected = SelectFirst(selector, true, InputManager.Mouse.Position);
@@ -108,7 +108,7 @@ namespace Blade.MG.UI
                       component.CanFocus &&
                       component.Visible.Value == Components.Visibility.Visible &&
                       component.ParentWindow?.Visible?.Value == Components.Visibility.Visible &&
-                      component.FinalRect.Contains(InputManager.Mouse.Position)
+                      component.ContainsScreenPoint(InputManager.Mouse.Position)
                     );
 
                 UIComponent focusComponent = SelectFirst(selector, true, InputManager.Mouse.Position);

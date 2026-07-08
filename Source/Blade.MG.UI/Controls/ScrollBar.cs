@@ -232,7 +232,7 @@ namespace Blade.MG.UI.Controls
         {
             if (uiEvent.Handled) return;
 
-            if (uiEvent.PrimaryButton.Pressed && FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            if (uiEvent.PrimaryButton.Pressed && ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)))
             {
                 LockEventsToControl(uiWindow, this);
 

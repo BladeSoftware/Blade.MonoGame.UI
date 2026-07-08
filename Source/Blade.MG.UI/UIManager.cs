@@ -566,7 +566,7 @@ namespace Blade.MG.UI
             {
                 var ui = uiWindows.Values[i];
 
-                if (point != null && !ui.FinalRect.Contains(point.Value))
+                if (point != null && !ui.ContainsScreenPoint(point.Value))
                 {
                     continue;
                 }
@@ -629,7 +629,7 @@ namespace Blade.MG.UI
             {
                 var ui = uiWindows.Values[i];
 
-                if (point != null && !ui.FinalRect.Contains(point.Value))
+                if (point != null && !ui.ContainsScreenPoint(point.Value))
                 {
                     continue;
                 }

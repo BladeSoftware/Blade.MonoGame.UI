@@ -298,7 +298,18 @@ namespace Blade.MG.UI
                 {
                     var localBounds = new Rectangle(0, 0, layoutBounds.Width, layoutBounds.Height);
                     var localTransform = Transform.Combine(new Transform(), this.Transform, this);
+
+                    // This pass renders into texture-local (0,0-based) coordinates rather than
+                    // screen space, so AncestorClipBounds (see UIContext) must be reset to
+                    // match - otherwise a cached control's drop shadow would be clipped
+                    // against whatever screen-space rect was left over from the main window's
+                    // last RenderLayout pass.
+                    var savedAncestorClipBounds = context.AncestorClipBounds;
+                    context.AncestorClipBounds = localBounds;
+
                     RenderControl(context, localBounds, localTransform);
+
+                    context.AncestorClipBounds = savedAncestorClipBounds;
                 }
                 finally
                 {

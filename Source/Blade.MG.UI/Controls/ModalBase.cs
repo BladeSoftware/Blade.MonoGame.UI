@@ -1,7 +1,9 @@
 ﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using Blade.MG.UI.Models;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace Blade.MG.UI.Controls
 {
@@ -127,6 +129,23 @@ namespace Blade.MG.UI.Controls
         public void ReturnAsyncResult()
         {
             //asyncManualResetEvent.Set();
+        }
+
+        // Escape closes any modal derived from this base (dialogs, menus - see Menu : ModalBase)
+        // without needing each one to implement its own handler, mirroring the existing
+        // ComboBox.HandleKeyPressAsync Escape-to-close-dropdown convention. Checked before
+        // propagating further so content inside the modal (e.g. a focused TextBox) doesn't
+        // also react to the same Escape press.
+        public override async Task HandleKeyPressAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
+        {
+            if (uiEvent.Key == Keys.Escape && !uiEvent.Handled)
+            {
+                uiEvent.Handled = true;
+                CloseModal();
+                return;
+            }
+
+            await base.HandleKeyPressAsync(uiWindow, uiEvent);
         }
 
     }

@@ -33,18 +33,13 @@ namespace Examples
         /// </summary>
         protected override void Initialize()
         {
-            // Register Standard Services
-            //Services.AddService(typeof(SceneManager), sceneManager = new SceneManager(this));
             Services.AddService(typeof(UIManager), uiManager = new UIManager(this));
-
-            // Inject the services we need
-            //uiManager = this.Services.GetService<UIManager>();
-
 
             // --- Set to Full Screen Mode
             graphicsDeviceManager.IsFullScreen = false;
             graphicsDeviceManager.HardwareModeSwitch = false;
             Window.AllowUserResizing = true;
+            Window.Title = "Blade.MG.UI Showcase";
 
             IsFixedTimeStep = false;
 
@@ -59,25 +54,6 @@ namespace Examples
                 graphicsDeviceManager.PreferredBackBufferWidth = 1280;
                 graphicsDeviceManager.PreferredBackBufferHeight = 720;
             }
-
-            // --- Set a pre-defined window size
-            //var viewport = graphicsDeviceManager.GraphicsDevice.Viewport.Bounds;
-            //if (viewport.Width < viewport.Height)
-            //{
-            //    // Portrait mode
-            //    graphicsDeviceManager.PreferredBackBufferWidth = 720;
-            //    graphicsDeviceManager.PreferredBackBufferHeight = 1280;
-            //}
-            //else
-            //{
-            //    // Landscape mode
-            //    graphicsDeviceManager.PreferredBackBufferWidth = 1280;
-            //    graphicsDeviceManager.PreferredBackBufferHeight = 720;
-            //}
-
-            //var x = graphicsDeviceManager.PreferredBackBufferWidth;
-            //var y = graphicsDeviceManager.PreferredBackBufferHeight;
-
 
             // -- Set allowed Orientations
             graphicsDeviceManager.SupportedOrientations = DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight;
@@ -99,8 +75,6 @@ namespace Examples
         {
             base.LoadContent();
 
-            //var layerUI = Layers.Add(LayerType.UI);
-            //layerUI.AddEntity(UIManager.Instance);
             uiManager.Clear();
             uiManager.Add(new ComponentTesterUI());
             uiManager.Add(new UIHierarchyOverlay());
@@ -141,10 +115,8 @@ namespace Examples
             {
                 InputManager.Update();
                 uiManager.Update(gameTime);
-
-                //await uiManager.UpdateAsync(gameTime).ConfigureAwait(true);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -158,23 +130,6 @@ namespace Examples
             base.Draw(gameTime);
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            //var viewBounds = GraphicsDevice.Viewport.Bounds;
-            //viewBounds = new Rectangle(0, 0, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight);
-
-
-            //GraphicsDevice.ScissorRectangle = Rectangle.Empty; // viewport.Bounds;
-
-            //using (var sb = new SpriteBatch(GraphicsDevice))
-            //{
-            //    sb.Begin();
-            //    Blade.MG.Primitives.Primitives2D.FillRect(sb, viewBounds, Color.Pink);
-
-            //    viewBounds.Inflate(-5, -5);
-            //    Blade.MG.Primitives.Primitives2D.FillRect(sb, viewBounds, Color.Purple);
-
-            //    sb.End();
-            //}
 
             uiManager.Draw(null, gameTime, null);
         }

@@ -1,34 +1,26 @@
+using Blade.MG.UI;
+using Microsoft.Xna.Framework;
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
 using Blade.MG.UI.Controls.Templates;
 using Examples.UI.Components;
 using GameStudio;
-using Microsoft.Xna.Framework;
 using System;
 
-namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
+namespace Examples.UI.HelpPages
 {
     public class HelpPage_ListView : Panel
     {
-
-        public HelpPage_ListView()
-        {
-
-        }
-
         protected override void InitTemplate()
         {
             base.InitTemplate();
 
-
             var layoutPanel = new StackPanel()
             {
                 Orientation = Orientation.Vertical,
-
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
             };
-
 
             base.AddChild(layoutPanel);
 
@@ -36,43 +28,34 @@ namespace Blade.MG.UI.Examples.GameStudio.UI.HelpPages
                 new PageHeader()
                 {
                     Padding = new Thickness(30, 0, 0, 0),
-                    Title = "List View"
+                    Title = "List View",
+                    Description = "A scrollable, virtualized list of items."
                 });
-
-
 
             var border = new Border()
             {
-                BorderThickness = new Thickness(2),
-                BorderColor = Color.Gray,
-                Margin = new Thickness(20),
+                BorderThickness = new Thickness(1),
+                BorderColor = new Binding<Color>(() => Theme.Outline),
+                Margin = new Thickness(30, 10, 30, 20),
                 Padding = new Thickness(10),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-                //Background = Color.HotPink,
-                //Width = 800,
-                Height = 600,
+                Height = 500,
             };
 
             layoutPanel.AddChild(border);
             layoutPanel.StretchLastChild = true;
 
-
-            // ListView for dropdown items
-            var ListView = new ListView()
+            var listView = new ListView()
             {
                 ItemTemplateType = typeof(ListViewItemTemplate),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
+                DataContext = Enum.GetNames(typeof(Country)),
             };
 
-            ListView.DataContext = Enum.GetNames(typeof(Country));
-
-            border.Content = ListView;
-
-
+            border.Content = listView;
         }
-
 
     }
 }
