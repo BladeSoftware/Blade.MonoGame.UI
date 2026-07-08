@@ -39,7 +39,7 @@ namespace Blade.MG.UI.Controls
 
             base.AddChild(panel);
 
-            var border1 = new Border
+            var border1 = new MenuPopupBorder
             {
                 BorderColor = Theme.Outline,
                 BorderThickness = new Thickness(2f),
@@ -167,5 +167,33 @@ namespace Blade.MG.UI.Controls
             ReturnAsyncResult();
         }
 
+        // Menu popups are anchored at the mouse position (Left/Top, HorizontalAlignment/
+        // VerticalAlignment = Absolute) with no regard for screen edges, so a menu opened near
+        // the right or bottom of the screen would otherwise render mostly off-screen. Once
+        // Measure has run we know the popup's DesiredSize, so nudge Left/Top back on-screen
+        // before the base Arrange turns them into FinalRect - keeping the popup, and everything
+        // arranged relative to it, consistent.
+        private class MenuPopupBorder : Border
+        {
+            public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
+            {
+                float desiredWidth = DesiredSize.Width;
+                float desiredHeight = DesiredSize.Height;
+
+                if (!float.IsNaN(desiredWidth) && desiredWidth > 0 && desiredWidth <= parentLayoutBounds.Width)
+                {
+                    float maxLeft = Math.Max(parentLayoutBounds.Left, parentLayoutBounds.Right - desiredWidth);
+                    Left = Math.Clamp(Left, parentLayoutBounds.Left, maxLeft);
+                }
+
+                if (!float.IsNaN(desiredHeight) && desiredHeight > 0 && desiredHeight <= parentLayoutBounds.Height)
+                {
+                    float maxTop = Math.Max(parentLayoutBounds.Top, parentLayoutBounds.Bottom - desiredHeight);
+                    Top = Math.Clamp(Top, parentLayoutBounds.Top, maxTop);
+                }
+
+                base.Arrange(context, layoutBounds, parentLayoutBounds);
+            }
+        }
     }
 }
