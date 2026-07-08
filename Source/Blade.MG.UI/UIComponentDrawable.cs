@@ -1,4 +1,5 @@
-﻿using Blade.MG.UI.Components;
+﻿using Blade.MG.UI.Caching;
+using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
 using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Theming;
@@ -9,7 +10,7 @@ using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
-    public abstract class UIComponentDrawable : UIComponentEvents
+    public abstract class UIComponentDrawable : UIComponentEvents, ICacheable
     {
         [JsonIgnore]
         [XmlIgnore]
@@ -119,6 +120,208 @@ namespace Blade.MG.UI
         //    return "";
         //}
 
+        // ---=== Off-screen / back-buffer caching (ICacheable) ===---
+        //
+        // A control opts in to caching (explicitly via EnableCaching, or implicitly via
+        // ShouldAutoCache) to have its entire visual output - its own drawing plus any
+        // children - rendered once to an off-screen RenderTarget2D and then reused across
+        // frames by blitting that texture, instead of re-issuing all of its draw calls
+        // every frame. This is a net win for controls whose rendering is comparatively
+        // expensive (multiple draw batches, stencil masking, per-pixel loops) but whose
+        // visual state changes rarely.
+        //
+        // Populating the cache requires switching the active render target, which would
+        // clobber whatever is currently being drawn (e.g. the back buffer) if done
+        // mid-frame during the normal draw pass. So cache updates only happen during a
+        // dedicated pre-render pass (see UIWindow.PreRenderLayout / PreRenderContext) that
+        // runs before the main draw pass for the frame; UpdateCache saves and restores the
+        // previously-active render target(s) around its own SetRenderTarget call so the
+        // main pass always starts from a clean, correct target.
+
+        private readonly ControlCache renderCache = new();
+
+        /// <summary>
+        /// Explicit opt-in: when true, this control's rendering is cached to an off-screen
+        /// texture and reused across frames until its size or CacheStateHash changes (or
+        /// InvalidateCache() is called). Best suited to controls with expensive/complex
+        /// visuals that change state infrequently (e.g. static panels, list items).
+        /// </summary>
+        [JsonIgnore]
+        [XmlIgnore]
+        public bool EnableCaching { get; set; } = false;
+
+        /// <summary>
+        /// Hook for a control type to decide, from its own current state, whether it's
+        /// worth caching right now - without requiring the app to opt in manually. Border
+        /// uses this to auto-cache only while it's using its expensive rounded-corner /
+        /// stencil rendering path. Combines with EnableCaching (either being true enables
+        /// caching).
+        /// </summary>
+        protected virtual bool ShouldAutoCache => false;
+
+        /// <summary>
+        /// A cheap hash of whatever state affects this control's rendered pixels (besides
+        /// its size, which is tracked separately). The cache is refreshed whenever this
+        /// changes. Override to combine in control-specific bindings, e.g.:
+        /// <c>protected override int CacheStateHash => HashCode.Combine(base.CacheStateHash, MyColor.Value);</c>
+        /// </summary>
+        protected virtual int CacheStateHash => Background.Value.GetHashCode();
+
+        /// <summary>
+        /// Forces the cache to be refreshed on the next pre-render pass, e.g. after
+        /// changing state that CacheStateHash doesn't cover.
+        /// </summary>
+        public void InvalidateCache() => renderCache.InvalidateCache();
+
+        bool ICacheable.IsCachingEnabled { get => EnableCaching || ShouldAutoCache; set => EnableCaching = value; }
+        bool ICacheable.IsCacheInvalid => !renderCache.IsCacheValidFor(CacheStateHash, FinalRect);
+        RenderTarget2D ICacheable.CachedTexture => renderCache.CachedTexture;
+        Rectangle ICacheable.CachedLayoutBounds => renderCache.CachedLayoutBounds;
+
+        void ICacheable.UpdateCache(UIContext context, Rectangle layoutBounds, Transform parentTransform)
+        {
+            var graphicsDevice = context?.GraphicsDevice;
+            if (graphicsDevice == null || layoutBounds.Width <= 0 || layoutBounds.Height <= 0)
+            {
+                return;
+            }
+
+            int stateHash = CacheStateHash;
+            if (renderCache.IsCacheValidFor(stateHash, layoutBounds))
+            {
+                return;
+            }
+
+            renderCache.EnsureRenderTarget(graphicsDevice, layoutBounds.Width, layoutBounds.Height);
+            if (renderCache.CachedTexture == null)
+            {
+                return;
+            }
+
+            var savedRenderTargets = graphicsDevice.GetRenderTargets();
+            var savedScissor = graphicsDevice.ScissorRectangle;
+
+            // Absolute (screen-space) coordinates need to become texture-local (0,0-based)
+            // coordinates: not just for the sprites we draw (handled by the transform
+            // passed to RenderControl) but also for scissor-rect clipping, which operates
+            // in absolute device coordinates unaffected by that transform. So the
+            // control's (and its descendants') FinalRect/FinalContentRect are temporarily
+            // shifted to be relative to this cache texture, rendered, then shifted back.
+            int dx = -layoutBounds.Left;
+            int dy = -layoutBounds.Top;
+
+            try
+            {
+                graphicsDevice.SetRenderTarget(renderCache.CachedTexture);
+                graphicsDevice.ScissorRectangle = new Rectangle(0, 0, layoutBounds.Width, layoutBounds.Height);
+                graphicsDevice.Clear(Color.Transparent);
+
+                // Prime the stencil buffer the same way UIWindow.RenderLayout does, since
+                // content relying on stencil masking (e.g. Border's rounded corners)
+                // expects this baseline to already be in place.
+                context.Renderer.ClearStencilBuffer();
+
+                TranslateSubtree(this, dx, dy);
+                try
+                {
+                    var localBounds = new Rectangle(0, 0, layoutBounds.Width, layoutBounds.Height);
+                    var localTransform = Transform.Combine(new Transform(), this.Transform, this);
+                    RenderControl(context, localBounds, localTransform);
+                }
+                finally
+                {
+                    TranslateSubtree(this, -dx, -dy);
+                }
+
+                renderCache.MarkCacheValid(stateHash, layoutBounds);
+            }
+            finally
+            {
+                graphicsDevice.SetRenderTargets(savedRenderTargets);
+                graphicsDevice.ScissorRectangle = savedScissor;
+            }
+        }
+
+        void ICacheable.RenderFromCache(UIContext context, Rectangle layoutBounds, Transform parentTransform)
+        {
+            var texture = renderCache.CachedTexture;
+            if (texture == null || texture.IsDisposed)
+            {
+                return;
+            }
+
+            // layoutBounds here is the parent-provided clip region (same as RenderControl's
+            // layoutBounds), not this control's own draw rect - that's FinalRect, exactly as
+            // every RenderControl implementation already uses it.
+            var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+            context.Renderer.ClipToRect(layoutBounds);
+            var sourceRect = new Rectangle(0, 0, FinalRect.Width, FinalRect.Height);
+            spriteBatch.Draw(texture, FinalRect, sourceRect, Color.White);
+            context.Renderer.EndBatch();
+        }
+
+        /// <summary>
+        /// Recursively shifts FinalRect/FinalContentRect for a control and everything it
+        /// draws (internal children, Control.Content, Container.Children) by (dx, dy).
+        /// Used to temporarily re-base a subtree's absolute screen coordinates to be
+        /// relative to its own cache texture before rendering into it.
+        /// </summary>
+        private static void TranslateSubtree(UIComponent component, int dx, int dy)
+        {
+            if (component == null)
+            {
+                return;
+            }
+
+            component.FinalRect = new Rectangle(component.FinalRect.X + dx, component.FinalRect.Y + dy, component.FinalRect.Width, component.FinalRect.Height);
+            component.FinalContentRect = new Rectangle(component.FinalContentRect.X + dx, component.FinalContentRect.Y + dy, component.FinalContentRect.Width, component.FinalContentRect.Height);
+
+            foreach (var child in component.PrivateControls)
+            {
+                TranslateSubtree(child, dx, dy);
+            }
+
+            if (component is Control control && control.Content != null)
+            {
+                TranslateSubtree(control.Content, dx, dy);
+            }
+
+            if (component is Container container)
+            {
+                foreach (var child in container.Children)
+                {
+                    TranslateSubtree(child, dx, dy);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Renders <paramref name="child"/> normally, unless it has caching enabled and an
+        /// up-to-date cached texture, in which case that texture is blitted instead of
+        /// re-issuing the child's (and its descendants') draw calls.
+        /// </summary>
+        protected static void RenderChildOrFromCache(UIComponent child, UIContext context, Rectangle layoutBounds, Transform transform)
+        {
+            if (child == null)
+            {
+                return;
+            }
+
+            if (child is ICacheable cacheable && cacheable.IsCachingEnabled && !cacheable.IsCacheInvalid && cacheable.CachedTexture != null)
+            {
+                cacheable.RenderFromCache(context, layoutBounds, transform);
+                return;
+            }
+
+            child.RenderControl(context, layoutBounds, transform);
+        }
+
+        public override void Dispose()
+        {
+            renderCache.Dispose();
+            base.Dispose();
+        }
+
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
 
@@ -152,7 +355,7 @@ namespace Blade.MG.UI
             // Render the Internal Components
             foreach (var child in InternalChildren)
             {
-                child?.RenderControl(context, layoutBounds, Transform.Combine(parentTransform, child.Transform, child));
+                RenderChildOrFromCache(child, context, layoutBounds, Transform.Combine(parentTransform, child.Transform, child));
             }
 
         }

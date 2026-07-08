@@ -87,7 +87,10 @@ namespace Blade.MG.UI.Caching
             // Dispose old texture
             _cachedTexture?.Dispose();
 
-            // Create new render target with some padding to reduce recreations
+            // Create new render target with some padding to reduce recreations.
+            // Uses a stencil-capable depth format because cached content (e.g. Border's
+            // rounded corners) may rely on the stencil buffer while being rendered into
+            // the cache texture.
             int paddedWidth = Math.Max(width, 64);
             int paddedHeight = Math.Max(height, 32);
 
@@ -97,7 +100,7 @@ namespace Blade.MG.UI.Caching
                 paddedHeight,
                 false,
                 SurfaceFormat.Color,
-                DepthFormat.None,
+                DepthFormat.Depth24Stencil8,
                 0,
                 RenderTargetUsage.PreserveContents);
 

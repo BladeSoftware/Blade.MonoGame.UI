@@ -2,7 +2,6 @@
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Models;
 using Blade.MG.UI.Theming;
-using Microsoft.VisualStudio.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Concurrent;
@@ -54,17 +53,10 @@ namespace Blade.MG.UI
         // Queue for async continuations to run on the main thread
         private ConcurrentQueue<Action> mainThreadQueue = new ConcurrentQueue<Action>();
 
-        // Used to run input handlers to completion synchronously each frame (see
-        // RunInputHandlerSync). JoinableTaskFactory avoids the deadlock risk of raw
-        // GetAwaiter().GetResult() sync-over-async.
-        private readonly JoinableTaskFactory joinableTaskFactory;
-
 
         public UIManager(Game game)
         {
             this.game = game;
-
-            joinableTaskFactory = new JoinableTaskFactory(new JoinableTaskContext());
         }
 
         private string ToPriority(int i) => $"{i.ToString("0000")}.{Stopwatch.GetTimestamp()}";
@@ -335,26 +327,56 @@ namespace Blade.MG.UI
 
         //}
 
-        // Input handlers are async for API consistency (so control event handlers can await
-        // things like dialogs), but perform no real asynchronous I/O in the framework itself.
-        // Running them to completion here - in a fixed order, before layout - keeps each
-        // frame's input handling and layout deterministic. Each handler is isolated so a
-        // fault in one (e.g. keyboard) doesn't prevent the others from running this frame.
-        private void RunInputHandlerSync(Func<Task> taskFactory, string handlerName)
+        // Input handlers are async so control event handlers can await things like modal
+        // dialogs (e.g. ModalBase.ShowAsync / Menu.ShowAsync), which by design stay pending
+        // across many frames until the user interacts with the modal - the game loop keeps
+        // running while they wait. That means these handlers must NEVER be blocked on
+        // synchronously: doing so (e.g. via JoinableTaskFactory.Run or .GetAwaiter().GetResult())
+        // freezes the whole app, because the dialog can only be dismissed by a *later*
+        // Update() call that would never get to run.
+        //
+        // Calling an async method without awaiting it still runs it synchronously up to its
+        // first genuine suspension point, so the common case (no dialog involved) completes
+        // immediately here, in order, with faults observed right away - only the rare case
+        // (a dialog/modal got shown) falls through to running the rest in the background.
+        private void RunInputHandler(Func<Task> taskFactory, string handlerName)
         {
+            Task task;
+
             try
             {
-                joinableTaskFactory.Run(taskFactory);
+                task = taskFactory();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error processing {handlerName} input: {ex}");
+                return;
             }
+
+            if (task.IsCompleted)
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.WriteLine($"Error processing {handlerName} input: {task.Exception?.InnerException?.Message}");
+                }
+
+                return;
+            }
+
+            // Still in flight (e.g. a modal dialog is now up, waiting on future frames) -
+            // let it continue on its own; just make sure a fault isn't silently swallowed.
+            task.ContinueWith(t =>
+            {
+                Debug.WriteLine($"Error processing {handlerName} input: {t.Exception?.InnerException?.Message}");
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
 
         /// <summary>
-        /// SYNCHRONOUS Update - input is handled to completion, in order, before layout runs.
+        /// Input is dispatched in a fixed order (keyboard, mouse, touch, gamepad) before
+        /// layout runs each frame. Each handler runs synchronously through to completion
+        /// unless it triggers a multi-frame operation like a modal dialog, in which case it
+        /// continues in the background rather than blocking this Update() call.
         /// </summary>
         public override void Update(GameTime gameTime)
         {
@@ -385,12 +407,13 @@ namespace Blade.MG.UI
                 ui.AreEventsLockedToControl = (eventLockedWindow != null);
             }
 
-            // Handle input synchronously and in order, so layout below always sees this
-            // frame's fully up-to-date input state (hover, focus, scroll offsets, etc.)
-            RunInputHandlerSync(() => HandleKeyboardInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "keyboard");
-            RunInputHandlerSync(() => HandleMouseInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "mouse");
-            RunInputHandlerSync(() => HandleTouchInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "touch");
-            RunInputHandlerSync(() => HandleGamePadInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "gamepad");
+            // Handle input in order, so layout below sees this frame's up-to-date input
+            // state (hover, focus, scroll offsets, etc.) for the common case where handling
+            // completes synchronously (see RunInputHandler for the modal-dialog exception).
+            RunInputHandler(() => HandleKeyboardInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "keyboard");
+            RunInputHandler(() => HandleMouseInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "mouse");
+            RunInputHandler(() => HandleTouchInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "touch");
+            RunInputHandler(() => HandleGamePadInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "gamepad");
 
             // Arrange layout (synchronous)
             foreach (var ui in uiWindows)
@@ -420,20 +443,20 @@ namespace Blade.MG.UI
         //    }
         //}
 
-        ///// <summary>
-        ///// Draw with automatic pre-render support.
-        ///// </summary>
-        //public void DrawWithCaching(SpriteBatch spriteBatch, GameTime gameTime)
-        //{
-        //    // First, perform pre-render phase for all cacheable controls
-        //    PreRender(gameTime);
-
-        //    // Then perform normal draw
-        //    Draw(spriteBatch, gameTime);
-        //}
-
         public override void Draw(SpriteBatch spriteBatch, GameTime gameTime, RenderTarget2D renderTarget)
         {
+            // Refresh any dirty cached-control textures before the main draw pass, for every
+            // window, so cache population - which needs to switch render targets - never
+            // happens mid-way through drawing to the real target. No-ops per window when
+            // EnableControlCaching is off.
+            foreach (var ui in uiWindows)
+            {
+                if (ui.Value.Visible.Value == Visibility.Visible)
+                {
+                    ui.Value.PreRenderLayout(gameTime);
+                }
+            }
+
             foreach (var ui in uiWindows)
             {
                 if (ui.Value.Visible.Value == Visibility.Visible)

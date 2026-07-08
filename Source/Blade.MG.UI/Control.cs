@@ -62,7 +62,7 @@ namespace Blade.MG.UI
             // Render Content control
             if (Content != null)
             {
-                Content.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalContentRect), Transform.Combine(parentTransform, Content.Transform, Content));
+                RenderChildOrFromCache(Content, context, Rectangle.Intersect(layoutBounds, FinalContentRect), Transform.Combine(parentTransform, Content.Transform, Content));
             }
         }
 

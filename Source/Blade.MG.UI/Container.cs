@@ -74,11 +74,9 @@ namespace Blade.MG.UI
             base.RenderControl(context, layoutBounds, parentTransform);
 
             // Render Child controls
-            //foreach (var child in CollectionsMarshal.AsSpan<UIComponent>((List<UIComponent>)Children))
             foreach (var child in Children)
             {
-                //var childBounds = GetChildBoundingBox(context, child);
-                child.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalContentRect), Transform.Combine(parentTransform, child.Transform, child));
+                RenderChildOrFromCache(child, context, Rectangle.Intersect(layoutBounds, FinalContentRect), Transform.Combine(parentTransform, child.Transform, child));
             }
         }
 

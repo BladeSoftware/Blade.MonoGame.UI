@@ -243,15 +243,31 @@ namespace Blade.MG.UI.Controls.Templates
                     context.Renderer.DrawString(spriteBatch, helperTextBounds, textBox.HelperText, helperTextSizeFont, helperTextSizeColor, HorizontalAlignmentType.Left, VerticalAlignmentType.Top, textBox.FinalRect);
                 }
 
-                // Display the Cursor
-                if (cursorFlashOn && textBox.HasFocus.Value)
+                // Display the Selection highlight and the Cursor
                 {
-                    textBox.CursorPosition = textBox.Text.Value.Length;
+                    string editText = textBox.Text.Value ?? "";
                     SpriteFontBase font = FontService.GetFontOrDefault(textBox.FontName?.Value, textBox.FontSize?.Value);
-                    Vector2 textSize = font.MeasureString(textBox.Text.Value[0..textBox.CursorPosition]);
 
-                    Rectangle cursorRect = new Rectangle((int)(label1.TextRect.Left + textSize.X), (int)label1.TextRect.Top, 2, (int)label1.TextRect.Height);
-                    context.Renderer.FillRect(spriteBatch, cursorRect, Color.Black, label1.FinalContentRect);
+                    if (textBox.SelectionLength > 0)
+                    {
+                        int selectionStart = Math.Clamp(textBox.SelectionStart, 0, editText.Length);
+                        int selectionEnd = Math.Clamp(selectionStart + textBox.SelectionLength, 0, editText.Length);
+
+                        float startX = font.MeasureString(editText[0..selectionStart]).X;
+                        float endX = font.MeasureString(editText[0..selectionEnd]).X;
+
+                        Rectangle selectionRect = new Rectangle((int)(label1.TextRect.Left + startX), (int)label1.TextRect.Top, (int)(endX - startX), (int)label1.TextRect.Height);
+                        context.Renderer.FillRect(spriteBatch, selectionRect, new Color(Theme.Primary, 0.35f), label1.FinalContentRect);
+                    }
+
+                    if (cursorFlashOn && textBox.HasFocus.Value)
+                    {
+                        int cursorPosition = Math.Clamp(textBox.CursorPosition, 0, editText.Length);
+                        Vector2 textSize = font.MeasureString(editText[0..cursorPosition]);
+
+                        Rectangle cursorRect = new Rectangle((int)(label1.TextRect.Left + textSize.X), (int)label1.TextRect.Top, 2, (int)label1.TextRect.Height);
+                        context.Renderer.FillRect(spriteBatch, cursorRect, Color.Black, label1.FinalContentRect);
+                    }
                 }
 
 
@@ -261,6 +277,46 @@ namespace Blade.MG.UI.Controls.Templates
                 context.Renderer.EndBatch();
             }
 
+        }
+
+        /// <summary>
+        /// Maps an absolute screen X coordinate to the nearest character index in the text
+        /// box's current text, based on the text's last-rendered position (label1.TextRect).
+        /// Used by TextBox for click-to-position-caret and click-drag selection.
+        /// </summary>
+        public int GetCharacterIndexAtX(float screenX)
+        {
+            var textBox = ParentAs<TextBox>();
+            string text = textBox.Text.Value ?? "";
+
+            if (text.Length == 0)
+            {
+                return 0;
+            }
+
+            float relativeX = screenX - label1.TextRect.Left;
+            if (relativeX <= 0)
+            {
+                return 0;
+            }
+
+            SpriteFontBase font = FontService.GetFontOrDefault(textBox.FontName?.Value, textBox.FontSize?.Value);
+
+            float previousWidth = 0f;
+            for (int i = 1; i <= text.Length; i++)
+            {
+                float width = font.MeasureString(text[0..i]).X;
+                float charCenter = (previousWidth + width) / 2f;
+
+                if (relativeX < charCenter)
+                {
+                    return i - 1;
+                }
+
+                previousWidth = width;
+            }
+
+            return text.Length;
         }
 
 

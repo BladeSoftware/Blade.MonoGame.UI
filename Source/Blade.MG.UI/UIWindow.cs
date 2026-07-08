@@ -1,5 +1,6 @@
 ﻿using Blade.MG.Input;
 using Blade.MG.Primitives;
+using Blade.MG.UI.Caching;
 using Blade.MG.UI.CompiledResources;
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
@@ -85,6 +86,62 @@ namespace Blade.MG.UI
             PerformLayout(layoutRect);
         }
 
+        [JsonIgnore]
+        [XmlIgnore]
+        private PreRenderContext preRenderContext;
+
+        [JsonIgnore]
+        [XmlIgnore]
+        private PreRenderContext PreRenderContext => preRenderContext ??= new PreRenderContext(Context);
+
+        /// <summary>
+        /// Refreshes any dirty cached-control textures (see ICacheable / EnableCaching)
+        /// before the main draw pass. Must run before RenderLayout each frame: populating a
+        /// cache requires temporarily switching the active render target, which would
+        /// clobber whatever's currently being drawn if it happened mid-way through the main
+        /// pass instead of before it.
+        /// </summary>
+        public virtual void PreRenderLayout(GameTime gameTime)
+        {
+            if (!UIManager.EnableControlCaching)
+            {
+                return;
+            }
+
+            Context.GameTime = gameTime;
+
+            CollectCacheableControls(Children);
+            PreRenderContext.ProcessPendingUpdates();
+        }
+
+        private void CollectCacheableControls(IEnumerable<UIComponent> components)
+        {
+            foreach (var component in components)
+            {
+                if (component == null || component.Visible.Value != Visibility.Visible)
+                {
+                    continue;
+                }
+
+                if (component is ICacheable cacheable)
+                {
+                    PreRenderContext.RegisterForPreRender(cacheable, component.FinalRect, component.Transform);
+                }
+
+                CollectCacheableControls(component.PrivateControls);
+
+                if (component is Control control && control.Content != null)
+                {
+                    CollectCacheableControls(new[] { control.Content });
+                }
+
+                if (component is Container container)
+                {
+                    CollectCacheableControls(container.Children);
+                }
+            }
+        }
+
         public virtual void RenderLayout(GameTime gameTime)
         {
             Context.GameTime = gameTime;
@@ -161,7 +218,7 @@ namespace Blade.MG.UI
 
             foreach (var child in Children)
             {
-                child.RenderControl(Context, layoutRect, Transform.Combine(Transform, child.Transform, child));
+                RenderChildOrFromCache(child, Context, layoutRect, Transform.Combine(Transform, child.Transform, child));
             }
 
         }

@@ -1,6 +1,7 @@
-﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
+using Blade.MG.UI.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -23,6 +24,8 @@ namespace Blade.MG.UI.Controls
                 {
                     text.Value = text.Value.Substring(0, MaxLength);
                 }
+
+                ClampCursorAndSelection();
             }
         }
 
@@ -42,8 +45,6 @@ namespace Blade.MG.UI.Controls
 
         public int MaxLength { get; set; }
 
-        //private int cursorTextIndex;
-
         public int CursorPosition { get; set; }
         public int SelectionStart { get; set; }
         public int SelectionLength { get; set; }
@@ -53,6 +54,14 @@ namespace Blade.MG.UI.Controls
         public string HelperText { get; set; }
         public bool Underline { get; set; } // Underline the text
         public bool ShrinkLabel { get; set; } // Label stays Shrunk and doesn't fill the textbox if the text is empty
+
+        // Anchor point for an in-progress selection (Shift+navigate or mouse drag).
+        // Null means there's no active selection.
+        private int? selectionAnchor;
+
+        private bool isDragSelecting;
+
+        private bool HasSelection => SelectionLength > 0;
 
 
         public TextBox()
@@ -95,10 +104,6 @@ namespace Blade.MG.UI.Controls
         {
             base.InitTemplate();
 
-            //CanHover = true;
-            //CanFocus = true;
-
-            //Content = new TextBoxTemplate();
             Content = Activator.CreateInstance(TemplateType) as UIComponent;
         }
 
@@ -129,6 +134,128 @@ namespace Blade.MG.UI.Controls
             base.RenderControl(context, layoutBounds, parentTransform);
         }
 
+        // ---=== Cursor / Selection model ===---
+
+        private string Value => Text.Value ?? "";
+
+        private void ClampCursorAndSelection()
+        {
+            int length = Value.Length;
+
+            CursorPosition = Math.Clamp(CursorPosition, 0, length);
+
+            if (selectionAnchor != null)
+            {
+                selectionAnchor = Math.Clamp(selectionAnchor.Value, 0, length);
+            }
+
+            SelectionStart = Math.Clamp(SelectionStart, 0, length);
+            SelectionLength = Math.Clamp(SelectionLength, 0, length - SelectionStart);
+        }
+
+        /// <summary>
+        /// Moves the caret to <paramref name="position"/>. When <paramref name="extendSelection"/>
+        /// is true (Shift held, or an in-progress drag-select), the selection is extended/created
+        /// from wherever the caret was before this move; otherwise any selection is cleared.
+        /// </summary>
+        private void SetCursorPosition(int position, bool extendSelection)
+        {
+            position = Math.Clamp(position, 0, Value.Length);
+
+            if (extendSelection)
+            {
+                selectionAnchor ??= CursorPosition;
+            }
+            else
+            {
+                selectionAnchor = null;
+            }
+
+            CursorPosition = position;
+            UpdateSelectionFromAnchor();
+        }
+
+        private void UpdateSelectionFromAnchor()
+        {
+            if (selectionAnchor == null || selectionAnchor.Value == CursorPosition)
+            {
+                SelectionStart = CursorPosition;
+                SelectionLength = 0;
+            }
+            else
+            {
+                SelectionStart = Math.Min(selectionAnchor.Value, CursorPosition);
+                SelectionLength = Math.Abs(CursorPosition - selectionAnchor.Value);
+            }
+        }
+
+        private void ClearSelection()
+        {
+            selectionAnchor = null;
+            SelectionStart = CursorPosition;
+            SelectionLength = 0;
+        }
+
+        /// <summary>
+        /// Removes the selected text (if any) and collapses the caret to where it started.
+        /// </summary>
+        private void DeleteSelection()
+        {
+            if (!HasSelection)
+            {
+                return;
+            }
+
+            Text.Value = Value.Remove(SelectionStart, SelectionLength);
+            CursorPosition = SelectionStart;
+            ClearSelection();
+        }
+
+        private void MoveCursor(int direction, bool wordJump, bool extendSelection)
+        {
+            int newPosition;
+
+            if (wordJump)
+            {
+                newPosition = direction < 0 ? FindPreviousWordBoundary(CursorPosition) : FindNextWordBoundary(CursorPosition);
+            }
+            else if (!extendSelection && HasSelection)
+            {
+                // Collapse an existing selection to its near edge, rather than moving the
+                // caret by one character from wherever it happened to be - matches typical
+                // desktop text-editing behavior.
+                newPosition = direction < 0 ? SelectionStart : SelectionStart + SelectionLength;
+            }
+            else
+            {
+                newPosition = CursorPosition + direction;
+            }
+
+            SetCursorPosition(newPosition, extendSelection);
+        }
+
+        private int FindPreviousWordBoundary(int position)
+        {
+            string value = Value;
+            int i = Math.Clamp(position, 0, value.Length);
+
+            while (i > 0 && char.IsWhiteSpace(value[i - 1])) i--;
+            while (i > 0 && !char.IsWhiteSpace(value[i - 1])) i--;
+
+            return i;
+        }
+
+        private int FindNextWordBoundary(int position)
+        {
+            string value = Value;
+            int i = Math.Clamp(position, 0, value.Length);
+
+            while (i < value.Length && char.IsWhiteSpace(value[i])) i++;
+            while (i < value.Length && !char.IsWhiteSpace(value[i])) i++;
+
+            return i;
+        }
+
         // ---=== UI Events ===---
 
         public override Task HandleFocusChangedEventAsync(UIWindow uiWindow, UIFocusChangedEvent uiEvent)
@@ -141,74 +268,261 @@ namespace Blade.MG.UI.Controls
             // Handle keyboard input if this control has focus
             if (!uiEvent.Handled && HasFocus.Value)
             {
-                HandleKey(uiEvent);
+                await HandleKeyAsync(uiWindow, uiEvent);
             }
 
             // Propagate to children
             await base.HandleKeyPressAsync(uiWindow, uiEvent);
         }
 
-        private void HandleKey(UIKeyEvent uiEvent)
+        private async Task HandleKeyAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
         {
+            // Enter/Tab commit the edit the same way clicking away does: give up focus,
+            // which triggers whatever the app wired up to react to losing focus (e.g. a
+            // rename box committing its new value on HandleFocusChangedEventAsync). Only
+            // for single-line boxes - a MultiLine box should get a literal newline instead.
+            if (!MultiLine && (uiEvent.Key == Keys.Enter || uiEvent.Key == Keys.Tab))
+            {
+                uiEvent.Handled = true;
+
+                if (uiWindow != null)
+                {
+                    await uiWindow.SetFocusAsync(null);
+                }
+
+                return;
+            }
+
+            // Clipboard / select-all shortcuts. Checked before KeyChar, since GetChar() maps
+            // letter keys to a character regardless of whether Ctrl is also held.
+            if (uiEvent.Ctrl)
+            {
+                switch (uiEvent.Key)
+                {
+                    case Keys.C:
+                        CopySelection();
+                        uiEvent.Handled = true;
+                        return;
+
+                    case Keys.X:
+                        CutSelection();
+                        uiEvent.Handled = true;
+                        return;
+
+                    case Keys.V:
+                        PasteClipboard();
+                        uiEvent.Handled = true;
+                        return;
+
+                    case Keys.A:
+                        SelectAll();
+                        uiEvent.Handled = true;
+                        return;
+                }
+            }
+
             if (uiEvent.KeyChar != null)
             {
                 AddChar(uiEvent.KeyChar);
                 uiEvent.Handled = true;
+                return;
             }
-            else
+
+            switch (uiEvent.Key)
             {
-                // Handle Special Keys
-                switch (uiEvent.Key)
-                {
-                    case Keys.Back:
-                        HandleBackspace();
-                        uiEvent.Handled = true;
-                        break;
+                case Keys.Back:
+                    HandleBackspace();
+                    uiEvent.Handled = true;
+                    break;
 
-                    case Keys.Delete:
-                        HandleDelete();
-                        uiEvent.Handled = true;
-                        break;
-                }
+                case Keys.Delete:
+                    HandleDelete();
+                    uiEvent.Handled = true;
+                    break;
+
+                case Keys.Left:
+                    MoveCursor(-1, uiEvent.Ctrl, uiEvent.Shift);
+                    uiEvent.Handled = true;
+                    break;
+
+                case Keys.Right:
+                    MoveCursor(1, uiEvent.Ctrl, uiEvent.Shift);
+                    uiEvent.Handled = true;
+                    break;
+
+                case Keys.Home:
+                    SetCursorPosition(0, uiEvent.Shift);
+                    uiEvent.Handled = true;
+                    break;
+
+                case Keys.End:
+                    SetCursorPosition(Value.Length, uiEvent.Shift);
+                    uiEvent.Handled = true;
+                    break;
             }
-
         }
 
         private void AddChar(string character)
         {
-            if (Text.Value.Length < MaxLength)
+            string value = Value;
+
+            if (HasSelection)
             {
-                Text.Value += character;
+                value = value.Remove(SelectionStart, SelectionLength);
+                CursorPosition = SelectionStart;
+                ClearSelection();
             }
+
+            if (value.Length >= MaxLength)
+            {
+                return;
+            }
+
+            Text.Value = value.Insert(CursorPosition, character);
+            CursorPosition += character.Length;
+            ClearSelection();
         }
 
         private void HandleBackspace()
         {
-            if (Text.Value.Length > 0)
+            if (HasSelection)
             {
-                Text.Value = Text.Value.Substring(0, Text.Value.Length - 1);
+                DeleteSelection();
+                return;
             }
+
+            if (CursorPosition <= 0)
+            {
+                return;
+            }
+
+            Text.Value = Value.Remove(CursorPosition - 1, 1);
+            CursorPosition -= 1;
+            ClearSelection();
         }
 
         private void HandleDelete()
         {
-            if (Text.Value.Length > 0)
+            if (HasSelection)
             {
-                //Text.Value = Text.Value.Substring(0, Text.Value.Length - 1);
+                DeleteSelection();
+                return;
             }
+
+            string value = Value;
+            if (CursorPosition >= value.Length)
+            {
+                return;
+            }
+
+            Text.Value = value.Remove(CursorPosition, 1);
+            ClearSelection();
         }
 
+        private void CopySelection()
+        {
+            if (!HasSelection)
+            {
+                return;
+            }
 
-        //public override async Task HandleFocusChangedEventAsync(UIWindow uiWindow, UIFocusChangedEvent uiEvent)
-        //{
-        //    //return base.HandleFocusChangedEventAsync(uiWindow, uiEvent);
-        //    this.HasFocus = uiEvent.Focused;
-        //}
+            ClipboardService.SetText(Value.Substring(SelectionStart, SelectionLength));
+        }
 
-        //protected override void HandleStateChange()
-        //{
-        //    base.HandleStateChange();
-        //}
+        private void CutSelection()
+        {
+            if (!HasSelection)
+            {
+                return;
+            }
+
+            CopySelection();
+            DeleteSelection();
+        }
+
+        private void PasteClipboard()
+        {
+            string clip = ClipboardService.GetText();
+            if (string.IsNullOrEmpty(clip))
+            {
+                return;
+            }
+
+            // This is a single-line text box - strip any newlines from the pasted text.
+            clip = clip.Replace("\r\n", " ").Replace('\n', ' ').Replace('\r', ' ');
+
+            string value = Value;
+
+            if (HasSelection)
+            {
+                value = value.Remove(SelectionStart, SelectionLength);
+                CursorPosition = SelectionStart;
+                ClearSelection();
+            }
+
+            int availableLength = MaxLength - value.Length;
+            if (availableLength <= 0)
+            {
+                return;
+            }
+
+            if (clip.Length > availableLength)
+            {
+                clip = clip.Substring(0, availableLength);
+            }
+
+            Text.Value = value.Insert(CursorPosition, clip);
+            CursorPosition += clip.Length;
+            ClearSelection();
+        }
+
+        private void SelectAll()
+        {
+            selectionAnchor = 0;
+            CursorPosition = Value.Length;
+            UpdateSelectionFromAnchor();
+        }
+
+        // ---=== Mouse: click to position caret, drag to select ===---
+
+        public override async Task HandleMouseDownEventAsync(UIWindow uiWindow, UIMouseDownEvent uiEvent)
+        {
+            if (!uiEvent.Handled && uiEvent.PrimaryButton.Pressed && FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            {
+                int index = (Content as TextBoxTemplate)?.GetCharacterIndexAtX(uiEvent.X) ?? Value.Length;
+                SetCursorPosition(index, false);
+
+                isDragSelecting = true;
+                LockEventsToControl(uiWindow, this);
+
+                uiEvent.Handled = true;
+            }
+
+            await base.HandleMouseDownEventAsync(uiWindow, uiEvent);
+        }
+
+        public override async Task HandleMouseMoveEventAsync(UIWindow uiWindow, UIMouseMoveEvent uiEvent)
+        {
+            if (isDragSelecting)
+            {
+                int index = (Content as TextBoxTemplate)?.GetCharacterIndexAtX(uiEvent.X) ?? CursorPosition;
+                SetCursorPosition(index, true);
+            }
+
+            await base.HandleMouseMoveEventAsync(uiWindow, uiEvent);
+        }
+
+        public override async Task HandleMouseUpEventAsync(UIWindow uiWindow, UIMouseUpEvent uiEvent)
+        {
+            if (isDragSelecting)
+            {
+                isDragSelecting = false;
+                UnlockEventsFromControl(uiWindow, this);
+                uiEvent.Handled = true;
+            }
+
+            await base.HandleMouseUpEventAsync(uiWindow, uiEvent);
+        }
 
     }
 }

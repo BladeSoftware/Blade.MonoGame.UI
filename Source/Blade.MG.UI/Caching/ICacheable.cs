@@ -46,10 +46,11 @@ namespace Blade.MG.UI.Caching
         void UpdateCache(UIContext context, Rectangle layoutBounds, Transform parentTransform);
 
         /// <summary>
-        /// Renders the control from cache.
+        /// Renders the control from cache, blitting the cached texture at the control's own
+        /// current FinalRect (same convention as RenderControl's implementations).
         /// </summary>
         /// <param name="context">The UI context.</param>
-        /// <param name="layoutBounds">The layout bounds.</param>
+        /// <param name="layoutBounds">The parent-provided clip bounds - same meaning as RenderControl's layoutBounds parameter, NOT the control's own draw rect.</param>
         /// <param name="parentTransform">The parent transform.</param>
         void RenderFromCache(UIContext context, Rectangle layoutBounds, Transform parentTransform);
     }
