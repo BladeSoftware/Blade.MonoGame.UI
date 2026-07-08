@@ -42,7 +42,10 @@ namespace Blade.MG.UI.Controls
             var border1 = new MenuPopupBorder
             {
                 BorderColor = Theme.Outline,
-                BorderThickness = new Thickness(2f),
+                BorderThickness = new Thickness(1f),
+                CornerRadius = new CornerRadius(8),
+                Elevation = 4,
+                Padding = new Thickness(4),
 
                 Background = Theme.Surface,
 

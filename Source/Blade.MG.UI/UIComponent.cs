@@ -1125,14 +1125,18 @@ namespace Blade.MG.UI
 
         public virtual async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
-            if (uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
+            bool outerGate = uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y);
+
+            if (outerGate)
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
                     if (component != null)
                     {
+                        bool innerGate = uiEvent.ForcePropagation || component.FinalRect.Contains(uiEvent.X, uiEvent.Y);
+
                         // Always propogate event if Hover = False as we've aleady moved off that control
-                        if (uiEvent.ForcePropagation || component.FinalRect.Contains(uiEvent.X, uiEvent.Y))
+                        if (innerGate)
                         {
                             await component.HandleHoverChangedAsync(uiWindow, uiEvent);
                             MouseHover = uiEvent.Hover;

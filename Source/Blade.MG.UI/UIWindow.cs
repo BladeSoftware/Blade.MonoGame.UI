@@ -372,7 +372,6 @@ namespace Blade.MG.UI
                 {
                 }
 
-
                 if (!useHitTest || Rectangle.Intersect(parent.FinalRect, current.FinalRect).Contains(point))
                 {
                     if (selector(current, parent))

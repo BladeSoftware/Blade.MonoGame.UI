@@ -91,7 +91,9 @@ namespace Blade.MG.UI.Controls.Dialogs
             var border1 = new Border
             {
                 BorderColor = Theme.Primary,
-                BorderThickness = new Thickness(2f),
+                BorderThickness = new Thickness(1f),
+                CornerRadius = new CornerRadius(16),
+                Elevation = 6,
 
                 Background = Theme.Surface
             };

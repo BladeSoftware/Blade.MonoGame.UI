@@ -214,8 +214,9 @@ namespace Blade.MG.UI.Controls
             Border border = new Border()
             {
                 BorderColor = Theme.Outline,
-                BorderThickness = new Thickness(2),
-                CornerRadius = new CornerRadius(4),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(8),
+                Elevation = 4,
                 Background = Theme.Surface,
                 Padding = new Thickness(2),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,

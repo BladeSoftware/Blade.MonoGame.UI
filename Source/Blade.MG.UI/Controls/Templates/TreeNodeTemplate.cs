@@ -214,7 +214,7 @@ namespace Blade.MG.UI.Controls.Templates
 
             ApplyThemedValue(this, BorderThickness, nameof(BorderThickness), new Thickness(0));
             ApplyThemedValue(this, BorderColor, nameof(BorderColor), Theme.Outline);
-            ApplyThemedValue(this, CornerRadius, nameof(CornerRadius), new CornerRadius(5));
+            ApplyThemedValue(this, CornerRadius, nameof(CornerRadius), new CornerRadius(8));
             ApplyThemedValue(this, label1.TextColor, nameof(TreeNodeTemplate.TextColor), Theme.OnPrimaryContainer);
 
             if (treeNode.IsSelected && MouseHover.Value)

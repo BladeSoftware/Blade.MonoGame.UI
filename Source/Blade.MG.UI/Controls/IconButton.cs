@@ -70,6 +70,8 @@ namespace Blade.MG.UI.Controls
 
         public override async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
+            MouseHover = uiEvent.Hover;
+
             await base.HandleHoverChangedAsync(uiWindow, uiEvent);
 
             StateHasChanged();

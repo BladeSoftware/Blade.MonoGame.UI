@@ -125,13 +125,20 @@ namespace Blade.MG.UI.Controls
         private void RenderShadow(UIContext context, Rectangle layoutBounds, Transform parentTransform, CornerRadius cornerRadius)
         {
             var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
-            context.Renderer.ClipToRect(layoutBounds);
 
             var shadowRect = FinalRect with
             {
                 X = FinalRect.X + Elevation.Value,
                 Y = FinalRect.Y + Elevation.Value
             };
+
+            // The shadow is deliberately offset past the control's own edge, so clipping to
+            // layoutBounds alone (the control's own footprint) would cut it off exactly where
+            // it's meant to be visible. Clip to the union of the two instead, so the shadow can
+            // extend into the space beyond the control while everything still respects any
+            // tighter clip an ancestor (e.g. a scroll viewport) may have set via layoutBounds.
+            var shadowClipRect = Rectangle.Union(layoutBounds, shadowRect);
+            context.Renderer.ClipToRect(shadowClipRect);
 
             // Use max corner radius for shadow (simplified)
             context.Renderer.FillRoundedRect(spriteBatch, shadowRect, cornerRadius.MaxRadius, new Color(Theme.Shadow, 0.35f));

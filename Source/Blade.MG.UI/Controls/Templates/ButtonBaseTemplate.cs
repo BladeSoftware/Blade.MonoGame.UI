@@ -34,10 +34,9 @@ namespace Blade.MG.UI.Controls.Templates
 
         public override async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
         {
-            if (uiEvent.Hover == false || FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await base.HandleHoverChangedAsync(uiWindow, uiEvent);
-            }
+            MouseHover = uiEvent.Hover;
+
+            await base.HandleHoverChangedAsync(uiWindow, uiEvent);
 
             StateHasChanged();
         }

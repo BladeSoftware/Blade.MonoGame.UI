@@ -192,8 +192,8 @@ namespace Blade.MG.UI.Controls.Templates
 
                 if (iconCheckedImage == null)
                 {
-                    context.Renderer.FillRoundedRect(spriteBatch, boxRect, 2, checkedColor);
-                    context.Renderer.DrawRoundedRect(spriteBatch, boxRect, 2, borderColor, 2f);
+                    context.Renderer.FillRoundedRect(spriteBatch, boxRect, 6, checkedColor);
+                    context.Renderer.DrawRoundedRect(spriteBatch, boxRect, 6, borderColor, 2f);
                 }
 
 

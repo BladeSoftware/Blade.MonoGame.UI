@@ -26,7 +26,7 @@ public class ComboBoxTemplate : Control
             // directly (combo.BorderColor = ...) as well as via SetStyleOverride.
             BorderColor = combo.BorderColor,
             BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(0),
+            CornerRadius = new CornerRadius(8),
             HorizontalAlignment = HorizontalAlignmentType.Stretch,
             VerticalAlignment = VerticalAlignmentType.Top,
             Padding = new Thickness(4)

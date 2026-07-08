@@ -226,14 +226,17 @@ namespace Blade.MG.UI.Controls
                     Height = child.FinalRect.Height + child.Margin.Value.Top + child.Margin.Value.Bottom,
                 };
 
-                // Advance the running offset for the next sibling.
+                // Advance the running offset for the next sibling. child.FinalRect.Width/Height
+                // already has the margin folded in (see reassignment above), so adding the
+                // margin again here would double-count it and push every subsequent sibling
+                // one extra margin too far along the stacking axis.
                 if (Orientation == Orientation.Horizontal)
                 {
-                    stackOffset += child.FinalRect.Width + child.Margin.Value.Left + child.Margin.Value.Right;
+                    stackOffset += child.FinalRect.Width;
                 }
                 else
                 {
-                    stackOffset += child.FinalRect.Height + child.Margin.Value.Top + child.Margin.Value.Bottom;
+                    stackOffset += child.FinalRect.Height;
                 }
             }
 

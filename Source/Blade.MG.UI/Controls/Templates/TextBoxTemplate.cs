@@ -82,6 +82,7 @@ namespace Blade.MG.UI.Controls.Templates
             {
                 ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Color.Transparent);
                 border1.Background = Color.Transparent;
+                border1.CornerRadius = new CornerRadius(0);
                 border1.Margin = new Thickness(0, 9, 0, helperTextHeight);
                 border1.Padding = new Thickness(10, 5 + 6, 0, 5);
 
@@ -90,6 +91,7 @@ namespace Blade.MG.UI.Controls.Templates
             {
                 ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Color.Transparent);
                 border1.Background = Theme.SurfaceVariant;
+                border1.CornerRadius = new CornerRadius(8, 8, 0, 0); // Rounded top corners, flat above the underline
                 border1.Margin = new Thickness(0, 9, 0, helperTextHeight);
                 border1.Padding = new Thickness(10, 5 + 6, 0, 5);
             }
@@ -97,6 +99,7 @@ namespace Blade.MG.UI.Controls.Templates
             {
                 ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Theme.Outline);
                 border1.Background = Color.Transparent;
+                border1.CornerRadius = new CornerRadius(8);
                 border1.Margin = new Thickness(0, 5, 0, helperTextHeight);
                 border1.Padding = new Thickness(10, 14, 10, 5);
             }

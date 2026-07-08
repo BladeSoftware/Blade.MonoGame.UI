@@ -83,7 +83,7 @@ namespace Blade.MG.UI
 
         protected virtual void SetValue(T value)
         {
-            Setter(value);
+            Setter?.Invoke(value);
         }
 
         public void FromString(string value)
