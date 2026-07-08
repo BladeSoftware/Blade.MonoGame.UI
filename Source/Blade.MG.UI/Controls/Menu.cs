@@ -41,10 +41,10 @@ namespace Blade.MG.UI.Controls
 
             var border1 = new Border
             {
-                BorderColor = Color.DarkBlue,
+                BorderColor = Theme.Outline,
                 BorderThickness = new Thickness(2f),
 
-                Background = Color.White,
+                Background = Theme.Surface,
 
                 HorizontalAlignment = HorizontalAlignmentType.Absolute,
                 VerticalAlignment = VerticalAlignmentType.Absolute,
@@ -90,7 +90,7 @@ namespace Blade.MG.UI.Controls
                             {
                                 Height = 1,
                                 Margin = new Thickness(0, 2),
-                                Background = Color.White
+                                Background = Theme.Outline
                             },
                             this,
                             option);

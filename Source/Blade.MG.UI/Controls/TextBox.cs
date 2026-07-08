@@ -35,6 +35,9 @@ namespace Blade.MG.UI.Controls
         private Binding<Color> textColor = new Binding<Color>();
         public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
 
+        private Binding<Color> borderColor = new Binding<Color>();
+        public Binding<Color> BorderColor { get => borderColor; set => SetField(ref borderColor, value); }
+
         public Binding<string> FontName { get; set; } = new Binding<string>();
 
         public Binding<float> FontSize { get; set; } = new Binding<float>();

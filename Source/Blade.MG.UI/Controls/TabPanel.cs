@@ -35,7 +35,7 @@ namespace Blade.MG.UI.Controls
         [XmlIgnore]
         public Type TabHeaderTemplateType { get; set; } = typeof(TabHeaderTemplate);
 
-        public Color DividerColor { get; set; } = Color.Orange;
+        public Color DividerColor { get; set; }
 
         private Dictionary<UIComponent, UIComponent> tabHeaderLink = new();  // Dictionary< 'Child Control', 'Tab Header'> ...
 
@@ -44,13 +44,14 @@ namespace Blade.MG.UI.Controls
         public TabPanel()
         {
             IsHitTestVisible = true;
+            DividerColor = Theme.Outline;
         }
 
         protected override void InitTemplate()
         {
             base.InitTemplate();
 
-            Background = Color.DarkSlateBlue;
+            Background = Theme.Surface;
 
             tabsStackPanel = new StackPanel
             {

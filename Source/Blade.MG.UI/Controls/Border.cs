@@ -134,7 +134,7 @@ namespace Blade.MG.UI.Controls
             };
 
             // Use max corner radius for shadow (simplified)
-            context.Renderer.FillRoundedRect(spriteBatch, shadowRect, cornerRadius.MaxRadius, new Color(Color.LightGray, 0.35f));
+            context.Renderer.FillRoundedRect(spriteBatch, shadowRect, cornerRadius.MaxRadius, new Color(Theme.Shadow, 0.35f));
             context.Renderer.EndBatch();
         }
 

@@ -10,15 +10,6 @@ namespace Blade.MG.UI.Controls.Templates
     {
         private Label label1;
 
-        private Color backgroundNormal = Color.White;
-        private Color backgroundHover = Color.LightGray;
-        private Color backgroundFocused = Color.White;
-
-        private Color textColorNormal = Color.Black;
-        private Color textColorHover = Color.Black;
-        private Color textColorFocused = Color.Black;
-
-
         public CheckBoxTemplate()
         {
         }
@@ -32,12 +23,13 @@ namespace Blade.MG.UI.Controls.Templates
             label1 = new Label()
             {
                 Text = checkbox.Text, // Use the Button Text
-                //TextColor = textBox.FontColor,  // Use the Button Foreground Color
                 FontName = checkbox.FontName, // Use the parent Font
                 FontSize = checkbox.FontSize, // Use the parent Font
                 Margin = new Thickness(25, 5, 2, 5),
 
-                TextColor = checkbox.Theme.Primary,
+                // Link to the CheckBox's own TextColor binding so a developer can override it
+                // directly (checkbox.TextColor = ...) as well as via SetStyleOverride.
+                TextColor = checkbox.TextColor,
             };
 
             Content = label1;
@@ -61,24 +53,24 @@ namespace Blade.MG.UI.Controls.Templates
 
         protected override void HandleStateChange()
         {
-            //await base.HandleStateChangeAsync();
+            var checkbox = ParentAs<CheckBox>();
 
             // Normal State
-            label1.TextColor.Value = textColorNormal;
-            Background.Value = backgroundNormal;
+            ApplyThemedValue(checkbox, label1.TextColor, nameof(CheckBox.TextColor), Theme.OnSurface);
+            ApplyThemedValue(checkbox, Background, nameof(CheckBox.Background), Color.Transparent);
 
-            // Hover State 
+            // Hover State
             if (MouseHover.Value)
             {
-                label1.TextColor.Value = textColorHover;
-                Background.Value = backgroundHover;
+                ApplyThemedValue(checkbox, label1.TextColor, nameof(CheckBox.TextColor), Theme.Primary);
+                ApplyThemedValue(checkbox, Background, nameof(CheckBox.Background), Theme.SurfaceVariant);
             }
 
             // Focused State
             if (HasFocus.Value)
             {
-                label1.TextColor.Value = textColorFocused;
-                Background.Value = backgroundFocused;
+                ApplyThemedValue(checkbox, label1.TextColor, nameof(CheckBox.TextColor), Theme.Primary);
+                ApplyThemedValue(checkbox, Background, nameof(CheckBox.Background), Theme.SecondaryContainer);
             }
 
 
@@ -163,10 +155,10 @@ namespace Blade.MG.UI.Controls.Templates
             var checkbox = ParentAs<CheckBox>();
 
 
-            Color primaryColor = Color.Red;
-            Color secondaryColor = Color.White;
-            Color disabledColor = Color.LightGray;
-            Color? uncheckedColor = null; // Color.Gray;
+            Color primaryColor = Theme.Primary;
+            Color secondaryColor = Theme.OnPrimary;
+            Color disabledColor = Theme.Disabled;
+            Color? uncheckedColor = Theme.Outline;
 
 
             Color checkedColor = checkbox.IsChecked?.Value switch

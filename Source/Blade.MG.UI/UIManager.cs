@@ -37,11 +37,78 @@ namespace Blade.MG.UI
 
         //private static SemaphoreSlim uiSemaphore = new SemaphoreSlim(1);
 
-        public static UITheme DefaultTheme { get; set; } = DefaultThemes.LightTheme();
+        private static UITheme defaultTheme = DefaultThemes.LightTheme();
+
+        /// <summary>
+        /// The app's active theme. Read this for the theme to use when creating new
+        /// windows/controls, or write it to set the app's default theme at startup (e.g.
+        /// UIManager.DefaultTheme = DefaultThemes.DarkTheme(); before adding any windows).
+        /// Assigning it after windows already exist swaps them live - see SetTheme, which
+        /// this setter delegates to.
+        /// </summary>
+        public static UITheme DefaultTheme
+        {
+            get => defaultTheme;
+            set => SetTheme(value);
+        }
+
+        /// <summary>
+        /// Raised after the active theme changes and every existing window has already been
+        /// refreshed to use it. Useful for app-level UI (e.g. a theme picker) that wants to
+        /// reflect the current selection.
+        /// </summary>
+        public static event Action<UITheme> ThemeChanged;
+
+        /// <summary>
+        /// Swaps the app's active theme immediately: every existing window/control is swept
+        /// to re-apply its theme-driven styling (via StateHasChanged), no restart needed.
+        /// New windows/controls created afterward also start with this theme. Per-control
+        /// style overrides (UIComponentDrawable.SetStyleOverride) are unaffected, since they
+        /// take precedence over whatever the theme provides either way.
+        /// </summary>
+        public static void SetTheme(UITheme theme)
+        {
+            if (theme == null || ReferenceEquals(theme, defaultTheme))
+            {
+                return;
+            }
+
+            defaultTheme = theme;
+
+            foreach (var instance in Instances)
+            {
+                instance.RefreshTheme(theme);
+            }
+
+            ThemeChanged?.Invoke(theme);
+        }
 
         public static ResourceDict ResourceDict { get; set; } = new ResourceDict(); // Default Resource Dictionaries
 
         //public static UIManager Instance { get; set; } = new UIManager();
+
+        // Tracks live UIManager instances so SetTheme can refresh their windows. There's
+        // normally exactly one per Game; a WeakReference list keeps this from holding a
+        // UIManager alive past its Game's lifetime.
+        private static readonly List<WeakReference<UIManager>> instances = new();
+
+        private static IEnumerable<UIManager> Instances
+        {
+            get
+            {
+                for (int i = instances.Count - 1; i >= 0; i--)
+                {
+                    if (instances[i].TryGetTarget(out var manager))
+                    {
+                        yield return manager;
+                    }
+                    else
+                    {
+                        instances.RemoveAt(i);
+                    }
+                }
+            }
+        }
 
         protected ConcurrentQueue<UITask> uiTaskQueue = new ConcurrentQueue<UITask>();
 
@@ -57,6 +124,16 @@ namespace Blade.MG.UI
         public UIManager(Game game)
         {
             this.game = game;
+
+            instances.Add(new WeakReference<UIManager>(this));
+        }
+
+        private void RefreshTheme(UITheme theme)
+        {
+            foreach (var ui in uiWindows)
+            {
+                ui.Value.RefreshTheme(theme);
+            }
         }
 
         private string ToPriority(int i) => $"{i.ToString("0000")}.{Stopwatch.GetTimestamp()}";
@@ -531,6 +608,20 @@ namespace Blade.MG.UI
             {
                 await action(eventLockedWindow);
                 return;
+            }
+
+            // If a modal popup/dialog is open, it owns all input exclusively - windows
+            // underneath must not also react to the same click/key, even if the point also
+            // falls within their bounds (e.g. a menu item rendered on top of a button must not
+            // let the click "fall through" to that button). The modal's own hit-testing decides
+            // whether the point is inside (handle it) or outside (typically dismiss).
+            for (int i = uiWindows.Count - 1; i >= 0; i--)
+            {
+                if (uiWindows.Values[i].IsModal)
+                {
+                    await action(uiWindows.Values[i]);
+                    return;
+                }
             }
 
             // Despatch events to all windows, in reverse order

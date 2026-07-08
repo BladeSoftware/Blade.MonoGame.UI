@@ -30,12 +30,9 @@ namespace Blade.MG.UI.Controls
         {
             IsHitTestVisible = true;
 
-            Background = Color.LightGray;
-            GrabHandle = Color.Gray;
-
-            EndCaps = Color.Gray;
-
-            //EndCaps = new Color((Background.R + GrabHandle.R) / 2, (Background.G + GrabHandle.G) / 2, (Background.B + GrabHandle.B) / 2);
+            Background = Theme.SurfaceVariant;
+            GrabHandle = Theme.Outline;
+            EndCaps = Theme.Outline;
         }
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
@@ -344,17 +341,14 @@ namespace Blade.MG.UI.Controls
             if (mouseHover || dragging)
             {
                 barMargin = 6;
-                EndCaps = Color.Gray;
-                GrabHandle = Color.Gray;
+                EndCaps = Theme.Outline;
+                GrabHandle = Theme.Outline;
             }
             else
             {
                 barMargin = 8;
-                //EndCaps = Color.LightGray;
-                //GrabHandle = new Color((Color.LightGray.R + Color.Gray.R) / 2, (Color.LightGray.G + Color.Gray.G) / 2, (Color.LightGray.B + Color.Gray.B) / 2);
-
-                EndCaps = new Color(Color.Gray, 0.2f);
-                GrabHandle = new Color(Color.Gray, 0.75f);
+                EndCaps = new Color(Theme.Outline, 0.2f);
+                GrabHandle = new Color(Theme.Outline, 0.75f);
             }
         }
     }

@@ -58,6 +58,16 @@ namespace Blade.MG.UI
         public int DefaultZIndex { get; set; } = 100;
         public int ZIndex { get; internal set; }
 
+        /// <summary>
+        /// True for popups/dialogs (e.g. ModalBase, ComboBox's dropdown) that must own all
+        /// input exclusively while open: clicks/keys go only to this window, even if they also
+        /// land within a window underneath it, and the modal itself decides whether a given
+        /// point is "inside" (handle it) or "outside" (typically dismiss). See
+        /// UIManager.DispatchEventAsync, which routes all input to the topmost modal window
+        /// when one is present instead of hit-testing every open window.
+        /// </summary>
+        public bool IsModal { get; set; } = false;
+
 
         public virtual void Initialize(Game game)
         {
@@ -71,6 +81,50 @@ namespace Blade.MG.UI
             Context.Renderer = new UIRenderer(Context);
 
             FontService.RegisterFont("Default", DefaultFont.Data);
+        }
+
+        /// <summary>
+        /// Applies a newly-active theme to this window: updates Context.Theme, then sweeps
+        /// every control in the tree (internal children, Control.Content, Container.Children)
+        /// calling StateHasChanged() so theme-driven styling re-applies immediately. Called
+        /// automatically by UIManager.SetTheme; no need to call this directly under normal use.
+        /// </summary>
+        public void RefreshTheme(UITheme theme)
+        {
+            if (Context != null)
+            {
+                Context.Theme = theme;
+            }
+
+            RefreshThemeRecursive(this);
+        }
+
+        private static void RefreshThemeRecursive(UIComponent component)
+        {
+            if (component == null)
+            {
+                return;
+            }
+
+            component.StateHasChanged();
+
+            foreach (var child in component.PrivateControls)
+            {
+                RefreshThemeRecursive(child);
+            }
+
+            if (component is Control control && control.Content != null)
+            {
+                RefreshThemeRecursive(control.Content);
+            }
+
+            if (component is Container container)
+            {
+                foreach (var child in container.Children)
+                {
+                    RefreshThemeRecursive(child);
+                }
+            }
         }
 
         public virtual void LoadContent()

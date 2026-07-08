@@ -21,6 +21,78 @@ namespace Blade.MG.UI
         [XmlIgnore]
         public UITheme Theme => ParentWindow?.Context?.Theme ?? (this as UIWindow)?.Context?.Theme ?? UIManager.DefaultTheme;
 
+        // ---=== Per-control style overrides ===---
+        //
+        // Controls source color/font/etc. from the active Theme by default, re-applied
+        // reactively whenever state (hover/focus/selected) or the theme itself changes (see
+        // HandleStateChange / UIManager.SetTheme). An application can override a specific
+        // property on a specific instance - e.g. "this one TextBox should always have a red
+        // background, regardless of theme or hover state" - the same way a CSS inline style
+        // beats a stylesheet rule. Framework/template code must apply themed defaults via
+        // ApplyThemedValue (not a direct assignment) for overrides set here to stick.
+
+        private Dictionary<string, object> styleOverrides;
+
+        /// <summary>
+        /// Sets an explicit override for a themed property on this control instance, which
+        /// then takes precedence over whatever the active theme/state would otherwise apply.
+        /// Use nameof() for propertyName so a rename is caught at compile time, e.g.:
+        /// <c>myTextBox.SetStyleOverride(nameof(TextBox.Background), Color.Red);</c>
+        /// Takes effect immediately.
+        /// </summary>
+        public void SetStyleOverride<T>(string propertyName, T value)
+        {
+            styleOverrides ??= new Dictionary<string, object>();
+            styleOverrides[propertyName] = value;
+            StateHasChanged();
+        }
+
+        /// <summary>
+        /// Removes a previously-set style override, reverting the property to whatever the
+        /// active theme/state provides. Takes effect immediately.
+        /// </summary>
+        public void ClearStyleOverride(string propertyName)
+        {
+            if (styleOverrides != null && styleOverrides.Remove(propertyName))
+            {
+                StateHasChanged();
+            }
+        }
+
+        public bool HasStyleOverride(string propertyName) => styleOverrides != null && styleOverrides.ContainsKey(propertyName);
+
+        public bool TryGetStyleOverride<T>(string propertyName, out T value)
+        {
+            if (styleOverrides != null && styleOverrides.TryGetValue(propertyName, out var obj) && obj is T typed)
+            {
+                value = typed;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Applies a theme/state-driven default to a themed Binding&lt;T&gt; property,
+        /// unless <paramref name="owner"/> has an explicit override for
+        /// <paramref name="propertyName"/> (see SetStyleOverride), in which case the
+        /// override wins. Framework/template code should always go through this instead of
+        /// assigning a themed property directly, so an application's override survives
+        /// future theme/state changes. <paramref name="owner"/> is usually the control the
+        /// application interacts with (e.g. a Button), while <paramref name="target"/> may
+        /// belong to an internal child (e.g. the button template's Label).
+        /// </summary>
+        protected static void ApplyThemedValue<T>(UIComponentDrawable owner, Binding<T> target, string propertyName, T themeValue)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            target.Value = (owner != null && owner.TryGetStyleOverride(propertyName, out T overrideValue)) ? overrideValue : themeValue;
+        }
+
         public Binding<Color> Background { get; set; } = Color.Transparent;
 
         [JsonIgnore]

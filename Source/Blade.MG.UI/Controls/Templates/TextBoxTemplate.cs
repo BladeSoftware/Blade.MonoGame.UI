@@ -12,22 +12,6 @@ namespace Blade.MG.UI.Controls.Templates
         private Border border1;
         private Label label1;
 
-        //private Color backgroundNormal = Color.White;
-        //private Color backgroundHover = Color.LightGray;
-        //private Color backgroundFocused = Color.White;
-
-        //private Color textColorNormal = Color.Black;
-        //private Color textColorHover = Color.Black;
-        //private Color textColorFocused = Color.Black;
-
-        //private Color borderColorNormal = Color.DarkSlateBlue;
-        //private Color borderColorHover = Color.White;  // Color.Gray;
-        //private Color borderColorFocused = Color.MediumSlateBlue;
-
-        //private int borderThicknessNormal = 2;
-        //private int borderThicknessHover = 2;
-        //private int borderThicknessFocused = 2;
-
         private DateTime cursorTime;
         private bool cursorFlashOn = false;
 
@@ -41,17 +25,19 @@ namespace Blade.MG.UI.Controls.Templates
         {
             var textBox = ParentAs<TextBox>();
 
-            //Background = Color.Transparent;
-            //Background = new Binding<Color>(() => GetResourceValue<Color>("Background"));
-            //Background = () => GetResourceValue<Color>("Background");
-            Background = new Style<Color>("TextBox.Background");
+            // Link to the TextBox's own Background binding so a developer can override it
+            // directly (textBox.Background = ...) as well as via SetStyleOverride.
+            Background = textBox.Background;
+            ApplyThemedValue(textBox, Background, nameof(TextBox.Background), Theme.Surface);
 
             //Margin = new Thickness(0, 0, 0, 7); // Reserve space for the helper text
             //Padding = new Thickness(0, 7, 0, 0);
 
             border1 = new Border
             {
-                BorderColor = Color.Black,
+                // Link to the TextBox's own BorderColor binding so a developer can override it
+                // directly (textBox.BorderColor = ...) as well as via SetStyleOverride.
+                BorderColor = textBox.BorderColor,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(0),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
@@ -94,7 +80,7 @@ namespace Blade.MG.UI.Controls.Templates
 
             if (textBox.Variant == Variant.Standard)
             {
-                border1.BorderColor = Color.Transparent;
+                ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Color.Transparent);
                 border1.Background = Color.Transparent;
                 border1.Margin = new Thickness(0, 9, 0, helperTextHeight);
                 border1.Padding = new Thickness(10, 5 + 6, 0, 5);
@@ -102,14 +88,14 @@ namespace Blade.MG.UI.Controls.Templates
             }
             else if (textBox.Variant == Variant.Filled)
             {
-                border1.BorderColor = Color.Transparent;
-                border1.Background = Color.LightGray;
+                ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Color.Transparent);
+                border1.Background = Theme.SurfaceVariant;
                 border1.Margin = new Thickness(0, 9, 0, helperTextHeight);
                 border1.Padding = new Thickness(10, 5 + 6, 0, 5);
             }
             else if (textBox.Variant == Variant.Outlined)
             {
-                border1.BorderColor = Color.Black;
+                ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Theme.Outline);
                 border1.Background = Color.Transparent;
                 border1.Margin = new Thickness(0, 5, 0, helperTextHeight);
                 border1.Padding = new Thickness(10, 14, 10, 5);
@@ -158,12 +144,12 @@ namespace Blade.MG.UI.Controls.Templates
                     if (textBox.Variant == Variant.Standard)
                     {
                         underlineRect = new Rectangle(label1.FinalRect.X, border1.FinalRect.Bottom - 1, border1.FinalRect.Width, 1);
-                        context.Renderer.FillRect(spriteBatch, underlineRect, Color.Black);
+                        context.Renderer.FillRect(spriteBatch, underlineRect, Theme.Outline);
                     }
                     else if (textBox.Variant == Variant.Filled)
                     {
                         underlineRect = new Rectangle(border1.FinalRect.X, border1.FinalRect.Bottom - 1, border1.FinalRect.Width, 1);
-                        context.Renderer.FillRect(spriteBatch, underlineRect, Color.Black);
+                        context.Renderer.FillRect(spriteBatch, underlineRect, Theme.Outline);
                     }
 
                 }
@@ -182,8 +168,8 @@ namespace Blade.MG.UI.Controls.Templates
 
                 if (!shrinkLabel)
                 {
-                    // Text Box Text is Empty, so display Label in the text box 
-                    labelSizeColor = Color.LightGray;
+                    // Text Box Text is Empty, so display Label in the text box
+                    labelSizeColor = Theme.OnSurfaceVariant;
                     labelSizeFontSize = textBox.FontSize?.Value ?? FontService.DefaultFontSize;
 
                     SpriteFontBase labelFont = FontService.GetFontOrDefault(textBox.FontName?.Value, labelSizeFontSize);
@@ -196,7 +182,7 @@ namespace Blade.MG.UI.Controls.Templates
                 else
                 {
                     // Text Box has Text, so shrink the label (display Label at the top-left corner of the text box)
-                    labelSizeColor = Color.Blue;
+                    labelSizeColor = Theme.Primary;
                     labelSizeFontSize = 15;
 
                     SpriteFontBase labelFont = FontService.GetFontOrDefault(textBox.FontName?.Value, labelSizeFontSize);
@@ -225,7 +211,7 @@ namespace Blade.MG.UI.Controls.Templates
                 {
 
                     // Text Box has Text, so display Label at the top-left corner of the text box
-                    Color helperTextSizeColor = Color.Gray;
+                    Color helperTextSizeColor = Theme.OnSurfaceVariant;
                     float helperTextSizeFontSize = 14;
 
                     SpriteFontBase helperTextSizeFont = FontService.GetFontOrDefault(textBox.FontName?.Value, helperTextSizeFontSize);
@@ -266,7 +252,7 @@ namespace Blade.MG.UI.Controls.Templates
                         Vector2 textSize = font.MeasureString(editText[0..cursorPosition]);
 
                         Rectangle cursorRect = new Rectangle((int)(label1.TextRect.Left + textSize.X), (int)label1.TextRect.Top, 2, (int)label1.TextRect.Height);
-                        context.Renderer.FillRect(spriteBatch, cursorRect, Color.Black, label1.FinalContentRect);
+                        context.Renderer.FillRect(spriteBatch, cursorRect, Theme.OnSurface, label1.FinalContentRect);
                     }
                 }
 
@@ -348,94 +334,11 @@ namespace Blade.MG.UI.Controls.Templates
         {
             var textBox = ParentAs<TextBox>();
 
-
-            // Revert view state to Normal
-            // TODO: Only set properties that aren't going to be re-set by the destination view state
-
-            // TypeConverter.UpdateProperty(textBox, nameof(TextBox.TextColor), Color.Black);
-
-            //label1.TextColor = GetResourceValue<Color>("TextColor");
-            //Background = textBox.Background; // Default to the Text Box Background Color
-
-            //// Hover State 
-            //if (MouseHover)
-            //{
-            //    label1.TextColor = GetResourceValue<Color>("TextColor.Hover");
-            //    Background = GetResourceValue<Color>("Background.Hover");
-            //}
-
-            //// Focused State
-            //if (HasFocus)
-            //{
-            //    label1.TextColor = GetResourceValue<Color>("TextColor.Focused");
-            //    Background = GetResourceValue<Color>("Background.Focused");
-            //}
-
-            switch (this.ViewState)
-            {
-                case ViewStates.Normal:
-                    textBox.TextColor = Color.Black;
-                    break;
-
-                case ViewStates.Hover:
-                    textBox.TextColor = Color.Violet;
-                    break;
-
-                case ViewStates.Focused:
-                    textBox.TextColor = Color.DarkRed;
-                    break;
-            }
-
-
-
-
-            //await base.HandleStateChangeAsync();
-
-            // ---- TESTS ----
-            //label1.TextColor = ResourceDict.GetResourceValue<Color>("", "TextColor" + ViewState);
-            ////Background = ResourceDict.GetResourceValue<Color>("", "Background" + ViewState());
-
-            //TypeConverter.UpdateProperty(textBox, nameof(TextBox.Text), "Hello, World!");
-            //TypeConverter.UpdateProperty(textBox, nameof(TextBox.MaxLength), "123");
-            //TypeConverter.UpdateProperty(textBox, nameof(TextBox.FontSize), "68");
-
-            //TypeConverter.UpdateProperty(textBox, nameof(TextBox.Background), Color.Purple.ToString());
-
-            //TypeConverter.UpdateProperty(textBox, nameof(TextBox.Background), Color.Purple);
-            //TypeConverter.UpdateProperty(textBox, nameof(TextBox.Background), new Binding<Color>(Color.Purple));
-
-
-            //Background = new Style<Color>("Background");
-
-            //label1.TextColor = GetResourceViewState<Color>("TextColor");
-            //Background = GetResourceViewState<Color>("Background");
-
-
-
-            // Very slow
-            //Background = (Func<Color>)(() => GetResourceValue<Color>("Background"));
-            //Background = new Binding<Color>(() => GetResourceValue<Color>("Background")); 
-
-
-            //// Normal State
-            //label1.TextColor = GetResourceValue<Color>("TextColor");
-            //Background = textBox.Background; // Default to the Text Box Background Color
-
-            //// Hover State 
-            //if (MouseHover)
-            //{
-            //    label1.TextColor = GetResourceValue<Color>("TextColor.Hover");
-            //    Background = GetResourceValue<Color>("Background.Hover");
-            //}
-
-            //// Focused State
-            //if (HasFocus)
-            //{
-            //    label1.TextColor = GetResourceValue<Color>("TextColor.Focused");
-            //    Background = GetResourceValue<Color>("Background.Focused");
-            //}
-
-
+            // Text color and background are theme-driven and developer-overridable.
+            // Border color is re-applied every Measure() pass since it depends on Variant,
+            // so it isn't set reactively here.
+            ApplyThemedValue(textBox, textBox.TextColor, nameof(TextBox.TextColor), Theme.OnSurface);
+            ApplyThemedValue(textBox, Background, nameof(TextBox.Background), Theme.Surface);
         }
 
     }

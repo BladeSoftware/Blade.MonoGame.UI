@@ -10,19 +10,6 @@ namespace Blade.MG.UI.Controls.Templates
         //private MenuItem button;
         private Label label1;
 
-        private Color backgroundNormal = Color.White;
-        private Color backgroundHover = Color.Gray;
-        private Color backgroundFocused = Color.LightGray;
-
-        private Color textColorNormal = Color.Black;
-        private Color textColorHover = Color.Black;
-        private Color textColorFocused = Color.Black;
-
-        //private int borderThicknessNormal = 2;
-        //private int borderThicknessHover = 2;
-        //private int borderThicknessFocused = 2;
-
-
         public MenuItemTemplate()
         {
         }
@@ -36,10 +23,15 @@ namespace Blade.MG.UI.Controls.Templates
             //this.VerticalAlignment = VerticalAlignmentType.Top;
 
 
+            var menuItem = ParentAs<MenuItem>();
+
             label1 = new Label()
             {
                 Text = menuOption?.ToString() ?? "",
-                TextColor = Color.Black,
+
+                // Link to the MenuItem's own TextColor binding so a developer can override it
+                // directly (menuItem.TextColor = ...) as well as via SetStyleOverride.
+                TextColor = menuItem.TextColor,
                 Height = 34,
 
                 FontName = null,
@@ -78,35 +70,25 @@ namespace Blade.MG.UI.Controls.Templates
 
         protected override void HandleStateChange()
         {
-            //await base.HandleStateChangeAsync();
+            var menuItem = ParentAs<MenuItem>();
 
             // Normal State
-            label1.TextColor.Value = textColorNormal;
-            Background.Value = backgroundNormal;
-            //border1.BorderThickness.Value = borderThicknessNormal;
-            //border1.BorderColor.Value = borderColorNormal;
+            ApplyThemedValue(menuItem, label1.TextColor, nameof(MenuItem.TextColor), Theme.OnSurface);
+            ApplyThemedValue(menuItem, Background, nameof(MenuItem.Background), Theme.Surface);
 
+            // Hover State
+            if (MouseHover.Value)
+            {
+                ApplyThemedValue(menuItem, label1.TextColor, nameof(MenuItem.TextColor), Theme.OnSecondaryContainer);
+                ApplyThemedValue(menuItem, Background, nameof(MenuItem.Background), Theme.SecondaryContainer);
+            }
 
             // Focused State
             if (HasFocus.Value)
             {
-                label1.TextColor.Value = textColorFocused;
-                Background.Value = backgroundFocused;
-                //border1.BorderThickness.Value = borderThicknessFocused;
-                //border1.BorderColor.Value = borderColorFocused;
+                ApplyThemedValue(menuItem, label1.TextColor, nameof(MenuItem.TextColor), Theme.OnPrimaryContainer);
+                ApplyThemedValue(menuItem, Background, nameof(MenuItem.Background), Theme.PrimaryContainer);
             }
-
-
-            // Hover State 
-            if (MouseHover.Value)
-            {
-                label1.TextColor.Value = textColorHover;
-                Background.Value = backgroundHover;
-                //border1.BorderThickness.Value = borderThicknessHover;
-                //border1.BorderColor.Value = borderColorHover;
-            }
-
-
         }
 
     }

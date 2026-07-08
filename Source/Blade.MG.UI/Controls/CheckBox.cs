@@ -1,6 +1,7 @@
 ﻿using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
 using Blade.MG.UI.Models;
+using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls
 {
@@ -10,6 +11,9 @@ namespace Blade.MG.UI.Controls
 
         public Binding<string> FontName { get; set; } = new Binding<string>();
         public Binding<float> FontSize { get; set; } = new Binding<float>();
+
+        private Binding<Color> textColor = new Binding<Color>();
+        public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
 
         public Binding<bool?> IsChecked { get; set; } = new Binding<bool?>();
         public Binding<bool> Tristate { get; set; } = false;

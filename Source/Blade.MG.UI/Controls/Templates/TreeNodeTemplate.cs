@@ -11,18 +11,8 @@ namespace Blade.MG.UI.Controls.Templates
         public Label label0;
         public Label label1;
 
-        private Color backgroundNormal = new Color(Color.DarkSlateBlue, 0.55f);
-        private Color backgroundHover = new Color(Color.SlateBlue, 0.80f);
-        private Color backgroundFocused = new Color(Color.SlateBlue, 0.80f);
-
-        private Color textColorNormal = Color.White;
-        private Color textColorHover = Color.White;
-        private Color textColorFocused = Color.White;
-
-
-        private Color borderColorNormal = Color.Orange;
-
-        private int borderThicknessNormal = 2;
+        private Binding<Color> textColor = new Binding<Color>();
+        public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
 
         //private Binding<SpriteFont> SpriteFont { get; set; }
 
@@ -55,7 +45,7 @@ namespace Blade.MG.UI.Controls.Templates
                 Height = 32,
                 HorizontalAlignment = HorizontalAlignmentType.Left,
                 VerticalAlignment = VerticalAlignmentType.Center,
-                TextColor = new Color(Color.Black, 1f),
+                TextColor = Theme.OnSurface,
                 Background = Color.Transparent,
 
                 CanHover = false,
@@ -105,7 +95,10 @@ namespace Blade.MG.UI.Controls.Templates
             label1 = new Label()
             {
                 Text = treeNode?.Text ?? "null",
-                TextColor = Color.Black,
+
+                // Link to this template's own TextColor binding so a subclass/customizer can
+                // override it directly as well as via SetStyleOverride.
+                TextColor = TextColor,
                 Background = Color.Transparent,
                 //Width = 100,
                 //Height = 100,
@@ -201,14 +194,11 @@ namespace Blade.MG.UI.Controls.Templates
 
         protected override void HandleStateChange()
         {
-            //await base.HandleStateChangeAsync();
-
             TreeView parentTree = Parent as TreeView;
             TreeNode treeNode = DataContext as TreeNode;
 
             // Normal State
-            //((StackPanel)Content).Background = Color.Transparent;
-            Background = Color.Transparent;
+            ApplyThemedValue(this, Background, nameof(Background), Color.Transparent);
 
             if (label1 == null)
             {
@@ -216,52 +206,35 @@ namespace Blade.MG.UI.Controls.Templates
             }
 
             label1.Visible = Visibility.Visible;
-            //editModeBorder.Visible = Visibility.Collapsed;
 
             if (treeNode == null)
             {
                 return;
             }
 
-
-            //if (MouseHover.Value)
-            //{
-            //    //((StackPanel)Content).Background = Color.LightGray;
-            //    this.Background = Color.LightGray;
-            //}
-            //else
-            //{
-            //    //((StackPanel)Content).Background = Color.Transparent;
-            //    this.Background = Color.Transparent;
-            //}
-
-            BorderThickness = new Thickness(0);
-            BorderColor = Theme.Outline; // Color.MidnightBlue;
-            CornerRadius = new CornerRadius(5);
-
-            label1.TextColor = Theme.OnPrimaryContainer;
+            ApplyThemedValue(this, BorderThickness, nameof(BorderThickness), new Thickness(0));
+            ApplyThemedValue(this, BorderColor, nameof(BorderColor), Theme.Outline);
+            ApplyThemedValue(this, CornerRadius, nameof(CornerRadius), new CornerRadius(5));
+            ApplyThemedValue(this, label1.TextColor, nameof(TreeNodeTemplate.TextColor), Theme.OnPrimaryContainer);
 
             if (treeNode.IsSelected && MouseHover.Value)
             {
-                Background = Theme.SecondaryContainer; //Color.SlateBlue;
-                BorderColor = Theme.Tertiary; // Color.MidnightBlue;
-                BorderThickness = new Thickness(2);
-
-                label1.TextColor = Theme.OnSecondaryContainer;
+                ApplyThemedValue(this, Background, nameof(Background), Theme.SecondaryContainer);
+                ApplyThemedValue(this, BorderColor, nameof(BorderColor), Theme.Tertiary);
+                ApplyThemedValue(this, BorderThickness, nameof(BorderThickness), new Thickness(2));
+                ApplyThemedValue(this, label1.TextColor, nameof(TreeNodeTemplate.TextColor), Theme.OnSecondaryContainer);
             }
             else if (treeNode.IsSelected)
             {
-                Background = Theme.SecondaryContainer; // Color.MediumSlateBlue;
-                BorderThickness = new Thickness(2);
-                label1.TextColor = Theme.OnSecondaryContainer;
-
+                ApplyThemedValue(this, Background, nameof(Background), Theme.SecondaryContainer);
+                ApplyThemedValue(this, BorderThickness, nameof(BorderThickness), new Thickness(2));
+                ApplyThemedValue(this, label1.TextColor, nameof(TreeNodeTemplate.TextColor), Theme.OnSecondaryContainer);
             }
             else if (MouseHover.Value)
             {
-                BorderColor = Theme.Tertiary; // Color.MidnightBlue;
-                BorderThickness = new Thickness(2);
+                ApplyThemedValue(this, BorderColor, nameof(BorderColor), Theme.Tertiary);
+                ApplyThemedValue(this, BorderThickness, nameof(BorderThickness), new Thickness(2));
             }
-
         }
 
     }

@@ -13,6 +13,9 @@ namespace Blade.MG.UI.Controls
         [XmlIgnore]
         public Type MenuItemTemplate { get; set; }
 
+        private Binding<Color> textColor = new Binding<Color>();
+        public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
+
         public MenuItem()
         {
             //Text = null;

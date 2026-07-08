@@ -22,7 +22,9 @@ public class ComboBoxTemplate : Control
         // Root border contains header and the list
         RootBorder = new Border()
         {
-            BorderColor = Color.Black,
+            // Link to the ComboBox's own BorderColor binding so a developer can override it
+            // directly (combo.BorderColor = ...) as well as via SetStyleOverride.
+            BorderColor = combo.BorderColor,
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(0),
             HorizontalAlignment = HorizontalAlignmentType.Stretch,
@@ -46,7 +48,10 @@ public class ComboBoxTemplate : Control
         {
             Text = combo.Text, // binding in render
             Background = Color.Transparent,
-            TextColor = Color.Black,
+
+            // Link to the ComboBox's own TextColor binding so a developer can override it
+            // directly (combo.TextColor = ...) as well as via SetStyleOverride.
+            TextColor = combo.TextColor,
             HorizontalAlignment = HorizontalAlignmentType.Stretch,
             VerticalAlignment = VerticalAlignmentType.Stretch
         };
@@ -175,5 +180,28 @@ public class ComboBoxTemplate : Control
     public override async System.Threading.Tasks.Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
     {
         await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
+    }
+
+    protected override void HandleStateChange()
+    {
+        var combo = ParentAs<ComboBox>();
+
+        // Normal State
+        ApplyThemedValue(combo, RootBorder.BorderColor, nameof(ComboBox.BorderColor), Theme.Outline);
+        ApplyThemedValue(combo, DisplayLabel.TextColor, nameof(ComboBox.TextColor), Theme.OnSurface);
+        ApplyThemedValue(combo, RootBorder.Background, nameof(ComboBox.Background), Color.Transparent);
+
+        // Hover State
+        if (MouseHover.Value)
+        {
+            ApplyThemedValue(combo, RootBorder.BorderColor, nameof(ComboBox.BorderColor), Theme.Primary);
+        }
+
+        // Focused State
+        if (HasFocus.Value)
+        {
+            ApplyThemedValue(combo, RootBorder.BorderColor, nameof(ComboBox.BorderColor), Theme.Primary);
+            ApplyThemedValue(combo, RootBorder.Background, nameof(ComboBox.Background), Theme.SurfaceVariant);
+        }
     }
 }

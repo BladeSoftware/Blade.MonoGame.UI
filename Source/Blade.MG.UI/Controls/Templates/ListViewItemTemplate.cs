@@ -11,18 +11,8 @@ namespace Blade.MG.UI.Controls.Templates
     {
         public Label label1;
 
-        private Color backgroundNormal = new Color(Color.DarkSlateBlue, 0.55f);
-        private Color backgroundHover = new Color(Color.SlateBlue, 0.80f);
-        private Color backgroundFocused = new Color(Color.SlateBlue, 0.80f);
-
-        private Color textColorNormal = Color.White;
-        private Color textColorHover = Color.White;
-        private Color textColorFocused = Color.White;
-
-
-        private Color borderColorNormal = Color.Orange;
-
-        private int borderThicknessNormal = 2;
+        private Binding<Color> textColor = new Binding<Color>();
+        public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
 
         [JsonIgnore]
         [XmlIgnore]
@@ -52,7 +42,10 @@ namespace Blade.MG.UI.Controls.Templates
             {
                 Height = "40px",
                 Text = item,
-                TextColor = Color.Black,
+
+                // Link to this template's own TextColor binding so a subclass/customizer can
+                // override it directly as well as via SetStyleOverride.
+                TextColor = TextColor,
                 Background = Color.Transparent,
                 //Width = 100,
                 //Height = 100,
@@ -92,38 +85,17 @@ namespace Blade.MG.UI.Controls.Templates
 
         protected override void HandleStateChange()
         {
-            //await base.HandleStateChangeAsync();
+            var content = (UIComponentDrawable)Content;
 
             // Normal State
-            ((UIComponentDrawable)Content).Background = Color.Transparent;
-            //((Grid)Content).Background = Color.Transparent;
+            ApplyThemedValue(this, content.Background, nameof(Background), Color.Transparent);
+            ApplyThemedValue(this, label1.TextColor, nameof(TextColor), Theme.OnSurface);
 
-            //label1.TextColor.Value = textColorNormal;
-            //border1.Background.Value = backgroundNormal;
-            //border1.BorderThickness.Value = borderThicknessNormal;
-            //border1.BorderColor.Value = borderColorNormal;
-
-
-            //// Focused State
-            //if (Focused.Value)
-            //{
-            //    label1.TextColor.Value = textColorFocused;
-            //    border1.Background.Value = backgroundFocused;
-            //    border1.BorderThickness.Value = borderThicknessFocused;
-            //    border1.BorderColor.Value = borderColorFocused;
-            //}
-
-
-            // Hover State 
+            // Hover State
             if (MouseHover.Value)
             {
-                //label1.TextColor.Value = textColorHover;
-                //border1.Background.Value = backgroundHover;
-                //border1.BorderThickness.Value = borderThicknessHover;
-                //border1.BorderColor.Value = borderColorHover;
-
-                ((UIComponentDrawable)Content).Background = Color.LightBlue;
-                //((Grid)Content).Background = Color.LightBlue;
+                ApplyThemedValue(this, content.Background, nameof(Background), Theme.SecondaryContainer);
+                ApplyThemedValue(this, label1.TextColor, nameof(TextColor), Theme.OnSecondaryContainer);
             }
         }
 

@@ -69,12 +69,7 @@ namespace Blade.MG.UI.Controls.Dialogs
 
             var gridMainLayout = new Grid()
             {
-                //Height = 14,
-                //Background = Color.Transparent,
-                //Background = new Color(Color.DarkSlateBlue, 0.5f),
-                Background = new Color(Color.DarkGray, 0.75f),
-                //Margin = new Thickness(0, 15, 0, 0),
-                //Padding = new Thickness(0, 0, 0, 0),
+                Background = new Color(Theme.Shadow, 0.5f), // Dim the rest of the screen behind the modal
 
                 IsHitTestVisible = true  // Prevent events from propagating to windows behind this one
 
@@ -95,12 +90,10 @@ namespace Blade.MG.UI.Controls.Dialogs
 
             var border1 = new Border
             {
-                BorderColor = Color.DarkBlue,
+                BorderColor = Theme.Primary,
                 BorderThickness = new Thickness(2f),
-                //Width = 800,
-                //Height = 600,
 
-                Background = Color.Gainsboro
+                Background = Theme.Surface
             };
 
             gridMainLayout.AddChild(border1, 1, 1);
@@ -108,7 +101,7 @@ namespace Blade.MG.UI.Controls.Dialogs
 
             var grid2 = new Grid()
             {
-                Background = Color.White,
+                Background = Theme.Surface,
             };
 
             grid2.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1f) });
@@ -124,7 +117,7 @@ namespace Blade.MG.UI.Controls.Dialogs
             var labelMessage = new Label()
             {
                 Text = MessageText,
-                TextColor = Color.Black,
+                TextColor = Theme.OnSurface,
                 Margin = new Thickness(0, 10),
                 HorizontalAlignment = HorizontalAlignmentType.Center
             };
@@ -167,7 +160,7 @@ namespace Blade.MG.UI.Controls.Dialogs
                         Text = button.Text,
                         Width = button.Width ?? 200,
                         Margin = new Thickness(10, 2),
-                        TextColor = button?.Color ?? Color.White,
+                        TextColor = button?.Color ?? Theme.OnPrimary,
 
                         //OnClick = (uiEvent) => { DialogButtonPressed(button.Id); }
                         OnPrimaryClickAsync = async (sender, uiEvent) => { await DialogButtonPressedAsync(button.Id); }

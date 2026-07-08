@@ -48,7 +48,7 @@ namespace Blade.MG.UI.Controls
             {
                 var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform); // Transform.Combine(parentTransform, Transform)
 
-                context.Renderer.DrawRect(spriteBatch, FinalContentRect, Color.LightGray);
+                context.Renderer.DrawRect(spriteBatch, FinalContentRect, Background.Value != Color.Transparent ? Background.Value : Theme.Outline);
 
                 //if (this.Background.Value != Color.Transparent)
                 //{

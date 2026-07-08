@@ -176,7 +176,7 @@ namespace Examples
             //    sb.End();
             //}
 
-            uiManager.Draw(null, gameTime);
+            uiManager.Draw(null, gameTime, null);
         }
 
     }

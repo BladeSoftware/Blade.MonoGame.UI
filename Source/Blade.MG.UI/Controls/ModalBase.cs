@@ -14,6 +14,12 @@ namespace Blade.MG.UI.Controls
 
         private bool isInitialized = false;
 
+        public ModalBase()
+        {
+            IsModal = true;
+            DefaultZIndex = UIManager.MaxZIndex;
+        }
+
         //public override void Initialize(Game game)
         //{
         //    base.Initialize(game);

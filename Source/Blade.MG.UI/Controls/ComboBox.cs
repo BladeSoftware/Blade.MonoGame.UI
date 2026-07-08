@@ -32,6 +32,12 @@ namespace Blade.MG.UI.Controls
 
         public Binding<Length> DropDownHeight { get; set; } = new Binding<Length>("250px");
 
+        private Binding<Color> textColor = new Binding<Color>();
+        public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
+
+        private Binding<Color> borderColor = new Binding<Color>();
+        public Binding<Color> BorderColor { get => borderColor; set => SetField(ref borderColor, value); }
+
         // Text shown in the editable textbox (or selected item text when not editable)
         private Binding<string> text = new Binding<string>("");
         public Binding<string> Text
@@ -173,6 +179,7 @@ namespace Blade.MG.UI.Controls
             {
                 Name = $"{Name}_Dropdown",
                 DefaultZIndex = UIManager.MaxZIndex,
+                IsModal = true,
                 Visible = { Value = Visibility.Visible }
             };
 
@@ -187,7 +194,7 @@ namespace Blade.MG.UI.Controls
                 ItemTemplateType = ItemTemplateType,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-                Background = new Color(Color.LightGray, 1f)
+                Background = Theme.Surface
             };
 
             listView.DataContext = GetFilteredItems().Cast<object>().ToList();
@@ -206,10 +213,10 @@ namespace Blade.MG.UI.Controls
 
             Border border = new Border()
             {
-                BorderColor = Color.DarkGray,
+                BorderColor = Theme.Outline,
                 BorderThickness = new Thickness(2),
                 CornerRadius = new CornerRadius(4),
-                Background = new Color(Color.LightGray, 1f),
+                Background = Theme.Surface,
                 Padding = new Thickness(2),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,

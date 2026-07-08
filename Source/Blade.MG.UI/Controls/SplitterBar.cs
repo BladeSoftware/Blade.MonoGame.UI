@@ -29,7 +29,7 @@ namespace Blade.MG.UI.Controls
         {
             Orientation = orientation;
             IsHitTestVisible = true;
-            Background = Color.Gray;
+            Background = Theme.SurfaceVariant;
         }
 
         private DragContext GetDragContext(Point currentPoint)
@@ -119,7 +119,7 @@ namespace Blade.MG.UI.Controls
             {
                 var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
 
-                Color barColor = isDragging ? Color.DarkGray : Background.Value;
+                Color barColor = isDragging ? Theme.Primary : Background.Value;
                 context.Renderer.FillRect(spriteBatch, FinalRect, barColor, layoutBounds);
 
                 // Optionally, draw a grip indicator
@@ -128,7 +128,7 @@ namespace Blade.MG.UI.Controls
                     int gripSize = 3;
                     int gripLength = 20;
 
-                    Color gripColor = Color.LightGray;
+                    Color gripColor = Theme.Outline;
                     if (Orientation == SplitterOrientation.Horizontal)
                     {
                         int y = FinalRect.Center.Y - gripSize;
