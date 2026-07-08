@@ -2,7 +2,7 @@
 
 namespace Blade.MG.UI.Events
 {
-    public class UIMouseDownEvent : UIEvent
+    public class UIMouseDownEvent : UIEvent, IPositionedEvent
     {
         public int X { get; set; }
         public int Y { get; set; }

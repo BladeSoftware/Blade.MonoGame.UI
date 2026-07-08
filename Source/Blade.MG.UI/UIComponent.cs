@@ -1038,232 +1038,83 @@ namespace Blade.MG.UI
 
         // ----------
 
-        public virtual async Task HandlePrimaryClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        /// <summary>
+        /// Shared implementation behind the position-filtered event handlers below (mouse
+        /// down/up/click/double-click/right-click/wheel-scroll, tap, long-press, primary/
+        /// secondary/multi-click). Only dispatches if the event falls within this control's
+        /// FinalRect (or the event has ForcePropagation set, used e.g. to let a MouseUp
+        /// reach a control it was dragging even if the mouse has since left its bounds),
+        /// then propagates to children under the same bounds check.
+        /// </summary>
+        protected async Task DispatchPositionedEventAsync<TEvent>(UIWindow uiWindow, TEvent uiEvent, Func<UIComponent, UIWindow, TEvent, Task> handler)
+            where TEvent : UIEvent, IPositionedEvent
         {
-            // Limit Events to the component layout window
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await PropagateAsync(uiEvent, uiWindow, async (component) =>
-                {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
-                    {
-                        await component?.HandlePrimaryClickEventAsync(uiWindow, uiEvent);
-                    }
-                });
-
-                //if (this.HitTestVisible) uiEvent.Handled = true;
-            }
-            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
-        }
-
-        public virtual async Task HandleMultiClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
-        {
-            // Limit Events to the component layout window
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await PropagateAsync(uiEvent, uiWindow, async (component) =>
-                {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
-                    {
-                        await component?.HandleMultiClickEventAsync(uiWindow, uiEvent);
-                    }
-                });
-
-                //if (this.HitTestVisible) uiEvent.Handled = true;
-            }
-            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
-        }
-
-        public virtual async Task HandleSecondaryClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
-        {
-            // Limit Events to the component layout window
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await PropagateAsync(uiEvent, uiWindow, async (component) =>
-                {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
-                    {
-                        await component?.HandleSecondaryClickEventAsync(uiWindow, uiEvent);
-                    }
-                });
-
-                //if (this.HitTestVisible) uiEvent.Handled = true;
-            }
-            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
-        }
-
-
-
-        public virtual async Task HandleTapEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
-        {
-            // Limit Events to the component layout window
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await PropagateAsync(uiEvent, uiWindow, async (component) =>
-                {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
-                    {
-                        await component?.HandleTapEventAsync(uiWindow, uiEvent);
-                    }
-                });
-
-                //if (this.HitTestVisible) uiEvent.Handled = true;
-            }
-            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
-        }
-
-        public virtual async Task HandleLongPressEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
-        {
-            // Limit Events to the component layout window
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await PropagateAsync(uiEvent, uiWindow, async (component) =>
-                {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
-                    {
-                        await component?.HandleLongPressEventAsync(uiWindow, uiEvent);
-                    }
-                });
-
-                //if (this.HitTestVisible) uiEvent.Handled = true;
-            }
-            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
-        }
-
-        public virtual async Task HandleMouseMoveEventAsync(UIWindow uiWindow, UIMouseMoveEvent uiEvent)
-        {
-            // Limit Mouse Events to the component layout window
-            //if (this.finalRect.Contains(uiEvent.X, uiEvent.Y))
-            //{
-
-            // Mouse Move Events need to be propogated to all controls
-            await PropagateAsync(uiEvent, uiWindow, async (component) => { await component?.HandleMouseMoveEventAsync(uiWindow, uiEvent); });
-            //}
-        }
-
-        public virtual async Task HandleMouseDownEventAsync(UIWindow uiWindow, UIMouseDownEvent uiEvent)
-        {
-            // Limit Mouse Events to the component layout window
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await PropagateAsync(uiEvent, uiWindow, async (component) =>
-                {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
-                    {
-                        await component?.HandleMouseDownEventAsync(uiWindow, uiEvent);
-                    }
-                });
-
-                //if (this.HitTestVisible) uiEvent.Handled = true;
-            }
-            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
-        }
-
-        public virtual async Task HandleMouseUpEventAsync(UIWindow uiWindow, UIMouseUpEvent uiEvent)
-        {
-            // Limit Mouse Events to the component layout window
             if (uiEvent.ForcePropagation || FinalRect.Contains(uiEvent.X, uiEvent.Y))
             {
                 await PropagateAsync(uiEvent, uiWindow, async (component) =>
                 {
                     if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
                     {
-                        await component?.HandleMouseUpEventAsync(uiWindow, uiEvent);
+                        await handler(component, uiWindow, uiEvent);
                     }
                 });
-
-                //if (this.HitTestVisible) uiEvent.Handled = true;
             }
-            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
         }
 
-        public virtual async Task HandleMouseWheelScrollEventAsync(UIWindow uiWindow, UIMouseWheelScrollEvent uiEvent)
+        /// <summary>
+        /// Shared implementation behind the handlers that propagate unconditionally to every
+        /// descendant regardless of position (mouse move, key down/up/press).
+        /// </summary>
+        protected async Task DispatchEventAsync<TEvent>(UIWindow uiWindow, TEvent uiEvent, Func<UIComponent, UIWindow, TEvent, Task> handler)
+            where TEvent : UIEvent
         {
-            // Limit Mouse Events to the component layout window
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await PropagateAsync(uiEvent, uiWindow, async (component) =>
-                {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
-                    {
-                        await component?.HandleMouseWheelScrollEventAsync(uiWindow, uiEvent);
-                    }
-                });
-
-                //if (HitTestVisible) uiEvent.Handled = true;
-            }
-
-            //if (this.HitTestVisible && this.finalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
+            await PropagateAsync(uiEvent, uiWindow, async (component) => await handler(component, uiWindow, uiEvent));
         }
 
-        public virtual async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
-        {
-            // Limit Mouse Events to the component layout window
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await PropagateAsync(uiEvent, uiWindow, async (component) =>
-                {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
-                    {
-                        await component?.HandleMouseClickEventAsync(uiWindow, uiEvent);
-                    }
-                });
+        public virtual Task HandlePrimaryClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandlePrimaryClickEventAsync(w, e));
 
-                //if (this.HitTestVisible) uiEvent.Handled = true;
-            }
-            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
-        }
+        public virtual Task HandleMultiClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleMultiClickEventAsync(w, e));
 
-        public virtual async Task HandleMouseDoubleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
-        {
-            // Limit Mouse Events to the component layout window
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await PropagateAsync(uiEvent, uiWindow, async (component) =>
-                {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
-                    {
-                        await component?.HandleMouseDoubleClickEventAsync(uiWindow, uiEvent);
-                    }
-                });
+        public virtual Task HandleSecondaryClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleSecondaryClickEventAsync(w, e));
 
-                //if (this.HitTestVisible) uiEvent.Handled = true;
-            }
-            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
-        }
+        public virtual Task HandleTapEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleTapEventAsync(w, e));
 
-        public virtual async Task HandleMouseRightClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
-        {
-            // Limit Mouse Events to the component layout window
-            if (FinalRect.Contains(uiEvent.X, uiEvent.Y))
-            {
-                await PropagateAsync(uiEvent, uiWindow, async (component) =>
-                {
-                    if (uiEvent.ForcePropagation || (component.FinalRect.Contains(uiEvent.X, uiEvent.Y) && component.Visible.Value == Visibility.Visible))
-                    {
-                        await component?.HandleMouseRightClickEventAsync(uiWindow, uiEvent);
-                    }
-                });
+        public virtual Task HandleLongPressEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleLongPressEventAsync(w, e));
 
-                //if (this.HitTestVisible) uiEvent.Handled = true;
-            }
-            //if (this.HitTestVisible && this.FinalRect.Contains(uiEvent.X, uiEvent.Y)) uiEvent.Handled = true;
-        }
+        public virtual Task HandleMouseMoveEventAsync(UIWindow uiWindow, UIMouseMoveEvent uiEvent) =>
+            DispatchEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleMouseMoveEventAsync(w, e));
 
-        public virtual async Task HandleKeyDownAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
-        {
-            await PropagateAsync(uiEvent, uiWindow, async (component) => { await component?.HandleKeyDownAsync(uiWindow, uiEvent); });
-        }
+        public virtual Task HandleMouseDownEventAsync(UIWindow uiWindow, UIMouseDownEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleMouseDownEventAsync(w, e));
 
-        public virtual async Task HandleKeyUpAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
-        {
-            await PropagateAsync(uiEvent, uiWindow, async (component) => { await component?.HandleKeyUpAsync(uiWindow, uiEvent); });
-        }
+        public virtual Task HandleMouseUpEventAsync(UIWindow uiWindow, UIMouseUpEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleMouseUpEventAsync(w, e));
 
-        public virtual async Task HandleKeyPressAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
-        {
-            await PropagateAsync(uiEvent, uiWindow, async (component) => { await component?.HandleKeyPressAsync(uiWindow, uiEvent); });
-        }
+        public virtual Task HandleMouseWheelScrollEventAsync(UIWindow uiWindow, UIMouseWheelScrollEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleMouseWheelScrollEventAsync(w, e));
+
+        public virtual Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleMouseClickEventAsync(w, e));
+
+        public virtual Task HandleMouseDoubleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleMouseDoubleClickEventAsync(w, e));
+
+        public virtual Task HandleMouseRightClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
+            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleMouseRightClickEventAsync(w, e));
+
+        public virtual Task HandleKeyDownAsync(UIWindow uiWindow, UIKeyEvent uiEvent) =>
+            DispatchEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleKeyDownAsync(w, e));
+
+        public virtual Task HandleKeyUpAsync(UIWindow uiWindow, UIKeyEvent uiEvent) =>
+            DispatchEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleKeyUpAsync(w, e));
+
+        public virtual Task HandleKeyPressAsync(UIWindow uiWindow, UIKeyEvent uiEvent) =>
+            DispatchEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleKeyPressAsync(w, e));
 
         public virtual async Task HandleFocusChangedEventAsync(UIWindow uiWindow, UIFocusChangedEvent uiEvent)
         {

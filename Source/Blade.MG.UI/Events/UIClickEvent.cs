@@ -1,6 +1,6 @@
 ﻿namespace Blade.MG.UI.Events
 {
-    public class UIClickEvent : UIEvent
+    public class UIClickEvent : UIEvent, IPositionedEvent
     {
         public int X { get; set; }
         public int Y { get; set; }

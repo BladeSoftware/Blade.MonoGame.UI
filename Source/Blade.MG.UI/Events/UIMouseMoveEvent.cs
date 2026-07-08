@@ -1,6 +1,6 @@
 ﻿namespace Blade.MG.UI.Events
 {
-    public class UIMouseMoveEvent : UIEvent
+    public class UIMouseMoveEvent : UIEvent, IPositionedEvent
     {
         public int LastX { get; set; }
         public int LastY { get; set; }
