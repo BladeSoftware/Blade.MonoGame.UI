@@ -124,13 +124,47 @@ namespace Blade.MG.UI.Controls
 
         private void RenderShadow(UIContext context, Transform parentTransform, CornerRadius cornerRadius)
         {
-            var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
+            // depthStencilState: DepthStencilState.None - an ancestor Border (e.g. a selection
+            // ring wrapping this one, a common pattern for list items) rounds its own corners by
+            // zeroing the stencil buffer in its corner cutouts before rendering its Content, and
+            // only restores it once that entire subtree (including this Border) has finished
+            // rendering - see the corner-radius branch below and its "restore" pass after
+            // base.RenderControl. Since a nested Border's own corner often sits well inside its
+            // parent's corner cutout box (e.g. a couple of px of padding vs a dozen px of
+            // radius), this shadow - drawn before this Border has even set up its own stencil
+            // state, let alone restored anyone else's - would otherwise be silently discarded by
+            // that still-active ancestor mask, even though it's nowhere near the ancestor's own
+            // edge. The border/background *content* doesn't hit this because it's drawn (and,
+            // for the stroke, drawn again after this Border's own restore) later, once this
+            // Border's own corner state is what's active. The shadow has no such second chance,
+            // so it opts out of the stencil test entirely and relies solely on the ordinary
+            // rectangular AncestorClipBounds scissor clip below.
+            var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform, depthStencilState: DepthStencilState.None);
 
             var shadowRect = FinalRect with
             {
                 X = FinalRect.X + Elevation.Value,
                 Y = FinalRect.Y + Elevation.Value
             };
+
+            // The foreground is drawn on top of this shadow afterward, cut to the same corner
+            // radius, and its rounding erases the shadow everywhere within its own radius x
+            // radius corner box - EXCEPT wherever the (diagonally offset) shadow's own rounded
+            // corner still reaches. The worst-covered point in that box is *not* the sharp tip
+            // (Right, Bottom) - that's the easiest point to cover, being closest to the shadow's
+            // offset center - it's the two points where the foreground's curve meets its flat
+            // edges, e.g. (Right - radius, Bottom): full `radius` pixels from the tip along the
+            // edge, so still far from the shadow's center even after the offset. A radius shrink
+            // that only accounts for the tip (e.g. radius - elevation) leaves that point
+            // uncovered. Requiring the shadow's own corner circle to just reach that point and
+            // solving distance(point, shadowCenter) = shadowRadius for shadowRadius (a quadratic
+            // in shadowRadius) gives the minimum radius that closes the gap everywhere in the
+            // box, not just at the tip; +1px on top avoids leaving a razor-thin, mostly
+            // anti-aliased-away edge right at that minimum.
+            float radius = cornerRadius.MaxRadius;
+            float elevation = Elevation.Value;
+            float minSafeShadowRadius = radius + 2f * elevation - MathF.Sqrt(2f * elevation * (radius + elevation));
+            float shadowRadius = Math.Clamp(minSafeShadowRadius + 1f, 0f, radius);
 
             // layoutBounds has already been narrowed all the way down to (at most) this
             // control's own FinalRect by the routine parent-to-child "don't draw outside your
@@ -145,8 +179,7 @@ namespace Blade.MG.UI.Controls
             // there.
             context.Renderer.ClipToRect(context.AncestorClipBounds);
 
-            // Use max corner radius for shadow (simplified)
-            context.Renderer.FillRoundedRect(spriteBatch, shadowRect, cornerRadius.MaxRadius, new Color(Theme.Shadow, 0.35f));
+            context.Renderer.FillRoundedRect(spriteBatch, shadowRect, shadowRadius, new Color(Theme.Shadow, 0.15f));
             context.Renderer.EndBatch();
         }
 

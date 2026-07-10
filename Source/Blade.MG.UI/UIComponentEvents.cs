@@ -72,8 +72,10 @@ namespace Blade.MG.UI
                 OnTap?.Invoke(this, uiEvent);
                 await (OnTapAsync?.Invoke(this, uiEvent) ?? Task.CompletedTask);
 
-                OnPrimaryClick?.Invoke(this, uiEvent);
-                await (OnPrimaryClickAsync?.Invoke(this, uiEvent) ?? Task.CompletedTask);
+                // OnPrimaryClick is NOT fired here - UIManager.Touch.cs follows every Tap with
+                // a HandleMouseClickEventAsync dispatch at the same point, and
+                // HandleMouseClickEventAsync (below) already fires OnPrimaryClick. Firing it
+                // here too would invoke it twice per tap.
 
                 //if (this.HitTestVisible) uiEvent.Handled = true;
             }

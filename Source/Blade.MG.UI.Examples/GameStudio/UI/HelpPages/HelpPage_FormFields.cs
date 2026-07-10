@@ -34,7 +34,8 @@ namespace Examples.UI.HelpPages
             var grid = new Grid()
             {
                 Width = "80%",
-                HorizontalAlignment = HorizontalAlignmentType.Center
+                HorizontalAlignment = HorizontalAlignmentType.Center,
+                Margin = new Thickness(0, 20, 0, 0),
             };
 
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1) });

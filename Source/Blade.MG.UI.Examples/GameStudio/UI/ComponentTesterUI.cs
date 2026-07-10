@@ -94,7 +94,7 @@ namespace Examples.UI
                 ItemToString = o => (o as UITheme)?.Name ?? "",
                 SelectedItem = allThemes.FirstOrDefault(t => t.Name == UIManager.DefaultTheme.Name),
                 Width = 170,
-                Height = 36,
+                Height = 40,
                 VerticalAlignment = VerticalAlignmentType.Center,
                 Margin = new Thickness(0, 0, 4, 0),
                 OnSelectionChanged = selected =>
@@ -143,8 +143,8 @@ namespace Examples.UI
                     BorderThickness = new Thickness(0),
                     BorderColor = new Binding<Color>(() => Theme.Primary),
                     Background = Color.Transparent,
-                    Margin = new Thickness(0, 3),
-                    Padding = new Thickness(2),
+                    Margin = new Thickness(3, 3),
+                    Padding = new Thickness(2, 2, 2, 2),
                     HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 };
 
@@ -158,7 +158,7 @@ namespace Examples.UI
                     // ring, leaving a gap. Text breathing room comes from
                     // HorizontalTextAlignment + the template's own small built-in label padding.
                     HorizontalAlignment = HorizontalAlignmentType.Stretch,
-                    HorizontalTextAlignment = HorizontalAlignmentType.Left,
+                    HorizontalTextAlignment = HorizontalAlignmentType.Center,
                     VerticalTextAlignment = VerticalAlignmentType.Center,
                 };
 

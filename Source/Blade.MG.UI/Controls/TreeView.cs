@@ -248,7 +248,13 @@ namespace Blade.MG.UI.Controls
             int verticalScrollBarWidth = IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;
             int horizontalScrollBarHeight = IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0;
 
-            var treeLayoutBounds = parentLayoutBounds with { Width = layoutBounds.Width - verticalScrollBarWidth, Height = layoutBounds.Height - horizontalScrollBarHeight };
+            // Node positions are anchored on this TreeView's own on-screen position (layoutBounds),
+            // not parentLayoutBounds - parentLayoutBounds is the grandparent container's content
+            // area, which doesn't account for any sibling controls (e.g. a toolbar StackPanel)
+            // positioned above this TreeView within that same area. Anchoring on parentLayoutBounds
+            // silently shifted every node up by that sibling's height, pushing the root node (and
+            // therefore the whole tree) partly or fully above this TreeView's own visible top edge.
+            var treeLayoutBounds = layoutBounds with { Width = layoutBounds.Width - verticalScrollBarWidth, Height = layoutBounds.Height - horizontalScrollBarHeight };
 
             ArrangeTree(context, treeLayoutBounds, ref desiredWidth, ref desiredHeight);
 
@@ -309,10 +315,15 @@ namespace Blade.MG.UI.Controls
             Size availableSize = new Size(layoutBounds.Width, layoutBounds.Height);
             Layout parentMinMax = new Layout(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
 
+            // Use this TreeView's own Padding here, not Parent's - Parent is the container
+            // holding this TreeView, and its Margin/Padding is irrelevant to where nodes start
+            // within this control's own content area. layoutBounds is already this TreeView's
+            // own on-screen position with no margin included (margin is resolved by whoever
+            // arranged this control), so Margin is not added here either.
             nodeBounds = nodeBounds with
             {
-                X = layoutBounds.X + Parent.Margin.Value.Left + Parent.Padding.Value.Left,
-                Y = layoutBounds.Y + Parent.Margin.Value.Top + Parent.Padding.Value.Top - (int)(_cachedNodeHeight.Value),
+                X = layoutBounds.X + Padding.Value.Left,
+                Y = layoutBounds.Y + Padding.Value.Top - (int)(_cachedNodeHeight.Value),
             };
 
             ArrangeNode(context, ref availableSize, ref parentMinMax, ref layoutBounds, ref nodeBounds, RootNode, false, true, 0, ref desiredWidth, ref desiredHeight);

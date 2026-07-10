@@ -35,7 +35,7 @@ namespace Examples.UI.HelpPages
 
             var grid = new Grid()
             {
-                Margin = new Thickness(30, 10, 30, 20),
+                Margin = new Thickness(30, 20, 30, 20),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
             };
 

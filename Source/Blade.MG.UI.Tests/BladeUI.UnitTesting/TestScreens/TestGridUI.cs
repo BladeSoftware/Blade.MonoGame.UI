@@ -52,7 +52,7 @@ namespace BladeUI.UnitTesting
             var border1 = new Border
             {
                 BorderColor = Color.DarkBlue,
-                BorderThickness = 2f,
+                BorderThickness = (Thickness)2f,
                 Width = 800,
                 Height = 600,
 
@@ -93,7 +93,7 @@ namespace BladeUI.UnitTesting
                 //Background = Color.Orange,
                 //Margin = new Thickness(10, 0),
                 Padding = new Thickness(10),
-                HorizontalScrollBarVisible = false
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden
             };
 
             grid2.AddChild(recentItemsListView, 0, 1);
@@ -103,8 +103,8 @@ namespace BladeUI.UnitTesting
             {
                 Name = "Start Page:Button Stack Panel",
                 Orientation = Orientation.Horizontal,
-                HorizontalScrollBarVisible = false,
-                VerticalScrollBarVisible = false,
+                HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
                 HorizontalAlignment = HorizontalAlignmentType.Center,
                 Height = 50,
                 Margin = new Thickness(0, 20),
@@ -152,7 +152,7 @@ namespace BladeUI.UnitTesting
 
         private void NewProject()
         {
-            UIManager.Remove(this);
+            Game.Services.GetService<UIManager>()?.Remove(this);
 
             // TODO: Start a new Project
         }
@@ -173,7 +173,7 @@ namespace BladeUI.UnitTesting
                 return;
             }
 
-            UIManager.Remove(this);
+            Game.Services.GetService<UIManager>()?.Remove(this);
 
             // TODO: Open an existing project
             OpenProject(selectedProjectPath);

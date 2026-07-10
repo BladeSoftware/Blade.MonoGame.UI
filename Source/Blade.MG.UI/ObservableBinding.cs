@@ -1,14 +1,17 @@
+#nullable enable
+
 using Blade.MG.UI;
 using System.ComponentModel;
 
-public class ObservableBinding<T> : Binding<T>
+public class ObservableBinding<T> : Binding<T>, IDisposable
 {
-    private INotifyPropertyChanged _source;
-    private string _propertyName;
-    private T _cachedValue;
+    private readonly INotifyPropertyChanged _source;
+    private readonly string _propertyName;
+    private T _cachedValue = default!;
     private bool _isDirty = true;
+    private bool _disposed;
 
-    public ObservableBinding(INotifyPropertyChanged source, string propertyName, Func<T> getter, Action<T> setter = null)
+    public ObservableBinding(INotifyPropertyChanged source, string propertyName, Func<T> getter, Action<T>? setter = null)
         : base(getter, setter)
     {
         _source = source;
@@ -16,7 +19,7 @@ public class ObservableBinding<T> : Binding<T>
         _source.PropertyChanged += OnPropertyChanged;
     }
 
-    private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == _propertyName || string.IsNullOrEmpty(e.PropertyName))
             _isDirty = true;
@@ -30,5 +33,12 @@ public class ObservableBinding<T> : Binding<T>
             _isDirty = false;
         }
         return _cachedValue;
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _source.PropertyChanged -= OnPropertyChanged;
+        _disposed = true;
     }
 }

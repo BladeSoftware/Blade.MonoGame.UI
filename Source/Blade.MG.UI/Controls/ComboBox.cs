@@ -11,6 +11,16 @@ using System.Threading.Tasks;
 
 namespace Blade.MG.UI.Controls
 {
+    // Controls when the dropdown opens while IsEditable - either only via the header's
+    // DropDownButton, or automatically as soon as the user starts typing (so the filtered
+    // items are visible live). Only relevant when IsEditable is true; in simple (non-editable)
+    // mode any header click - button or elsewhere - always opens the dropdown.
+    public enum ComboBoxOpenTrigger
+    {
+        ButtonOnly,
+        AutoOpenOnType
+    }
+
     public class ComboBox : TemplatedControl
     {
         public Type ItemTemplateType { get; set; } = typeof(ListViewItemTemplate);
@@ -23,6 +33,9 @@ namespace Blade.MG.UI.Controls
 
         // When true the control allows text entry to filter items
         public Binding<bool> IsEditable { get; set; } = new Binding<bool>(false);
+
+        // See ComboBoxOpenTrigger. Defaults to auto-opening on the first typed character.
+        public Binding<ComboBoxOpenTrigger> OpenTrigger { get; set; } = new Binding<ComboBoxOpenTrigger>(ComboBoxOpenTrigger.AutoOpenOnType);
 
         // When true the control enforces selection of an existing item
         public Binding<bool> StrictMode { get; set; } = new Binding<bool>(true);
@@ -58,6 +71,14 @@ namespace Blade.MG.UI.Controls
         // Popup window / list used for dropdown
         private UIWindow dropdownWindow = null;
         private ListView dropdownListView = null;
+
+        // The same physical click that opens the dropdown (header click, or a synthesized
+        // activation - see UIManager.GamePad.cs/UIManager.Touch.cs, which each dispatch their
+        // own independent HandleMouseClickEventAsync broadcast alongside the mouse one for the
+        // same input) can end up reaching DropdownWindow.HandleMouseClickEventAsync's
+        // click-outside-closes check a second time in the very same frame, immediately closing
+        // what just opened. Recorded here and checked there to ignore that immediate re-close.
+        private DateTime dropdownOpenedAt = DateTime.MinValue;
 
         public ComboBox()
         {
@@ -155,19 +176,38 @@ namespace Blade.MG.UI.Controls
             Rectangle parentBounds = pw.FinalContentRect; // full backbuffer
 
             int x = controlRect.Left;
-            int y = controlRect.Bottom; // open below control
             int width = controlRect.Width;
 
             // Compute pixel height from Length
-            int height;
+            int desiredHeight;
             try
             {
-                height = (int)DropDownHeight.Value.ToPixelsHeight(this, pw.FinalRect);
-                if (height <= 0) height = 200;
+                desiredHeight = (int)DropDownHeight.Value.ToPixelsHeight(this, pw.FinalRect);
+                if (desiredHeight <= 0) desiredHeight = 200;
             }
             catch
             {
-                height = 200;
+                desiredHeight = 200;
+            }
+
+            // Prefer opening below the control, but flip above it when there isn't enough
+            // room below and more room is available above - and either way clamp the popup's
+            // height to whichever side it ends up on so it never runs past the edge of the
+            // window (e.g. a combo box near the bottom of a short/resized window).
+            int spaceBelow = Math.Max(0, parentBounds.Bottom - controlRect.Bottom);
+            int spaceAbove = Math.Max(0, controlRect.Top - parentBounds.Top);
+
+            int y;
+            int height;
+            if (desiredHeight <= spaceBelow || spaceBelow >= spaceAbove)
+            {
+                y = controlRect.Bottom;
+                height = Math.Min(desiredHeight, spaceBelow);
+            }
+            else
+            {
+                height = Math.Min(desiredHeight, spaceAbove);
+                y = controlRect.Top - height;
             }
 
             // Compute margins so that UIWindow.PerformLayout places the window at (x,y) with given width/height
@@ -194,7 +234,24 @@ namespace Blade.MG.UI.Controls
                 ItemTemplateType = ItemTemplateType,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
-                Background = Theme.Surface
+                Background = Theme.Surface,
+
+                // Arrow-key browsing should move a highlight without closing the popup on
+                // every keypress (OnSelectionChanged below closes it) - only Enter/Space or a
+                // mouse click should commit and close. See ListView.CommitSelectionImmediately.
+                CommitSelectionImmediately = false,
+
+                // ListView.HandleKeyPressAsync gates its own Up/Down/Enter/Home/End handling on
+                // HasFocus.Value, since key events otherwise propagate unconditionally to every
+                // component in the tree (see its own comment). Real UI focus stays on the combo
+                // box/EditBox on the main window the whole time the dropdown is open - this
+                // popup ListView is never the UIWindow-tracked focused component (see
+                // DropdownWindow.HandleKeyPressAsync, which forwards unhandled keys back to
+                // ComboBox.HandleKeyPressAsync, which in turn calls this ListView's
+                // HandleKeyPressAsync directly rather than through the normal focus-dispatch
+                // path). Without this, that gate would silently block every Up/Down/Enter press
+                // from ever navigating the list.
+                HasFocus = true
             };
 
             listView.DataContext = GetFilteredItems().Cast<object>().ToList();
@@ -231,6 +288,7 @@ namespace Blade.MG.UI.Controls
             // Keep references
             dropdownWindow = popup;
             dropdownListView = listView;
+            dropdownOpenedAt = DateTime.Now;
 
             // Add to UIManager so it renders above everything
             uiManager.Add(popup, UIManager.MaxZIndex);
@@ -252,8 +310,9 @@ namespace Blade.MG.UI.Controls
             StateHasChanged();
         }
 
-        // Update dropdown contents while open
-        private void RefreshPopupItems()
+        // Update dropdown contents while open. Internal so ComboBoxTemplate.Arrange can call it
+        // during the layout phase (see there for why) as well as RenderControl below.
+        internal void RefreshPopupItems()
         {
             if (dropdownListView != null)
             {
@@ -268,10 +327,16 @@ namespace Blade.MG.UI.Controls
             // Acquire template
             var tmpl = Content as ComboBoxTemplate;
 
-            // If we clicked on the header, toggle dropdown
             if (tmpl != null)
             {
-                if (tmpl.HeaderRect.Contains(uiEvent.X, uiEvent.Y))
+                bool onButton = tmpl.DropDownButton != null && tmpl.DropDownButton.FinalRect.Contains(uiEvent.X, uiEvent.Y);
+
+                // Toggle on any header click, but only in simple (non-editable) mode - clicking
+                // the header while editable should only focus the text entry, not toggle.
+                // Excludes DropDownButton itself, which handles its own toggle via OnPrimaryClick
+                // (see ComboBoxTemplate.InitTemplate) so it keeps working the same way via
+                // keyboard/gamepad/touch activation (Part 1) regardless of IsEditable.
+                if (!onButton && !IsEditable.Value && tmpl.HeaderRect.Contains(uiEvent.X, uiEvent.Y))
                 {
                     if (dropdownWindow == null)
                     {
@@ -288,9 +353,34 @@ namespace Blade.MG.UI.Controls
 
                     return;
                 }
+
+                // Editable mode: explicitly focus the embedded EditBox on any header click
+                // (including directly on the box itself), rather than relying on the ambient
+                // mouse-down focus search in UIManager.Mouse.cs to land on it for free. EditBox
+                // is several levels deep in the template's visual tree, and TextBox's own
+                // mouse-down handling (drag-select) locks input to itself via
+                // LockEventsToControl - between the two, the automatic hit-test based focus
+                // search does not reliably resolve to EditBox when clicked directly. Doing it
+                // here, after the click has already resolved, guarantees the right control ends
+                // up focused regardless of what the automatic search picked.
+                if (!onButton && IsEditable.Value && tmpl.EditBox != null && tmpl.HeaderRect.Contains(uiEvent.X, uiEvent.Y))
+                {
+                    await uiWindow.SetFocusAsync(tmpl.EditBox);
+
+                    // Re-open on a click while EditBox is already focused (e.g. the dropdown was
+                    // just closed by a previous click - see DropdownWindow.HandleMouseClickEventAsync).
+                    // The dropdown's own open-on-focus-gained logic (ComboBoxTemplate.Arrange)
+                    // only fires on the transition to focused, which already happened, so it
+                    // won't fire again here on its own.
+                    if (dropdownWindow == null && OpenTrigger.Value == ComboBoxOpenTrigger.AutoOpenOnType)
+                    {
+                        OpenDropDown();
+                    }
+                }
             }
 
-            // Otherwise let base handle (keyboard focus, etc.)
+            // Otherwise let base handle it - propagates to children (e.g. DropDownButton's own
+            // click) and grants keyboard focus, etc.
             await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
         }
 
@@ -301,31 +391,49 @@ namespace Blade.MG.UI.Controls
 
             if (!uiEvent.Focused)
             {
-                // losing focus: if editable and strict mode, ensure text corresponds to an item
-                if (IsEditable.Value)
+                HandleFocusLost();
+            }
+        }
+
+        // Shared "lost focus" logic (strict-mode text enforcement + closing the popup). In
+        // simple mode the ComboBox itself is the focused component, so
+        // HandleFocusChangedEventAsync above fires normally when focus moves elsewhere. In
+        // editable mode the embedded EditBox holds focus directly instead (see
+        // IsEditBoxFocused) - UIWindow.RaiseFocusChangedEventAsync only calls
+        // HandleFocusChangedEventAsync on the exact component that lost focus, so this
+        // ComboBox's own override above never runs when EditBox is what loses focus. Called
+        // from there instead, via ComboBoxTemplate.Arrange's per-frame EditBox.HasFocus
+        // tracking (which already watches the opposite edge to auto-open the dropdown).
+        internal void HandleFocusLost()
+        {
+            // losing focus: if editable and strict mode, ensure text corresponds to an item
+            if (IsEditable.Value)
+            {
+                var match = FindItemByText(Text.Value);
+                if (match != null)
                 {
-                    var match = FindItemByText(Text.Value);
-                    if (match != null)
+                    SelectedItem.Value = match;
+                }
+                else
+                {
+                    if (StrictMode.Value)
                     {
-                        SelectedItem.Value = match;
+                        // revert to selected item text or clear
+                        Text.Value = SelectedItem.Value != null ? ItemToString(SelectedItem.Value) : "";
                     }
                     else
                     {
-                        if (StrictMode.Value)
-                        {
-                            // revert to selected item text or clear
-                            Text.Value = SelectedItem.Value != null ? ItemToString(SelectedItem.Value) : "";
-                        }
-                        else
-                        {
-                            SelectedItem.Value = null;
-                        }
+                        SelectedItem.Value = null;
                     }
                 }
-
-                CloseDropDown();
             }
+
+            CloseDropDown();
         }
+
+        // In editable mode the embedded EditBox, not the ComboBox itself, holds focus - need
+        // both checked when deciding whether keyboard nav below applies to this combo.
+        private bool IsEditBoxFocused => (Content as ComboBoxTemplate)?.EditBox?.HasFocus.Value ?? false;
 
         // Allow typing when embedded TextBox has focus - template's TextBox is bound to combo.Text
         public override async Task HandleKeyPressAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
@@ -338,8 +446,32 @@ namespace Blade.MG.UI.Controls
                 return;
             }
 
-            // If Enter pressed and editable, try to resolve to an item
-            if (uiEvent.Key == Keys.Enter && IsEditable.Value)
+            // Space must stay literal typed input while editable - only treat it as an
+            // activation/navigation key in simple (non-editable) mode.
+            bool spaceIsLiteralText = IsEditable.Value;
+
+            // Open the dropdown from the keyboard when it's closed: Down/Enter always; Space
+            // only in simple mode (no text entry for it to type into there).
+            if (dropdownWindow == null && (HasFocus.Value || IsEditBoxFocused) &&
+                (uiEvent.Key == Keys.Down || uiEvent.Key == Keys.Enter || (uiEvent.Key == Keys.Space && !spaceIsLiteralText)))
+            {
+                OpenDropDown();
+                uiEvent.Handled = true;
+            }
+
+            // Forward Up/Down/Enter/(Space outside editable mode) to the open popup list -
+            // reuses ListView's own navigation and the OnSelectionChanged wiring already set
+            // up in OpenDropDown to commit the highlighted item and close. Home/End are
+            // deliberately excluded so they keep moving the text caret inside EditBox instead.
+            if (!uiEvent.Handled && dropdownWindow != null && dropdownListView != null &&
+                (uiEvent.Key == Keys.Up || uiEvent.Key == Keys.Down || uiEvent.Key == Keys.Enter || (uiEvent.Key == Keys.Space && !spaceIsLiteralText)))
+            {
+                await dropdownListView.HandleKeyPressAsync(uiWindow, uiEvent);
+            }
+
+            // If Enter pressed and editable, and the popup didn't already resolve a
+            // highlighted item above, fall back to matching the typed text against the items
+            if (!uiEvent.Handled && uiEvent.Key == Keys.Enter && IsEditable.Value)
             {
                 var match = FindItemByText(Text.Value);
                 if (match != null)
@@ -412,6 +544,24 @@ namespace Blade.MG.UI.Controls
                 base.Dispose();
             }
 
+            // While the dropdown is open, this modal popup is the *only* window that receives
+            // keyboard input at all (see UIManager.cs's shared DispatchEventAsync - a modal
+            // window "owns all input exclusively"). Left alone, that cuts the still-focused
+            // EditBox on the main window off from every keystroke - including the literal
+            // characters the user is trying to type to filter the list - the moment the
+            // dropdown opens. Let the popup's own tree (the ListView's Up/Down/Home/End
+            // navigation) handle it first, then forward anything left unhandled back to the
+            // combo box on the main window, where it reaches EditBox the normal way.
+            public override async Task HandleKeyPressAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
+            {
+                await base.HandleKeyPressAsync(this, uiEvent);
+
+                if (!uiEvent.Handled && parentCombo.ParentWindow != null)
+                {
+                    await parentCombo.HandleKeyPressAsync(parentCombo.ParentWindow, uiEvent);
+                }
+            }
+
             public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
             {
                 // Let normal handling run first (ListView should set its SelectedItem)
@@ -436,8 +586,10 @@ namespace Blade.MG.UI.Controls
                     }
                 }
 
-                // If click wasn't handled by children (click outside list), close dropdown
-                if (!uiEvent.Handled)
+                // If click wasn't handled by children (click outside list), close dropdown -
+                // unless this is the same physical click that just opened it, arriving here a
+                // second time via an independent input dispatch (see dropdownOpenedAt).
+                if (!uiEvent.Handled && (DateTime.Now - parentCombo.dropdownOpenedAt).TotalMilliseconds >= 150)
                 {
                     parentCombo.CloseDropDown();
                     uiEvent.Handled = true;

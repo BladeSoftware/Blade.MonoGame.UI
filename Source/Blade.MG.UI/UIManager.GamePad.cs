@@ -74,18 +74,22 @@ namespace Blade.MG.UI
 
             // --- Activate: A clicks whichever control currently has focus. Synthesized at
             // that control's own FinalRect center and dispatched through the normal
-            // HandlePrimaryClickEventAsync path, so it reuses the existing hit-testing/
+            // HandleMouseClickEventAsync path, so it reuses the existing hit-testing/
             // propagation machinery unchanged (the point trivially falls inside the control)
-            // instead of needing a parallel position-independent activation path.
+            // instead of needing a parallel position-independent activation path. Targets
+            // HandleMouseClickEventAsync specifically (not HandlePrimaryClickEventAsync)
+            // because that's where each control's real click logic actually lives (CheckBox
+            // toggling, ComboBox/ListView/TabPanel selection, etc.) - see
+            // UIManager.Keyboard.cs's Enter/Space handling for the same technique.
             if (gamePad.IsButtonPressed(Buttons.A))
             {
-                UIComponent focused = GetGamePadFocusedComponent(eventLockedWindow);
+                UIComponent focused = GetFocusedComponent(eventLockedWindow);
                 if (focused != null)
                 {
                     Point center = focused.FinalRect.Center;
                     var uiClickEvent = new UIClickEvent { X = center.X, Y = center.Y };
 
-                    await DispatchEventAsync(eventLockedWindow, center, async (uiWindow) => { await uiWindow.HandlePrimaryClickEventAsync(uiWindow, uiClickEvent); });
+                    await DispatchEventAsync(eventLockedWindow, center, async (uiWindow) => { await uiWindow.HandleMouseClickEventAsync(uiWindow, uiClickEvent); });
                 }
             }
 
@@ -115,7 +119,8 @@ namespace Blade.MG.UI
 
         // Same modal-priority ordering DispatchEventAsync uses elsewhere: a topmost modal
         // window owns focus/input exclusively, otherwise search all windows in reverse z-order.
-        private UIComponent GetGamePadFocusedComponent(UIWindow eventLockedWindow)
+        // Shared by gamepad A (above) and keyboard Enter/Space (UIManager.Keyboard.cs).
+        private UIComponent GetFocusedComponent(UIWindow eventLockedWindow)
         {
             if (eventLockedWindow != null)
             {

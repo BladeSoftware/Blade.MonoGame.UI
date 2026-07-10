@@ -1,6 +1,7 @@
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Blade.MG.UI.Controls.Templates;
 
@@ -9,9 +10,18 @@ public class ComboBoxTemplate : Control
     public Border RootBorder;
     public Label DisplayLabel;
     public Border HeaderBorder;
+    public Panel HeaderPanel;
+    public IconButton DropDownButton;
     public Rectangle HeaderRect => HeaderBorder?.FinalRect ?? FinalRect;
     public ListView ListView;
     public TextBox EditBox;
+
+    // Tracks EditBox.HasFocus across frames so the dropdown auto-opens exactly once when focus
+    // is gained (see Arrange), rather than re-opening every frame it happens to be both focused
+    // and closed - which would fight the user right back open after they close it with Escape
+    // (Escape closes the dropdown without dropping EditBox's focus - see
+    // ComboBox.HandleKeyPressAsync).
+    private bool wasEditBoxFocused;
 
     protected override void InitTemplate()
     {
@@ -53,7 +63,8 @@ public class ComboBoxTemplate : Control
             // directly (combo.TextColor = ...) as well as via SetStyleOverride.
             TextColor = combo.TextColor,
             HorizontalAlignment = HorizontalAlignmentType.Stretch,
-            VerticalAlignment = VerticalAlignmentType.Stretch
+            VerticalAlignment = VerticalAlignmentType.Stretch,
+            Margin = new Thickness(0, 0, 24, 0) // leave room for DropDownButton
         };
 
         // TextBox for editable state
@@ -61,7 +72,38 @@ public class ComboBoxTemplate : Control
         {
             HorizontalAlignment = HorizontalAlignmentType.Stretch,
             VerticalAlignment = VerticalAlignmentType.Stretch,
+            Margin = new Thickness(0, 0, 24, 0), // leave room for DropDownButton
             MaxLength = 250
+        };
+
+        // Let the combo box's own hover/focus background (applied to RootBorder - see
+        // HandleStateChange) show through instead of TextBox's normal opaque Surface fill. Set
+        // as an override rather than a direct assignment so it survives
+        // TextBoxTemplate.HandleStateChange re-applying the themed default on every focus/hover
+        // change.
+        EditBox.SetStyleOverride(nameof(TextBox.Background), Color.Transparent);
+
+        // Dropdown toggle button - drawn as an up/down chevron depending on IsDropDownOpen,
+        // reusing the same "Images/arrow_up_small" texture ScrollBar.cs already draws its
+        // endcap arrows with, flipped vertically for the closed (down) state.
+        DropDownButton = new IconButton()
+        {
+            Width = 24,
+            Height = 24,
+            HorizontalAlignment = HorizontalAlignmentType.Right,
+            VerticalAlignment = VerticalAlignmentType.Stretch,
+            IconSize = 12,
+            DrawIcon = (ctx, spriteBatch, rect, color) =>
+            {
+                var arrowTexture = ctx.LoadContent<Texture2D>("Images/arrow_up_small");
+                var effects = combo.IsDropDownOpen ? SpriteEffects.None : SpriteEffects.FlipVertically;
+                spriteBatch.Draw(arrowTexture, rect, null, color, 0f, Vector2.Zero, effects, 0f);
+            },
+            OnPrimaryClick = (sender, e) =>
+            {
+                combo.IsDropDownOpen = !combo.IsDropDownOpen;
+                e.Handled = true;
+            }
         };
 
         //// ListView for dropdown items
@@ -73,7 +115,22 @@ public class ComboBoxTemplate : Control
         //    Height = combo.DropDownHeight,
         //};
 
-        // Compose header: if editable use EditBox else DisplayLabel.
+        // Header content: a Panel (not a StackPanel - StackPanel can only stretch its *last*
+        // child to fill remaining space, not pin a fixed-size element to one edge while
+        // another fills the rest) holding both EditBox and DisplayLabel (only one Visible at a
+        // time, toggled in Arrange) plus the DropDownButton pinned to the right via its own
+        // HorizontalAlignment.
+        HeaderPanel = new Panel()
+        {
+            HorizontalAlignment = HorizontalAlignmentType.Stretch,
+            VerticalAlignment = VerticalAlignmentType.Stretch
+        };
+        HeaderPanel.AddChild(DisplayLabel);
+        HeaderPanel.AddChild(EditBox);
+        HeaderPanel.AddChild(DropDownButton);
+
+        HeaderBorder.Content = HeaderPanel;
+
         // Root content is a StackPanel-like setup: header then list
         var container = new StackPanel()
         {
@@ -83,7 +140,6 @@ public class ComboBoxTemplate : Control
             //Height = 120, // Temporary fixed height for testing
         };
 
-        HeaderBorder.Content = combo.IsEditable.Value ? (UIComponent)EditBox : (UIComponent)DisplayLabel;
         container.AddChild(HeaderBorder);
         //container.AddChild(ListView);
 
@@ -128,19 +184,74 @@ public class ComboBoxTemplate : Control
     {
         var combo = ParentAs<ComboBox>();
 
-        // Update header with proper content (edit vs label)
-        if (HeaderBorder != null)
+        // Refresh the dropdown popup's filtered items here (layout phase) rather than only in
+        // RenderControl below. All windows' layout runs before any window's render each frame
+        // (see UIManager.Update/Draw), so a Text update only reflected in the popup's own
+        // ListView.DataContext at render time is one full frame too late for that popup's own
+        // Arrange (which builds/prunes its item list) to pick up - refreshing here as well lets
+        // it see this frame's filtered results immediately instead of lagging by a frame.
+        combo.RefreshPopupItems();
+
+        // Show whichever of EditBox/DisplayLabel matches the current mode. Both are permanent
+        // children of HeaderPanel (see InitTemplate) - toggling Visible instead of swapping
+        // HeaderBorder.Content lets DropDownButton stay a stable sibling instead of being
+        // re-added every pass, and naturally makes a hidden EditBox unfocusable (the mouse-down
+        // focus search in UIManager.Mouse.cs requires Visible == Visible).
+        if (EditBox != null)
         {
-            HeaderBorder.Content = combo.IsEditable.Value ? (UIComponent)EditBox : (UIComponent)DisplayLabel;
+            EditBox.Visible = combo.IsEditable.Value ? Visibility.Visible : Visibility.Collapsed;
+        }
+        if (DisplayLabel != null)
+        {
+            DisplayLabel.Visible = combo.IsEditable.Value ? Visibility.Collapsed : Visibility.Visible;
         }
 
         // Arrange using base
         base.Arrange(context, layoutBounds, parentLayoutBounds);
 
-        // If editable, bind TextBox.Text to combo.Text
+        // Keep EditBox.Text and combo.Text in sync. This isn't a live two-way binding (Text's
+        // setter copies the assigned value in rather than adopting the binding by reference -
+        // same as every other SetField-backed property), so syncing unconditionally in one
+        // direction every frame - as this used to do, always combo -> EditBox - stomped
+        // every keystroke back to whatever combo.Text was before the user started typing.
+        // Instead, follow whichever side is the current source of truth: while the box has
+        // focus the user is editing it directly, so push its value up; otherwise combo.Text
+        // is authoritative (e.g. set programmatically via SelectedItem, or reverted on
+        // Enter/Escape/focus-loss), so push it down.
         if (EditBox != null)
         {
-            EditBox.Text = combo.Text;
+            bool isEditBoxFocused = EditBox.HasFocus.Value;
+
+            if (isEditBoxFocused)
+            {
+                // Auto-open the dropdown as soon as focus is gained, so the filtered items are
+                // visible immediately rather than only once the user starts typing
+                // (ComboBoxOpenTrigger.AutoOpenOnType, the default). Gated on the focus-gained
+                // edge (see wasEditBoxFocused) rather than "focused and currently closed" so it
+                // doesn't immediately re-open right after the user closes it with Escape while
+                // still typing.
+                if (!wasEditBoxFocused && !combo.IsDropDownOpen && combo.OpenTrigger.Value == ComboBoxOpenTrigger.AutoOpenOnType)
+                {
+                    combo.IsDropDownOpen = true;
+                }
+
+                combo.Text.Value = EditBox.Text.Value;
+            }
+            else
+            {
+                // Focus-lost edge: notify the combo box so it can enforce strict mode and close
+                // the popup, mirroring HandleFocusChangedEventAsync's non-editable-mode
+                // behavior - see ComboBox.HandleFocusLost for why this can't just be that
+                // override firing normally in editable mode.
+                if (wasEditBoxFocused)
+                {
+                    combo.HandleFocusLost();
+                }
+
+                EditBox.Text = combo.Text;
+            }
+
+            wasEditBoxFocused = isEditBoxFocused;
         }
 
         // Update label text when not editable or to reflect selected item
@@ -148,6 +259,12 @@ public class ComboBoxTemplate : Control
         {
             DisplayLabel.Text = combo.Text;
         }
+
+        // Re-evaluate the header's hover/focus styling every frame. EditBox's focus (which
+        // drives the "focused" look in editable mode - see HandleStateChange) changes on a
+        // separate component from this template, with no event that notifies this template
+        // when it does, so there's nothing else that would otherwise pick up the change.
+        HandleStateChange();
     }
 
     public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
@@ -197,8 +314,11 @@ public class ComboBoxTemplate : Control
             ApplyThemedValue(combo, RootBorder.BorderColor, nameof(ComboBox.BorderColor), Theme.Primary);
         }
 
-        // Focused State
-        if (HasFocus.Value)
+        // Focused State - in editable mode the embedded EditBox holds keyboard focus directly
+        // rather than the ComboBox itself (see ComboBox.IsEditBoxFocused), so check that too;
+        // otherwise the header never shows as focused while the user is typing in it.
+        bool isFocused = HasFocus.Value || (combo.IsEditable.Value && EditBox != null && EditBox.HasFocus.Value);
+        if (isFocused)
         {
             ApplyThemedValue(combo, RootBorder.BorderColor, nameof(ComboBox.BorderColor), Theme.Primary);
             ApplyThemedValue(combo, RootBorder.Background, nameof(ComboBox.Background), Theme.SurfaceVariant);

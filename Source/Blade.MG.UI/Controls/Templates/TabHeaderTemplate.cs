@@ -22,6 +22,7 @@ namespace Blade.MG.UI.Controls.Templates
             string item = DataContext?.ToString() ?? "null";
 
             IsHitTestVisible = true;
+            IsTabStop = true;
 
             //Margin = new Thickness(1, 1, 3, 2);
             //Background = Theme.SecondaryContainer;

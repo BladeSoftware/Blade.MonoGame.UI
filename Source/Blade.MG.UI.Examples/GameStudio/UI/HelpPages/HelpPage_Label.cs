@@ -32,7 +32,8 @@ namespace Examples.UI.HelpPages
             var alignmentGrid = new Grid()
             {
                 Width = "80%",
-                HorizontalAlignment = HorizontalAlignmentType.Center
+                HorizontalAlignment = HorizontalAlignmentType.Center,
+                Margin = new Thickness(0, 20, 0, 0),
             };
 
             alignmentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(GridUnitType.Star, 1) });

@@ -5,5 +5,5 @@
 /// </summary>
 public interface IItemTemplate
 {
-    
+    Binding<bool> IsSelected { get; set; }
 }

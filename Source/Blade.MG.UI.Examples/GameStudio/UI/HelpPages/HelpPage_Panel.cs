@@ -48,6 +48,7 @@ namespace Examples.UI.HelpPages
                 BorderColor = new Binding<Color>(() => Theme.Outline),
                 HorizontalAlignment = HorizontalAlignmentType.Center,
                 VerticalAlignment = VerticalAlignmentType.Center,
+                Margin = new Thickness(0, 20, 0, 0),
             };
 
             border.Content = demoSurface;
@@ -56,7 +57,7 @@ namespace Examples.UI.HelpPages
 
             AddRow(demoSurface, "Full width (100%)", ("100%", HorizontalAlignmentType.Left));
             AddRow(demoSurface, "Split 50 / 50", ("50%", HorizontalAlignmentType.Left), ("50%", HorizontalAlignmentType.Left));
-            AddRow(demoSurface, "Split 33 / 33 / 34", ("33%", HorizontalAlignmentType.Left), ("33%", HorizontalAlignmentType.Left), ("34%", HorizontalAlignmentType.Left));
+            AddRow(demoSurface, "Split 33 / 34 / 33", ("33%", HorizontalAlignmentType.Left), ("34%", HorizontalAlignmentType.Left), ("33%", HorizontalAlignmentType.Left));
             AddRow(demoSurface, "Split 25 / 25 / 25 / 25", ("25%", HorizontalAlignmentType.Left), ("25%", HorizontalAlignmentType.Left), ("25%", HorizontalAlignmentType.Left), ("25%", HorizontalAlignmentType.Left));
         }
 

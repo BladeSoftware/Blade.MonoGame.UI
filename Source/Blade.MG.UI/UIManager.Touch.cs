@@ -60,8 +60,13 @@ namespace Blade.MG.UI
                     var uiTapEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
                     await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleTapEventAsync(uiWindow, uiTapEvent); });
 
+                    // Dispatched through HandleMouseClickEventAsync (not
+                    // HandlePrimaryClickEventAsync) so a tap reaches each control's real click
+                    // logic (CheckBox toggling, ComboBox/ListView/TabPanel selection, etc.),
+                    // not just the generic OnPrimaryClick delegate - see
+                    // UIManager.GamePad.cs's A-button handling for the same fix.
                     var uiClickEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
-                    await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandlePrimaryClickEventAsync(uiWindow, uiClickEvent); });
+                    await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleMouseClickEventAsync(uiWindow, uiClickEvent); });
                 }
                 else if (gesture.GestureType == GestureType.DoubleTap)
                 {
@@ -74,7 +79,7 @@ namespace Blade.MG.UI
                     await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleTapEventAsync(uiWindow, uiTapEvent); });
 
                     var uiClickEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
-                    await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandlePrimaryClickEventAsync(uiWindow, uiClickEvent); });
+                    await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleMouseClickEventAsync(uiWindow, uiClickEvent); });
 
                     var uiDoubleClickEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
                     await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleMouseDoubleClickEventAsync(uiWindow, uiDoubleClickEvent); });

@@ -263,6 +263,18 @@ namespace Blade.MG.UI.Controls
 
         public override Task HandleFocusChangedEventAsync(UIWindow uiWindow, UIFocusChangedEvent uiEvent)
         {
+            if (uiEvent.Focused)
+            {
+                // Default the caret to the end of the existing text when focus is first gained,
+                // rather than leaving it wherever it last was (position 0, for a box that's
+                // never been clicked into before). A subsequent click while already focused
+                // still positions the caret precisely as normal - see
+                // HandleMouseDownEventAsync/GetCharacterIndexAtX - this only covers the initial
+                // focus transition itself (click-to-focus, Tab, or a composite control like
+                // ComboBox focusing its embedded EditBox).
+                SetCursorPosition(Value.Length, false);
+            }
+
             return base.HandleFocusChangedEventAsync(uiWindow, uiEvent);
         }
 

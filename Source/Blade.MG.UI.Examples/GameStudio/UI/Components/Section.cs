@@ -29,7 +29,7 @@ namespace Examples.UI.Components
                 BorderColor = new Binding<Color>(() => Theme.Outline),
                 Background = new Binding<Color>(() => Theme.Surface),
                 Margin = new Thickness(5, 5, 5, 5),
-                Elevation = 3
+                Elevation = 0
             };
 
             base.Content = border;

@@ -56,7 +56,7 @@ namespace BladeUI.UnitTesting.Tests.Containers
 
             Rectangle expectedFinalContentRect = TestHelper.ShrinkRect(layoutRect, marginLeft, marginTop, marginRight, marginBottom, paddingLeft, paddingTop, paddingRight, paddingBottom);
 
-            expectedFinalContentRect = TestHelper.ShrinkRect(expectedFinalContentRect, 0, 0, stackPanel.HorizontalScrollBarVisible ? (int)stackPanel.HorizontalScrollBar.Height.ToPixels(finalContentRect.Height) : 0, stackPanel.VerticalScrollBarVisible ? (int)stackPanel.VerticalScrollBar.Width.ToPixels(finalContentRect.Width) : 0);
+            expectedFinalContentRect = TestHelper.ShrinkRect(expectedFinalContentRect, 0, 0, stackPanel.IsHorizontalScrollbarVisible ? (int)stackPanel.HorizontalScrollBar.Height.ToPixels(finalContentRect.Height) : 0, stackPanel.IsVerticalScrollbarVisible ? (int)stackPanel.VerticalScrollBar.Width.ToPixels(finalContentRect.Width) : 0);
 
             Assert.AreEqual(finalContentRect, expectedFinalContentRect);
 

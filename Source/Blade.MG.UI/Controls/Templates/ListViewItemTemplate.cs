@@ -14,6 +14,9 @@ namespace Blade.MG.UI.Controls.Templates
         private Binding<Color> textColor = new Binding<Color>();
         public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
 
+        private Binding<bool> isSelected = new Binding<bool>(false);
+        public Binding<bool> IsSelected { get => isSelected; set => SetField(ref isSelected, value); }
+
         [JsonIgnore]
         [XmlIgnore]
         private Binding<SpriteFont> SpriteFont { get; set; }
@@ -27,6 +30,12 @@ namespace Blade.MG.UI.Controls.Templates
             base.InitTemplate();
 
             IsHitTestVisible = true;
+
+            // Let focus land on the owning ListView (see ListView.InitTemplate) rather than
+            // the individual item - SelectFirst's mouse-down focus search picks the deepest
+            // CanFocus match under the cursor, and ListView's own keyboard navigation is
+            // gated on its HasFocus, not any one item's.
+            CanFocus = false;
 
             string item = DataContext?.ToString() ?? "null";
 
@@ -90,6 +99,13 @@ namespace Blade.MG.UI.Controls.Templates
             // Normal State
             ApplyThemedValue(this, content.Background, nameof(Background), Color.Transparent);
             ApplyThemedValue(this, label1.TextColor, nameof(TextColor), Theme.OnSurface);
+
+            // Selected State
+            if (IsSelected.Value)
+            {
+                ApplyThemedValue(this, content.Background, nameof(Background), Theme.PrimaryContainer);
+                ApplyThemedValue(this, label1.TextColor, nameof(TextColor), Theme.OnPrimaryContainer);
+            }
 
             // Hover State
             if (MouseHover.Value)

@@ -58,8 +58,17 @@ namespace Blade.MG.UI.Controls
         }
 
         // ---=== UI Events ===---
-        public override async Task HandlePrimaryClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+
+        // Notifies the parent Menu in addition to the inherited OnMouseClick/OnPrimaryClick
+        // firing (UIComponentEvents.HandleMouseClickEventAsync). Overriding this method
+        // instead of HandlePrimaryClickEventAsync means the notification fires consistently
+        // for every input type - mouse, keyboard Enter/Space, touch tap, and gamepad A - since
+        // they all now dispatch through HandleMouseClickEventAsync (see UIManager.Keyboard.cs,
+        // UIManager.Touch.cs, UIManager.GamePad.cs).
+        public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
+            await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
+
             if (!ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)))
             {
                 return;
@@ -67,16 +76,7 @@ namespace Blade.MG.UI.Controls
 
             uiEvent.Handled = true;
 
-            Menu parentMenu = FindParent<Menu>();
-
-            if (parentMenu != null)
-            {
-                parentMenu.OnMenuItemClicked(this);
-            }
-
-            await OnPrimaryClickAsync?.Invoke(this, uiEvent);
-
-            //base.HandleClickEvent(uiWindow, uiEvent);
+            FindParent<Menu>()?.OnMenuItemClicked(this);
         }
 
 

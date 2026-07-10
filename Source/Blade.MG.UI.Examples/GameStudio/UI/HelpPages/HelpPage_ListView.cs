@@ -36,7 +36,7 @@ namespace Examples.UI.HelpPages
             {
                 BorderThickness = new Thickness(1),
                 BorderColor = new Binding<Color>(() => Theme.Outline),
-                Margin = new Thickness(30, 10, 30, 20),
+                Margin = new Thickness(30, 20, 30, 20),
                 Padding = new Thickness(10),
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,

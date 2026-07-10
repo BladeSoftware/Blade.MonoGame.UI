@@ -50,14 +50,30 @@ namespace Blade.MG.UI.Controls.Templates
 
             label1 = new Label()
             {
-                Text = textBox.Text, // Use the Button Text
+                // Linked via a getter/setter Binding rather than a plain `Text = textBox.Text`
+                // snapshot assignment. Label.Text is a plain auto-property, so that bare
+                // assignment *looks* like it adopts textBox's own Binding<string> by
+                // reference (making every future read/write of either side visible through
+                // both) - but in practice label1's text never reflected what was typed or
+                // programmatically selected. Building the Binding from a getter/setter pair
+                // instead means every access reads/writes straight through to textBox.Text.Value
+                // itself, live, with nothing to snapshot or fall out of sync - so it holds up
+                // regardless of what was breaking the reference-sharing assumption above.
+                Text = new Binding<string>(() => textBox.Text.Value, v => textBox.Text.Value = v),
                 Background = Color.Transparent,
-                //TextColor = textBox.FontColor,  // Use the Button Foreground Color
-                TextColor = textBox.TextColor,
-                FontName = textBox.FontName, // Use the Button Font
-                FontSize = textBox.FontSize, // Use the Button Font
-                HorizontalTextAlignment = textBox.HorizontalTextAlignment,
-                VerticalTextAlignment = textBox.VerticalTextAlignment,
+                TextColor = new Binding<Color>(() => textBox.TextColor.Value, v => textBox.TextColor.Value = v),
+                HorizontalTextAlignment = new Binding<HorizontalAlignmentType>(() => textBox.HorizontalTextAlignment.Value, v => textBox.HorizontalTextAlignment.Value = v),
+                VerticalTextAlignment = new Binding<VerticalAlignmentType>(() => textBox.VerticalTextAlignment.Value, v => textBox.VerticalTextAlignment.Value = v),
+
+                // FontName/FontSize are left as plain snapshot assignments (not linked): unlike
+                // the properties above, TextBox allows these to be a literal null Binding
+                // (meaning "use the default font"), and LabelTemplate already reads them via
+                // null-conditional access (label.FontName?.Value) - a live getter closure can't
+                // return null through a non-nullable Binding<T> the same way, and neither
+                // FontName nor FontSize changes after a TextBox is constructed in any current
+                // usage, so there's no staleness risk here to link against.
+                FontName = textBox.FontName,
+                FontSize = textBox.FontSize,
 
                 // Prevent child controls from receiving input events
                 IsHitTestVisible = false,
@@ -76,15 +92,30 @@ namespace Blade.MG.UI.Controls.Templates
         {
             var textBox = ParentAs<TextBox>();
 
-            int helperTextHeight = 16;
+            // These margins/paddings exist purely to reserve room for the floating label
+            // (above/inside the box) and the helper text (below it) - both drawn by
+            // RenderControl below. A TextBox with neither set (e.g. ComboBox's embedded
+            // editable header, which uses TextBox purely as a compact input with no Material
+            // label/helper chrome) has nothing to draw there, so reserving the space anyway
+            // just inflates the control well past what its content needs - which is exactly
+            // what was blowing out ComboBox's fixed-height header.
+            bool hasLabel = !string.IsNullOrEmpty(textBox.Label);
+            bool hasHelperText = !string.IsNullOrEmpty(textBox.HelperText);
+
+            int helperTextHeight = hasHelperText ? 16 : 0;
 
             if (textBox.Variant == Variant.Standard)
             {
                 ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Color.Transparent);
                 border1.Background = Color.Transparent;
                 border1.CornerRadius = new CornerRadius(0);
-                border1.Margin = new Thickness(0, 9, 0, helperTextHeight);
-                border1.Padding = new Thickness(10, 5 + 6, 0, 5);
+                border1.Margin = new Thickness(0, hasLabel ? 9 : 0, 0, helperTextHeight);
+                // With no label, match DisplayLabel/label1's own implicit zero vertical
+                // padding exactly (rather than merely shrinking it) - a fixed-height host like
+                // ComboBox's 40px header budgets for a plain Label's zero-padding footprint,
+                // and even the "compact" 5px top/bottom this used to fall back to was still
+                // enough to push the box past that budget and get clipped.
+                border1.Padding = hasLabel ? new Thickness(10, 11, 0, 5) : new Thickness(10, 0, 0, 0);
 
             }
             else if (textBox.Variant == Variant.Filled)
@@ -92,16 +123,16 @@ namespace Blade.MG.UI.Controls.Templates
                 ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Color.Transparent);
                 border1.Background = Theme.SurfaceVariant;
                 border1.CornerRadius = new CornerRadius(8, 8, 0, 0); // Rounded top corners, flat above the underline
-                border1.Margin = new Thickness(0, 9, 0, helperTextHeight);
-                border1.Padding = new Thickness(10, 5 + 6, 0, 5);
+                border1.Margin = new Thickness(0, hasLabel ? 9 : 0, 0, helperTextHeight);
+                border1.Padding = hasLabel ? new Thickness(10, 11, 0, 5) : new Thickness(10, 0, 0, 0);
             }
             else if (textBox.Variant == Variant.Outlined)
             {
                 ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Theme.Outline);
                 border1.Background = Color.Transparent;
                 border1.CornerRadius = new CornerRadius(8);
-                border1.Margin = new Thickness(0, 5, 0, helperTextHeight);
-                border1.Padding = new Thickness(10, 14, 10, 5);
+                border1.Margin = new Thickness(0, hasLabel ? 5 : 0, 0, helperTextHeight);
+                border1.Padding = hasLabel ? new Thickness(10, 14, 10, 5) : new Thickness(10, 0, 10, 0);
             }
 
             base.Measure(context, ref availableSize, ref parentMinMax);

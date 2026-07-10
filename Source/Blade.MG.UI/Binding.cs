@@ -1,9 +1,11 @@
-﻿using Blade.MG.UI.Models;
+﻿#nullable enable
+
+using Blade.MG.UI.Models;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
@@ -11,7 +13,6 @@ namespace Blade.MG.UI
     public interface IBinding
     {
         [JsonIgnore]
-        [XmlIgnore]
         Type BaseType { get; }
         void FromString(string value);
     }
@@ -24,22 +25,18 @@ namespace Blade.MG.UI
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [JsonConverter(typeof(JsonBindingConverter))]
-    public class Binding<T> : IBinding //, IXmlSerializable  //where T : struct
+    public class Binding<T> : IBinding
     {
-        // public readonly string ID = Guid.NewGuid().ToString(); // Debugging - Remove
-
         protected Func<T> Getter;
-        protected Action<T> Setter;
+        protected Action<T>? Setter;
 
-
-        //public T Value { get { return Getter(); } set { Setter(value); } }
         public T Value { get { return GetValue(); } set { SetValue(value); } }
 
         private T _backingVar;
 
         public bool IsImplicitCast { get; init; } // True if this Binding<T> was created from an Implicit Cast
 
-        private Binding()
+        private Binding() : this(default!, false)
         {
 
         }
@@ -62,7 +59,7 @@ namespace Blade.MG.UI
         /// int myint = 10;
         /// var intRef = new Reference<int>(() => myint, (value) => myint = value);
         /// </summary>
-        public Binding(Func<T> getter, Action<T> setter = null)
+        public Binding(Func<T> getter, Action<T>? setter = null)
         {
             Getter = getter;
             Setter = setter;
@@ -88,9 +85,15 @@ namespace Blade.MG.UI
 
         public void FromString(string value)
         {
-            if (Setter != null)
+            if (Setter == null) return;
+
+            try
             {
-                Setter((T)Convert.ChangeType(value, typeof(T)));
+                Setter((T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture));
+            }
+            catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException)
+            {
+                // Leave the current value unchanged on an unparsable input.
             }
         }
 
@@ -98,42 +101,6 @@ namespace Blade.MG.UI
         {
             return Getter()?.ToString() ?? "";
         }
-
-
-        //XmlSchema IXmlSerializable.GetSchema()
-        //{
-        //    return null;
-        //}
-
-        //void IXmlSerializable.ReadXml(XmlReader reader)
-        //{
-        //    XmlSerializer keySerializer = new XmlSerializer(typeof(T));
-
-        //    bool wasEmpty = reader.IsEmptyElement;
-
-        //    reader.Read();
-        //    if (wasEmpty)
-        //    {
-        //        return;
-        //    }
-
-        //    //reader.ReadStartElement("key");
-        //    T key = (T)keySerializer.Deserialize(reader);
-        //    //reader.ReadEndElement();
-
-        //    Value = key;
-
-        //    //reader.MoveToContent();
-        //    //reader.ReadEndElement();
-        //}
-
-        //void IXmlSerializable.WriteXml(XmlWriter writer)
-        //{
-        //    XmlSerializer keySerializer = new XmlSerializer(typeof(T));
-        //    //writer.WriteStartElement("key");
-        //    keySerializer.Serialize(writer, Value);
-        //    //writer.WriteEndElement();
-        //}
 
         /// <summary>
         /// Implicitly Cast from Type T to Binding<T> on Assignment 
@@ -167,35 +134,16 @@ namespace Blade.MG.UI
             return value.Value;
         }
 
-
-        //public static explicit operator T(Binding<T> value)
-        //{
-        //    return value.Value;
-        //}
-
-
-        //public static implicit operator Binding<T>(string value)
-        //{
-        //    if (typeof(T) == typeof(string))
-        //    {
-        //        return new Binding<T>((T)((object)value));
-        //    }
-        //    else
-        //    {
-        //        return new Binding<T>((T)((object)value));
-        //    }
-        //}
-
         private bool hasValue => Value != null;
 
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             if (!hasValue) return other == null;
             if (other == null) return false;
-            return Value.Equals(other);
+            return Value!.Equals(other);
         }
 
-        public override int GetHashCode() => hasValue ? Value.GetHashCode() : 0;
+        public override int GetHashCode() => hasValue ? Value!.GetHashCode() : 0;
     }
 
 
@@ -203,23 +151,22 @@ namespace Blade.MG.UI
     {
 
         protected new Func<T2> Getter;
-        protected new Action<T2> Setter;
+        protected new Action<T2>? Setter;
 
         protected override T1 GetValue()
         {
-            //object o = Getter();
-            return (T1)new T3().ConvertFrom(Getter());
+            return (T1)new T3().ConvertFrom(Getter())!;
         }
 
         protected override void SetValue(T1 value)
         {
-            Setter((T2)new T3().ConvertTo(value));
+            Setter?.Invoke((T2)new T3().ConvertTo(value));
         }
 
-        public Binding(T2 initialValue = default) : base((T1)new T3().ConvertFrom(initialValue))
+        public Binding(T2 initialValue = default) : base((T1)new T3().ConvertFrom(initialValue)!)
         {
             Getter = () => { return (T2)new T3().ConvertTo(base.Getter()); };
-            Setter = (value) => { base.Setter((T1)new T3().ConvertFrom(value)); };
+            Setter = (value) => { base.Setter?.Invoke((T1)new T3().ConvertFrom(value)!); };
 
         }
 
@@ -228,33 +175,22 @@ namespace Blade.MG.UI
         /// int myint = 10;
         /// var intRef = new Reference<int>(() => myint, (value) => myint = value);
         /// </summary>
-        public Binding(Func<T2> getter, Action<T2> setter = null) : base(null, null)
+        public Binding(Func<T2> getter, Action<T2>? setter = null) : base(default!, false)
         {
-            //#if NETFX_CORE
-            if (typeof(IBinding).GetTypeInfo().IsAssignableFrom(typeof(T1).GetTypeInfo()))
+            if (typeof(IBinding).IsAssignableFrom(typeof(T1)))
             {
                 throw new NotSupportedException("You cannot bind to a Type which implements IBindable : " + typeof(T1).ToString());
             }
-            if (typeof(IBinding).GetTypeInfo().IsAssignableFrom(typeof(T2).GetTypeInfo()))
+            if (typeof(IBinding).IsAssignableFrom(typeof(T2)))
             {
                 throw new NotSupportedException("You cannot bind to a Type which implements IBindable : " + typeof(T2).ToString());
             }
-            //#else
-            //            if (typeof(IBinding).IsAssignableFrom(typeof(T1)))
-            //            {
-            //            throw new NotSupportedException("You cannot bind to a Type which implements IBindable : " + typeof(T1).ToString());
-            //            }
-            //             if (typeof(IBinding).IsAssignableFrom(typeof(T2)))
-            //            {
-            //            throw new NotSupportedException("You cannot bind to a Type which implements IBindable : " + typeof(T2).ToString());
-            //            }
-            //#endif
 
             Getter = () => { return getter(); };
-            Setter = (value) => { setter(value); };
+            Setter = (value) => { setter?.Invoke(value); };
 
-            base.Getter = () => { return (T1)new T3().ConvertFrom(Getter()); };
-            base.Setter = (value) => { Setter((T2)new T3().ConvertTo(value)); };
+            base.Getter = () => { return (T1)new T3().ConvertFrom(Getter())!; };
+            base.Setter = (value) => { Setter?.Invoke((T2)new T3().ConvertTo(value)); };
 
         }
 
@@ -262,13 +198,13 @@ namespace Blade.MG.UI
 
     public interface IBindingConverter
     {
-        object ConvertFrom(object o);
+        object? ConvertFrom(object o);
         object ConvertTo(object o);
     }
 
     public class IntToStringBindingConverter : IBindingConverter
     {
-        public object ConvertFrom(object i)
+        public object? ConvertFrom(object i)
         {
             if (i is int)
             {
@@ -286,13 +222,13 @@ namespace Blade.MG.UI
 
         public object ConvertTo(object s)
         {
-            return int.Parse(s as string);
+            return int.Parse((string)s);
         }
     }
 
     public class FloatToStringBindingConverter : IBindingConverter
     {
-        public object ConvertFrom(object i)
+        public object? ConvertFrom(object i)
         {
             if (i is float)
             {
@@ -310,7 +246,7 @@ namespace Blade.MG.UI
 
         public object ConvertTo(object s)
         {
-            return float.Parse(s as string);
+            return float.Parse((string)s);
         }
     }
 

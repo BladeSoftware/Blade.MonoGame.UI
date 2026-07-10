@@ -109,15 +109,14 @@ namespace Blade.MG.UI.Controls.Templates
                 border1.Elevation.Value = 2;
             }
 
-            // Hover State - a subtle "lift" (increased elevation) alongside the color shift
-            // gives the button some tactile depth instead of a flat color swap.
+            // Hover State
             if (MouseHover.Value)
             {
                 label1.TextColor.Value = Theme.OnSecondaryContainer;
                 border1.Background.Value = Theme.SecondaryContainer;
                 border1.BorderThickness.Value = BorderThickness;
                 border1.BorderColor.Value = Theme.Tertiary;
-                border1.Elevation.Value = 4;
+                border1.Elevation.Value = 2;
             }
         }
 

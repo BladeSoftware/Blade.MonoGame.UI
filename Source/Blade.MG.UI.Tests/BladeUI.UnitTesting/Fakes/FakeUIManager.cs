@@ -11,15 +11,14 @@ namespace BladeUI.UnitTesting.Fakes
         private static GameTime oneFrameGameTime = new GameTime(oneFrameTimeSpan, oneFrameTimeSpan);
 
 
-        public FakeUIManager()
+        public FakeUIManager() : base(FakeGame.Instance)
         {
-            UIManager.Instance = this;
-            UIManager.Instance.Initialize(FakeGame.Instance);
         }
 
-        public async Task PerformLayout()
+        public Task PerformLayout()
         {
-            await UpdateAsync(oneFrameGameTime).ConfigureAwait(true);
+            Update(oneFrameGameTime);
+            return Task.CompletedTask;
         }
 
         public void AddUI(UIWindow ui)
@@ -29,13 +28,7 @@ namespace BladeUI.UnitTesting.Fakes
 
         public void ClearUI()
         {
-            UIManager.Clear();
-            //for (int i = UI.Count - 1; i >= 0; i--)
-            //{
-            //    var window = UI?.ElementAtOrDefault(i);
-            //    UI?.RemoveAt(i);
-            //    UnloadWindow(window);
-            //}
+            Clear();
         }
 
 
