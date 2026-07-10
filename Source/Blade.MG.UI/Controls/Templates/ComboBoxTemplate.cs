@@ -200,6 +200,31 @@ public class ComboBoxTemplate : Control
         if (EditBox != null)
         {
             EditBox.Visible = combo.IsEditable.Value ? Visibility.Visible : Visibility.Collapsed;
+
+            // TextBox hardcodes IsTabStop = true in its constructor, and Tab navigation
+            // (UIWindow.HandleTabNext/HandleTabPrevious) selects the next stop by IsTabStop
+            // alone - it doesn't check Visible. Left alone, that lets Tab land keyboard focus
+            // on this EditBox even while it's Collapsed in non-editable mode, and once focused
+            // the sync below pushes its typed text into combo.Text (and from there into the
+            // visible DisplayLabel) regardless of IsEditable. Keeping IsTabStop in lockstep with
+            // Visible closes that path.
+            EditBox.IsTabStop = combo.IsEditable.Value;
+
+            // The real leak: UIComponent.HandleFocusChangedEventAsync (the base implementation)
+            // propagates a "focused" event into *every* descendant of whatever component
+            // actually receives focus, and each descendant sets its own HasFocus = true as part
+            // of that - unconditionally, regardless of Visible or IsTabStop. So simply clicking
+            // anywhere on the ComboBox header (landing focus on the ComboBox/HeaderPanel, not
+            // EditBox specifically) still cascades HasFocus = true down onto this EditBox. From
+            // there, TextBox.HandleKeyAsync has no idea ComboBox.IsEditable exists - it only
+            // checks its own HasFocus before consuming a keystroke. Force it back off every
+            // frame here so a stray cascaded focus grant can never leave EditBox able to consume
+            // typed input while non-editable (this runs before HandleKeyPressAsync gets to the
+            // next keystroke, since Arrange runs every frame).
+            if (!combo.IsEditable.Value && EditBox.HasFocus.Value)
+            {
+                EditBox.HasFocus.Value = false;
+            }
         }
         if (DisplayLabel != null)
         {
@@ -220,7 +245,10 @@ public class ComboBoxTemplate : Control
         // Enter/Escape/focus-loss), so push it down.
         if (EditBox != null)
         {
-            bool isEditBoxFocused = EditBox.HasFocus.Value;
+            // Guard against IsEditable == false here too, not just via Visible/IsTabStop above -
+            // this is the actual point where a focused EditBox's typed text would otherwise leak
+            // into combo.Text (and from there the visible DisplayLabel) regardless of mode.
+            bool isEditBoxFocused = EditBox.HasFocus.Value && combo.IsEditable.Value;
 
             if (isEditBoxFocused)
             {

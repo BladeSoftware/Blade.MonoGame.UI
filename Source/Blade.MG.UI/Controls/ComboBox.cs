@@ -418,8 +418,26 @@ namespace Blade.MG.UI.Controls
                 {
                     if (StrictMode.Value)
                     {
-                        // revert to selected item text or clear
-                        Text.Value = SelectedItem.Value != null ? ItemToString(SelectedItem.Value) : "";
+                        // No exact match, but the user typed something that narrowed the list
+                        // (e.g. "Alb" for "Albania") - resolve to the top of that filtered set
+                        // rather than blindly reverting to whatever was selected before, which
+                        // otherwise looks like the box ignored the filter and snapped back to
+                        // the first item of the *entire* unfiltered list whenever that happened
+                        // to be the prior selection (e.g. the page's initial default).
+                        var query = Text.Value?.Trim();
+                        var firstFilteredMatch = !string.IsNullOrEmpty(query) ? GetFilteredItems().FirstOrDefault() : null;
+
+                        if (firstFilteredMatch != null)
+                        {
+                            SelectedItem.Value = firstFilteredMatch;
+                            Text.Value = ItemToString(SelectedItem.Value);
+                        }
+                        else
+                        {
+                            // No filtered candidates either (or the box was cleared) - fall back
+                            // to reverting to whatever was already selected, or clearing.
+                            Text.Value = SelectedItem.Value != null ? ItemToString(SelectedItem.Value) : "";
+                        }
                     }
                     else
                     {
