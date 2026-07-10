@@ -99,7 +99,7 @@ public class ComboBoxTemplate : Control
                 var effects = combo.IsDropDownOpen ? SpriteEffects.None : SpriteEffects.FlipVertically;
                 spriteBatch.Draw(arrowTexture, rect, null, color, 0f, Vector2.Zero, effects, 0f);
             },
-            OnPrimaryClick = (sender, e) =>
+            OnActivate = (sender, e) =>
             {
                 combo.IsDropDownOpen = !combo.IsDropDownOpen;
                 e.Handled = true;
@@ -319,12 +319,6 @@ public class ComboBoxTemplate : Control
         base.RenderControl(context, layoutBounds, parentTransform);
         //base.RenderControl(context, FinalContentRect, parentTransform);
         //base.RenderControl(context, ParentWindow.FinalContentRect, parentTransform);
-    }
-
-    // Forward hover/focus/selection state changes if needed (optional)
-    public override async System.Threading.Tasks.Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
-    {
-        await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
     }
 
     protected override void HandleStateChange()

@@ -1,4 +1,5 @@
 ﻿using Blade.MG.UI.Components;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls.Templates
@@ -88,7 +89,7 @@ namespace Blade.MG.UI.Controls.Templates
             //        //args.Handled = true;
             //    },
 
-            //    OnPrimaryClick = (sender, args) =>
+            //    OnActivate = (sender, args) =>
             //    {
             //        // Use Selected Tab Page rather than Focus
             //        var parentTabPanel = FindParent<TabPanel>();
@@ -130,7 +131,7 @@ namespace Blade.MG.UI.Controls.Templates
                     }
                 },
 
-                OnPrimaryClick = (sender, args) =>
+                OnActivate = (sender, args) =>
                 {
                     var parentTabPanel = FindParent<TabPanel>();
                     parentTabPanel?.CloseTab(this);
@@ -193,14 +194,23 @@ namespace Blade.MG.UI.Controls.Templates
         //    StateHasChanged();
         //}
 
-        //public override Task HandleClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
-        //{
-        //    var parentTabPanel = FindParent<TabPanel>();
-        //    parentTabPanel?.SetActiveTab(this);
-        //    uiEvent.Handled = true;
-        //
-        //    return base.HandleClickEventAsync(uiWindow, uiEvent);
-        //}
+        // Switches to this tab on activation (mouse click, touch tap, gamepad A, or keyboard
+        // Enter/Space now that this template is a tab stop - see IsTabStop = true above).
+        // base.ActivateAsync runs first, which reaches the close ("X") button's own OnActivate
+        // if that's what was actually hit (see label2 above) - if it already set
+        // uiEvent.Handled, don't also switch tabs.
+        public override async Task ActivateAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        {
+            await base.ActivateAsync(uiWindow, uiEvent);
+
+            if (uiEvent.Handled)
+            {
+                return;
+            }
+
+            FindParent<TabPanel>()?.SetActiveTab(this);
+            uiEvent.Handled = true;
+        }
 
         protected override void HandleStateChange()
         {

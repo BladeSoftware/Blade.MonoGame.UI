@@ -72,12 +72,14 @@ namespace Blade.MG.UI.Controls
         private UIWindow dropdownWindow = null;
         private ListView dropdownListView = null;
 
-        // The same physical click that opens the dropdown (header click, or a synthesized
-        // activation - see UIManager.GamePad.cs/UIManager.Touch.cs, which each dispatch their
-        // own independent HandleMouseClickEventAsync broadcast alongside the mouse one for the
-        // same input) can end up reaching DropdownWindow.HandleMouseClickEventAsync's
+        // A touch tap dispatches both HandleTapEventAsync and (see UIManager.Touch.cs) a
+        // separate synthesized HandleMouseClickEventAsync for the same physical tap - and a
+        // touchscreen can independently also raise an OS-synthesized mouse click for that same
+        // tap. Either combination can end up reaching DropdownWindow.HandleMouseClickEventAsync's
         // click-outside-closes check a second time in the very same frame, immediately closing
         // what just opened. Recorded here and checked there to ignore that immediate re-close.
+        // (GamePad A and keyboard Enter/Space no longer contribute to this risk - they call
+        // ActivateAsync directly on the focused component instead of broadcasting a click.)
         private DateTime dropdownOpenedAt = DateTime.MinValue;
 
         public ComboBox()
@@ -321,8 +323,8 @@ namespace Blade.MG.UI.Controls
             }
         }
 
-        // When clicked, toggle dropdown open/close (header) OR if clicking a list item propagate selection (handled by popup)
-        public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        // When activated, toggle dropdown open/close (header) OR if clicking a list item propagate selection (handled by popup)
+        public override async Task ActivateAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // Acquire template
             var tmpl = Content as ComboBoxTemplate;
@@ -333,9 +335,9 @@ namespace Blade.MG.UI.Controls
 
                 // Toggle on any header click, but only in simple (non-editable) mode - clicking
                 // the header while editable should only focus the text entry, not toggle.
-                // Excludes DropDownButton itself, which handles its own toggle via OnPrimaryClick
+                // Excludes DropDownButton itself, which handles its own toggle via OnActivate
                 // (see ComboBoxTemplate.InitTemplate) so it keeps working the same way via
-                // keyboard/gamepad/touch activation (Part 1) regardless of IsEditable.
+                // keyboard/gamepad/touch activation regardless of IsEditable.
                 if (!onButton && !IsEditable.Value && tmpl.HeaderRect.Contains(uiEvent.X, uiEvent.Y))
                 {
                     if (dropdownWindow == null)
@@ -379,9 +381,9 @@ namespace Blade.MG.UI.Controls
                 }
             }
 
-            // Otherwise let base handle it - propagates to children (e.g. DropDownButton's own
-            // click) and grants keyboard focus, etc.
-            await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
+            // Otherwise let base handle it (fires OnActivate/OnActivateAsync for any app code
+            // that just wants a callback).
+            await base.ActivateAsync(uiWindow, uiEvent);
         }
 
         // When focus lost and editable: enforce strict mode if requested and close any popup

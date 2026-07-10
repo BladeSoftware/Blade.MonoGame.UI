@@ -546,7 +546,7 @@ namespace Blade.MG.UI.Controls
             InitNodeTemplate(TempNodeTemplate, node);
 
 
-            ((UIComponentEvents)TempNodeTemplate).OnPrimaryClickAsync = async (eventSource, uiEvent) =>
+            ((UIComponentEvents)TempNodeTemplate).OnActivateAsync = async (eventSource, uiEvent) =>
             {
                 await HandleNodeClickAsync(ParentWindow, uiEvent, ((UIComponent)eventSource).DataContext as ITreeNode);
             };

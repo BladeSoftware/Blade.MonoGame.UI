@@ -60,11 +60,13 @@ namespace Blade.MG.UI
                     var uiTapEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
                     await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleTapEventAsync(uiWindow, uiTapEvent); });
 
-                    // Dispatched through HandleMouseClickEventAsync (not
-                    // HandlePrimaryClickEventAsync) so a tap reaches each control's real click
-                    // logic (CheckBox toggling, ComboBox/ListView/TabPanel selection, etc.),
-                    // not just the generic OnPrimaryClick delegate - see
-                    // UIManager.GamePad.cs's A-button handling for the same fix.
+                    // Dispatched through HandleMouseClickEventAsync (which calls ActivateAsync
+                    // internally) rather than calling ActivateAsync directly here, because we
+                    // still need the position-gated hit-test dispatch to find the right target -
+                    // unlike GamePad/Keyboard, a tap doesn't already know which component it's
+                    // for. This also lets a tap outside an open modal (e.g. a ComboBox dropdown
+                    // or Menu) still reach that modal's own HandleMouseClickEventAsync-based
+                    // click-outside-closes logic, which HandleTapEventAsync alone never would.
                     var uiClickEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
                     await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleMouseClickEventAsync(uiWindow, uiClickEvent); });
                 }
@@ -86,11 +88,11 @@ namespace Blade.MG.UI
                 }
                 else if (gesture.GestureType == GestureType.Hold)
                 {
+                    // HandleLongPressEventAsync's own base body already fires OnSecondaryClick -
+                    // no separate dispatch needed (there used to be one targeting the now-removed
+                    // vestigial HandleSecondaryClickEventAsync shell, which nothing overrode).
                     var uiLongPressEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
                     await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleLongPressEventAsync(uiWindow, uiLongPressEvent); });
-
-                    var uiClickEvent = new UIClickEvent { X = touchPoint.X, Y = touchPoint.Y };
-                    await DispatchEventAsync(eventLockedWindow, touchPoint, async (uiWindow) => { await uiWindow.HandleSecondaryClickEventAsync(uiWindow, uiClickEvent); });
                 }
 
                 return;

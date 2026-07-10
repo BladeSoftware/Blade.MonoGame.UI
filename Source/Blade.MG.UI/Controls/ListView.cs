@@ -353,8 +353,9 @@ namespace Blade.MG.UI.Controls
 
         // ---=== UI Events ===---
 
-        // Override the Click Event handling
-        public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        // Override Activate so selection-by-position is reached uniformly regardless of which
+        // input device triggered it (mouse click, touch tap, gamepad A, keyboard Enter/Space).
+        public override async Task ActivateAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
             // If we've clicked on a list item, then update SelectedItem
             if (ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)))
@@ -371,9 +372,7 @@ namespace Blade.MG.UI.Controls
                 }
             }
 
-            await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
-
-            //OnClick?.Invoke(uiEvent);
+            await base.ActivateAsync(uiWindow, uiEvent);
         }
 
         // Override Key Press handling to support Up/Down/Home/End selection - gated on

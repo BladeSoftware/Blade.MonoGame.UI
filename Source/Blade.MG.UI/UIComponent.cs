@@ -1172,15 +1172,6 @@ namespace Blade.MG.UI
             await PropagateAsync(uiEvent, uiWindow, async (component) => await handler(component, uiWindow, uiEvent));
         }
 
-        public virtual Task HandlePrimaryClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
-            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandlePrimaryClickEventAsync(w, e));
-
-        public virtual Task HandleMultiClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
-            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleMultiClickEventAsync(w, e));
-
-        public virtual Task HandleSecondaryClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
-            DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleSecondaryClickEventAsync(w, e));
-
         public virtual Task HandleTapEventAsync(UIWindow uiWindow, UIClickEvent uiEvent) =>
             DispatchPositionedEventAsync(uiWindow, uiEvent, (component, w, e) => component.HandleTapEventAsync(w, e));
 

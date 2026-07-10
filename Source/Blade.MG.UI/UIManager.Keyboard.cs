@@ -79,23 +79,22 @@ namespace Blade.MG.UI
                         }
                     }
 
-                    // Enter/Space activates whichever control currently has focus - same
-                    // "synthesize a click at the focused control's own center" technique as
-                    // UIManager.GamePad.cs's A-button handling, so it reaches each control's
-                    // real click logic (HandleMouseClickEventAsync) rather than needing a
-                    // parallel position-independent activation path. Gated on !uiEvent.Handled
+                    // Enter/Space activates whichever control currently has focus - calls
+                    // ActivateAsync directly on it, same technique as UIManager.GamePad.cs's
+                    // A-button handling (see its comment for why this bypasses hit-test dispatch
+                    // entirely rather than synthesizing a fake click). Gated on !uiEvent.Handled
                     // so it never fires while a focused TextBox/ComboBox edit box has already
                     // consumed the key (e.g. inserting a literal space, or its own Enter
                     // handling - see TextBox.HandleKeyAsync).
                     if ((key == Keys.Enter || key == Keys.Space) && !uiEvent.Handled)
                     {
                         UIComponent focused = GetFocusedComponent(eventLockedWindow);
-                        if (focused != null)
+                        if (focused is UIComponentEvents focusedEvents)
                         {
                             Point center = focused.FinalRect.Center;
                             var uiActivateEvent = new UIClickEvent { X = center.X, Y = center.Y };
 
-                            await DispatchEventAsync(eventLockedWindow, center, async (uiWindow) => { await uiWindow.HandleMouseClickEventAsync(uiWindow, uiActivateEvent); });
+                            await focusedEvents.ActivateAsync(focused.ParentWindow, uiActivateEvent);
                         }
                     }
 

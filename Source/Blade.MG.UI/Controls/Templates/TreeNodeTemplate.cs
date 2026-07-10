@@ -80,7 +80,7 @@ namespace Blade.MG.UI.Controls.Templates
                 //    uiEvent.Handled = true;
                 //},
 
-                //OnPrimaryClick = (sender, uiEvent) =>
+                //OnActivate = (sender, uiEvent) =>
                 //{
                 //    treeNode.IsExpanded = !treeNode.IsExpanded;
                 //    uiEvent.Handled = true;

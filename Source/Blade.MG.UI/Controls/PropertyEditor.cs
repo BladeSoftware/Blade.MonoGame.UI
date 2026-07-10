@@ -17,6 +17,12 @@ namespace Blade.MG.UI.Controls
         private object targetObject;
         private List<PropertyInfo> properties = new();
 
+        // TextBox has no change-notification event to hook (its Text is a plain Binding<string>
+        // with no subscribe mechanism), so the search filter is applied by diffing the search
+        // box's text once per frame in Arrange - the same frame-to-frame diffing technique
+        // ComboBoxTemplate.Arrange already uses to detect its own EditBox's focus transitions.
+        private string lastFilterText = "";
+
         public object TargetObject
         {
             get => targetObject;
@@ -69,7 +75,6 @@ namespace Blade.MG.UI.Controls
                 Height = 30,
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
             };
-            //searchBox.OnTextChanged = (sender, args) => RefreshProperties(); // TODO: OnTextChanged event
             stackPanel.AddChild(searchBox);
 
 
@@ -121,6 +126,18 @@ namespace Blade.MG.UI.Controls
             // Initial refresh
             RefreshProperties();
 
+        }
+
+        public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
+        {
+            base.Arrange(context, layoutBounds, parentLayoutBounds);
+
+            string currentFilterText = searchBox?.Text?.Value ?? "";
+            if (currentFilterText != lastFilterText)
+            {
+                lastFilterText = currentFilterText;
+                RefreshProperties();
+            }
         }
 
         private void RefreshProperties()

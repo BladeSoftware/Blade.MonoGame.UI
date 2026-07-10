@@ -72,24 +72,26 @@ namespace Blade.MG.UI
                 }
             }
 
-            // --- Activate: A clicks whichever control currently has focus. Synthesized at
-            // that control's own FinalRect center and dispatched through the normal
-            // HandleMouseClickEventAsync path, so it reuses the existing hit-testing/
-            // propagation machinery unchanged (the point trivially falls inside the control)
-            // instead of needing a parallel position-independent activation path. Targets
-            // HandleMouseClickEventAsync specifically (not HandlePrimaryClickEventAsync)
-            // because that's where each control's real click logic actually lives (CheckBox
-            // toggling, ComboBox/ListView/TabPanel selection, etc.) - see
+            // --- Activate: A activates whichever control currently has focus. Calls
+            // ActivateAsync directly on that control - no hit-test dispatch needed, since the
+            // target is already known (there's no "outside" concept for a gamepad button, unlike
+            // a real click). This also sidesteps a modal-dispatch bug the old fake-click
+            // synthesis had: while a modal popup is open (e.g. an open ComboBox dropdown),
+            // top-level DispatchEventAsync routes exclusively to the modal, so a synthesized
+            // click at the *main window's* focused-control coordinates used to be misrouted to
+            // the popup and misread as an outside-click-closes. Still passes FinalRect.Center as
+            // the event's position so any override that inspects it (e.g. ComboBox's
+            // dropdown-button-vs-header check) behaves the same as a real click would - see
             // UIManager.Keyboard.cs's Enter/Space handling for the same technique.
             if (gamePad.IsButtonPressed(Buttons.A))
             {
                 UIComponent focused = GetFocusedComponent(eventLockedWindow);
-                if (focused != null)
+                if (focused is UIComponentEvents focusedEvents)
                 {
                     Point center = focused.FinalRect.Center;
-                    var uiClickEvent = new UIClickEvent { X = center.X, Y = center.Y };
+                    var uiActivateEvent = new UIClickEvent { X = center.X, Y = center.Y };
 
-                    await DispatchEventAsync(eventLockedWindow, center, async (uiWindow) => { await uiWindow.HandleMouseClickEventAsync(uiWindow, uiClickEvent); });
+                    await focusedEvents.ActivateAsync(focused.ParentWindow, uiActivateEvent);
                 }
             }
 

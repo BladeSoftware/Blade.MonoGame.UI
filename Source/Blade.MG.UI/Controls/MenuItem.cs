@@ -59,20 +59,18 @@ namespace Blade.MG.UI.Controls
 
         // ---=== UI Events ===---
 
-        // Notifies the parent Menu in addition to the inherited OnMouseClick/OnPrimaryClick
-        // firing (UIComponentEvents.HandleMouseClickEventAsync). Overriding this method
-        // instead of HandlePrimaryClickEventAsync means the notification fires consistently
-        // for every input type - mouse, keyboard Enter/Space, touch tap, and gamepad A - since
-        // they all now dispatch through HandleMouseClickEventAsync (see UIManager.Keyboard.cs,
-        // UIManager.Touch.cs, UIManager.GamePad.cs).
-        public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        // Notifies the parent Menu in addition to the inherited OnActivate firing
+        // (UIComponentEvents.ActivateAsync). Overriding this input-agnostic activation handler
+        // (rather than relying solely on the OnActivate delegate) means the notification fires
+        // consistently for every input type - mouse, keyboard Enter/Space, touch tap, and
+        // gamepad A - since they all funnel through ActivateAsync (see UIManager.Keyboard.cs,
+        // UIManager.Touch.cs, UIManager.GamePad.cs). No position check needed here - the caller
+        // (HandleMouseClickEventAsync's default body, or GamePad/Keyboard calling ActivateAsync
+        // directly on the focused component) already establishes that this component is the
+        // intended target before ActivateAsync is ever invoked.
+        public override async Task ActivateAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
-
-            if (!ContainsScreenPoint(new Point(uiEvent.X, uiEvent.Y)))
-            {
-                return;
-            }
+            await base.ActivateAsync(uiWindow, uiEvent);
 
             uiEvent.Handled = true;
 

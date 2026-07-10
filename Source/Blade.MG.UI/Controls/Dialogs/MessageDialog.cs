@@ -149,7 +149,7 @@ namespace Blade.MG.UI.Controls.Dialogs
                     Width = 150,
                     Margin = new Thickness(10, 2),
 
-                    OnPrimaryClickAsync = async (sender, uiEvent) => { await DialogButtonPressedAsync("Ok"); }
+                    OnActivateAsync = async (sender, uiEvent) => { await DialogButtonPressedAsync("Ok"); }
                 });
 
             }
@@ -165,7 +165,7 @@ namespace Blade.MG.UI.Controls.Dialogs
                         TextColor = button?.Color ?? Theme.OnPrimary,
 
                         //OnClick = (uiEvent) => { DialogButtonPressed(button.Id); }
-                        OnPrimaryClickAsync = async (sender, uiEvent) => { await DialogButtonPressedAsync(button.Id); }
+                        OnActivateAsync = async (sender, uiEvent) => { await DialogButtonPressedAsync(button.Id); }
 
                     });
                 }

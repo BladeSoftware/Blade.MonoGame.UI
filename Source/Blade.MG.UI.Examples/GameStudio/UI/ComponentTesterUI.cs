@@ -162,7 +162,7 @@ namespace Examples.UI
                     VerticalTextAlignment = VerticalAlignmentType.Center,
                 };
 
-                button.OnPrimaryClick = (sender, uiEvents) =>
+                button.OnActivate = (sender, uiEvents) =>
                 {
                     SelectNavItem(wrapper);
                     contentHost.Content = factory();

@@ -407,28 +407,19 @@ namespace Blade.MG.UI.Controls
             }
         }
 
-        public override async Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        // Tab-header selection now lives in ActivateAsync (see TabHeaderTemplate), reached via
+        // normal propagation (tabsStackPanel is an internal child - see InitTemplate - so the
+        // default HandleMouseClickEventAsync body already walks into it and each header) rather
+        // than this manually looping over tabsStackPanel.Children and forwarding the click
+        // itself. That lets tab switching work uniformly for mouse, touch, gamepad, and keyboard
+        // instead of only mouse.
+        public override async Task ActivateAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-
-            // Handle click event on Tab Headers
-            foreach (var item in tabsStackPanel.Children)
-            {
-                if (item != null && (item.FinalContentRect.Contains(uiEvent.X, uiEvent.Y) || uiEvent.ForcePropagation))
-                {
-                    await item.HandleMouseClickEventAsync(uiWindow, uiEvent);
-
-                    if (!uiEvent.Handled)
-                    {
-                        SetActiveTab(item);
-                    }
-                }
-            }
+            await base.ActivateAsync(uiWindow, uiEvent);
 
             ProcessTabsActions();
 
-            await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
-
-            // Prevent Click Event for propogating outside the TabPanel
+            // Prevent the click from propagating outside the TabPanel
             uiEvent.Handled = true;
         }
 

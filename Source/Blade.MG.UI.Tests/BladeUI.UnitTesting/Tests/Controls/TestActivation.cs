@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace BladeUI.UnitTesting.Tests.Controls
 {
-    // Regression coverage for the fix where keyboard Enter/Space, touch tap, and gamepad A
-    // synthesize a click at the focused/tapped control's own center point and dispatch it
-    // through HandleMouseClickEventAsync (previously HandlePrimaryClickEventAsync, which only
-    // MenuItem overrode - see UIManager.Keyboard.cs, UIManager.Touch.cs, UIManager.GamePad.cs).
-    // These tests exercise that same dispatch path - through UIWindow.HandleMouseClickEventAsync
-    // at a synthesized point, not a direct method call on the control - to confirm it actually
-    // reaches each control's real click logic.
+    // Regression coverage for the shared Activate/ActivateAsync hook: mouse click, touch tap,
+    // gamepad A, and keyboard Enter/Space should all reach a control's real "activate" behavior
+    // uniformly (CheckBox's toggle, Button's OnActivate) rather than each device inventing its
+    // own way to reach it. These tests drive UIWindow.HandleMouseClickEventAsync directly (mouse
+    // click's own path, which calls ActivateAsync internally) to confirm it actually reaches
+    // each control's real activation logic.
     [TestClass]
     public class TestActivation
     {
@@ -39,14 +38,14 @@ namespace BladeUI.UnitTesting.Tests.Controls
         }
 
         [TestMethod]
-        public async Task Button_SynthesizedClickAtOwnCenter_FiresOnPrimaryClick()
+        public async Task Button_SynthesizedClickAtOwnCenter_FiresOnActivate()
         {
             var uiManager = new FakeUIManager();
             var ui = new EmptyUI();
 
             var button = new Button();
             bool clicked = false;
-            button.OnPrimaryClick = (sender, e) => clicked = true;
+            button.OnActivate = (sender, e) => clicked = true;
 
             ui.AddChild(button);
             uiManager.AddUI(ui);

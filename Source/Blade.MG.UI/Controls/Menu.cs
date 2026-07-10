@@ -81,7 +81,7 @@ namespace Blade.MG.UI.Controls
                         case MenuOption menuOption:
                             optionsStackPanel.AddChild(new MenuItem
                             {
-                                OnPrimaryClickAsync = async (sender, uiEvent) => { await OptionSelectedAsync(menuOption.Id); uiEvent.Handled = true; }
+                                OnActivateAsync = async (sender, uiEvent) => { await OptionSelectedAsync(menuOption.Id); uiEvent.Handled = true; }
                             },
                             this,
                             option);

@@ -22,10 +22,6 @@ namespace Blade.MG.UI
 
 
         // --- Mouse Events ---
-        [JsonIgnore][XmlIgnore] public Action<object, UIClickEvent> OnMouseClick;
-
-        [JsonIgnore][XmlIgnore] public Func<object, UIClickEvent, Task> OnMouseClickAsync;
-
         [JsonIgnore][XmlIgnore] public Action<object, UIClickEvent> OnMouseDoubleClick;
         [JsonIgnore][XmlIgnore] public Func<object, UIClickEvent, Task> OnMouseDoubleClickAsync;
 
@@ -43,9 +39,9 @@ namespace Blade.MG.UI
 
 
         // --- Virtual Events ---
-        [JsonIgnore][XmlIgnore] public Action<object, UIClickEvent> OnPrimaryClick;
+        [JsonIgnore][XmlIgnore] public Action<object, UIClickEvent> OnActivate;
 
-        [JsonIgnore][XmlIgnore] public Func<object, UIClickEvent, Task> OnPrimaryClickAsync;
+        [JsonIgnore][XmlIgnore] public Func<object, UIClickEvent, Task> OnActivateAsync;
 
         [JsonIgnore][XmlIgnore] public Action<object, UIClickEvent> OnMultiClick;
         [JsonIgnore][XmlIgnore] public Func<object, UIClickEvent, Task> OnMultiClickAsync;
@@ -72,13 +68,38 @@ namespace Blade.MG.UI
                 OnTap?.Invoke(this, uiEvent);
                 await (OnTapAsync?.Invoke(this, uiEvent) ?? Task.CompletedTask);
 
-                // OnPrimaryClick is NOT fired here - UIManager.Touch.cs follows every Tap with
+                // ActivateAsync is NOT called here - UIManager.Touch.cs follows every Tap with
                 // a HandleMouseClickEventAsync dispatch at the same point, and
-                // HandleMouseClickEventAsync (below) already fires OnPrimaryClick. Firing it
+                // HandleMouseClickEventAsync (below) already calls ActivateAsync. Calling it
                 // here too would invoke it twice per tap.
 
                 //if (this.HitTestVisible) uiEvent.Handled = true;
             }
+        }
+
+        // Single, input-agnostic hook every "this control was activated" input path funnels
+        // through: a real mouse primary-button click (HandleMouseClickEventAsync below), a
+        // touch tap promoted to a click (UIManager.Touch.cs), a gamepad A press, and a keyboard
+        // Enter/Space press (the latter two call ActivateAsync directly on the focused
+        // component - see UIManager.GamePad.cs / UIManager.Keyboard.cs - bypassing hit-testing
+        // entirely since the target is already known). Controls with real "activate" behavior
+        // (CheckBox's toggle, ComboBox's open/close, ListView's select-by-position, etc.)
+        // override Activate/ActivateAsync instead of any device-specific handler, so that
+        // behavior is reached uniformly regardless of input device. Override Activate for
+        // synchronous logic, ActivateAsync for logic that needs to await something -
+        // ActivateAsync always invokes the (possibly overridden) Activate first via virtual
+        // dispatch, so overriding just one of the pair is enough; call base.ActivateAsync/
+        // base.Activate to preserve OnActivate/OnActivateAsync firing for app code that only
+        // wants a callback.
+        public virtual void Activate(UIWindow uiWindow, UIClickEvent uiEvent)
+        {
+            OnActivate?.Invoke(this, uiEvent);
+        }
+
+        public virtual async Task ActivateAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        {
+            Activate(uiWindow, uiEvent);
+            await (OnActivateAsync?.Invoke(this, uiEvent) ?? Task.CompletedTask);
         }
 
         public override async Task HandleLongPressEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
@@ -103,11 +124,7 @@ namespace Blade.MG.UI
             {
                 await base.HandleMouseClickEventAsync(uiWindow, uiEvent);
 
-                OnMouseClick?.Invoke(this, uiEvent);
-                await (OnMouseClickAsync?.Invoke(this, uiEvent) ?? Task.CompletedTask);
-
-                OnPrimaryClick?.Invoke(this, uiEvent);
-                await (OnPrimaryClickAsync?.Invoke(this, uiEvent) ?? Task.CompletedTask);
+                await ActivateAsync(uiWindow, uiEvent);
 
                 //if (this.HitTestVisible) uiEvent.Handled = true;
             }

@@ -112,14 +112,12 @@ namespace Blade.MG.UI.Controls
             //}
         }
 
-        public override Task HandleMouseClickEventAsync(UIWindow uiWindow, UIClickEvent uiEvent)
+        public override async Task ActivateAsync(UIWindow uiWindow, UIClickEvent uiEvent)
         {
-            // return base.HandleClickEventAsync(uiWindow, uiEvent);
-
             // Don't change state if not Enabled
             if (!IsEnabled.Value)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             if (Tristate.Value)
@@ -144,10 +142,13 @@ namespace Blade.MG.UI.Controls
             OnValueChanged?.Invoke(IsChecked);
             if (OnValueChangedAsync != null)
             {
-                return OnValueChangedAsync(IsChecked);
+                await OnValueChangedAsync(IsChecked);
             }
 
-            return Task.CompletedTask;
+            // Previously never called (the equivalent base call here was commented out), so
+            // OnActivate/OnActivateAsync never fired for CheckBox - now they do, consistent with
+            // every other control that has real activation behavior.
+            await base.ActivateAsync(uiWindow, uiEvent);
         }
 
     }
