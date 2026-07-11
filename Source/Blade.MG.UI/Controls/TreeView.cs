@@ -31,6 +31,11 @@ namespace Blade.MG.UI.Controls
         private int focusedNodeHash = -1;
         private ITreeNode selectedNode = null;
 
+        // Read-only view of the currently selected node, for callers that just want to query
+        // current state (e.g. an example page showing "Selected: ...") without having to wire
+        // up OnSelectedNodeChanged themselves.
+        public ITreeNode SelectedNode => selectedNode;
+
         public Action<ITreeNode> OnSelectedNodeChanged { get; set; }
         public Func<ITreeNode, Task> OnSelectedNodeChangedAsync { get; set; }
 
@@ -662,6 +667,8 @@ namespace Blade.MG.UI.Controls
             var nodeTemplate = GetNodeTemplate(treeNode, out _);
             if (nodeTemplate != null)
             {
+                DeselectCurrentNode(treeNode);
+
                 focusedNodeHash = treeNode.GetHashCode();
 
                 selectedNode = treeNode;
@@ -679,9 +686,13 @@ namespace Blade.MG.UI.Controls
         {
             if (nodeTemplate != null)
             {
+                var treeNode = nodeTemplate.DataContext as ITreeNode;
+
+                DeselectCurrentNode(treeNode);
+
                 focusedNodeHash = nodeTemplate.DataContext.GetHashCode();
 
-                selectedNode = nodeTemplate.DataContext as ITreeNode;
+                selectedNode = treeNode;
                 selectedNode.IsSelected = true;
 
                 await ParentWindow.SetFocusAsync(nodeTemplate);
@@ -692,6 +703,155 @@ namespace Blade.MG.UI.Controls
             }
         }
 
+        // Clears IsSelected on whatever was selected before - mirrors the de-select step
+        // GetNodeTemplate's mouse-driven OnFocusChangedAsync already does. Without this, moving
+        // selection programmatically (keyboard nav - see MoveSelectionAsync/MoveToParentAsync/
+        // MoveToFirstChildAsync) left the previously-focused node's IsSelected stuck true, since
+        // only the newly focused node's blur/focus roundtrip was reconciled, not the old one's -
+        // the old node's own blur event fires *after* focusedNodeHash has already been
+        // overwritten to the new node's hash below, so its OnFocusChangedAsync's own hash check
+        // never matches and never runs its de-select branch.
+        private void DeselectCurrentNode(ITreeNode newlySelectedNode)
+        {
+            if (selectedNode == null || selectedNode == newlySelectedNode)
+            {
+                return;
+            }
+
+            selectedNode.IsSelected = false;
+
+            UIComponent oldChildNode = FindChildByHash(selectedNode.GetHashCode());
+            oldChildNode?.StateHasChanged();
+        }
+
+        // ---=== Keyboard navigation ===---
+
+        // There's no cached flat/visible-order list to walk (rendering is done via recursive,
+        // virtualized Measure/Arrange calls - see MeasureNode/ArrangeNode) and ITreeNode doesn't
+        // track its own parent, so keyboard nav (Up/Down/Left-to-parent) needs its own
+        // depth-first walk that mirrors the same "collapsed = collapsed || !node.IsExpanded"
+        // skip-logic already used there, capturing each node's parent along the way.
+        private List<(ITreeNode Node, ITreeNode Parent, int Depth)> GetVisibleNodes()
+        {
+            var result = new List<(ITreeNode, ITreeNode, int)>();
+
+            if (RootNode == null)
+            {
+                return result;
+            }
+
+            void Walk(ITreeNode node, ITreeNode parent, int depth, bool isRoot)
+            {
+                bool skip = isRoot && !ShowRootNode;
+
+                if (!skip)
+                {
+                    result.Add((node, parent, depth));
+                }
+
+                // A hidden root's children are always walked regardless of the root's own
+                // IsExpanded - matches MeasureNode/ArrangeNode, where the "collapsed" flag
+                // computed from node.IsExpanded is only applied when the node itself was
+                // actually rendered (!skipNode).
+                if (node.Children != null && (skip || node.IsExpanded))
+                {
+                    foreach (var child in node.Children)
+                    {
+                        Walk(child, node, skip ? 0 : depth + 1, false);
+                    }
+                }
+            }
+
+            Walk(RootNode, null, 0, true);
+
+            return result;
+        }
+
+        // Focuses/selects a node (creating its template on demand via SetFocusAsync/
+        // GetNodeTemplate if it isn't already a real child) and scrolls it into view -
+        // the shared tail end of every keyboard-nav operation below.
+        private async Task FocusVisibleNodeAsync(ITreeNode node)
+        {
+            if (node == null)
+            {
+                return;
+            }
+
+            await SetFocusAsync(node);
+
+            var visible = GetVisibleNodes();
+            int index = visible.FindIndex(n => Equals(n.Node, node));
+            if (index >= 0)
+            {
+                ScrollNodeIntoView(index);
+            }
+        }
+
+        // Up (direction -1) / Down (direction +1) - moves to the previous/next node in visible
+        // document order, without crossing into a collapsed subtree.
+        public async Task MoveSelectionAsync(ITreeNode currentNode, int direction)
+        {
+            var visible = GetVisibleNodes();
+            int index = visible.FindIndex(n => Equals(n.Node, currentNode));
+            if (index < 0)
+            {
+                return;
+            }
+
+            int newIndex = Math.Clamp(index + direction, 0, visible.Count - 1);
+            if (newIndex != index)
+            {
+                await FocusVisibleNodeAsync(visible[newIndex].Node);
+            }
+        }
+
+        // Left, when the current node is already collapsed (or has no children) - moves up to
+        // the owning parent, matching common tree-view UX (e.g. Windows Explorer).
+        public async Task MoveToParentAsync(ITreeNode currentNode)
+        {
+            var visible = GetVisibleNodes();
+            var entry = visible.FirstOrDefault(n => Equals(n.Node, currentNode));
+            if (entry.Parent != null)
+            {
+                await FocusVisibleNodeAsync(entry.Parent);
+            }
+        }
+
+        // Right, when the current node is already expanded - moves down into its first child.
+        public async Task MoveToFirstChildAsync(ITreeNode currentNode)
+        {
+            if (currentNode?.Children != null && currentNode.Children.Count > 0)
+            {
+                await FocusVisibleNodeAsync(currentNode.Children[0]);
+            }
+        }
+
+        // Items are virtualized, so a keyboard-focused node may not be a real child yet -
+        // estimate its position from the last-measured node height (nodes are assumed uniform
+        // height) rather than relying on a FinalRect that may not exist for it this frame -
+        // mirrors ListView.ScrollItemIntoView.
+        private void ScrollNodeIntoView(int index)
+        {
+            if (_cachedNodeHeight is not float nodeHeight || nodeHeight <= 0)
+            {
+                return;
+            }
+
+            int itemTop = (int)(index * nodeHeight);
+            int itemBottom = itemTop + (int)nodeHeight;
+
+            int viewTop = VerticalScrollBar.ScrollOffset;
+            int viewBottom = viewTop + FinalContentRect.Height;
+
+            if (itemTop < viewTop)
+            {
+                VerticalScrollBar.ScrollOffset = Math.Max(0, Math.Min(itemTop, VerticalScrollBar.MaxValue));
+            }
+            else if (itemBottom > viewBottom)
+            {
+                VerticalScrollBar.ScrollOffset = Math.Max(0, Math.Min(itemBottom - FinalContentRect.Height, VerticalScrollBar.MaxValue));
+            }
+        }
 
         // ---=== UI Events ===---
 

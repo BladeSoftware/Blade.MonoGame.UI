@@ -29,8 +29,35 @@ namespace Examples.UI.HelpPages
                 {
                     Padding = new Thickness(30, 0, 0, 0),
                     Title = "Tree View",
-                    Description = "A virtualized, expandable tree - only visible rows are measured and drawn."
+                    Description = "A virtualized, expandable tree - only visible rows are measured and drawn. " +
+                        "Click a row, then use Up/Down to move between rows, Left/Right to collapse/expand, " +
+                        "and Enter/Space to toggle expansion of the selected row."
                 });
+
+            var treeView = new TreeView
+            {
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                VerticalAlignment = VerticalAlignmentType.Stretch,
+                ShowRootNode = true,
+                RootNode = BuildProjectTree(),
+            };
+
+            var selectedLabel = new Label()
+            {
+                Padding = new Thickness(30, 0, 0, 0),
+                Margin = new Thickness(0, 10, 0, 0),
+                FontSize = 14,
+                TextColor = new Binding<Color>(() => Theme.OnSurfaceVariant),
+                HorizontalAlignment = HorizontalAlignmentType.Left,
+                Text = "Selected: (none)",
+            };
+
+            treeView.OnSelectedNodeChanged = node =>
+            {
+                selectedLabel.Text.Value = $"Selected: {node?.Text ?? "(none)"}";
+            };
+
+            layoutPanel.AddChild(selectedLabel);
 
             var border = new Border()
             {
@@ -45,14 +72,6 @@ namespace Examples.UI.HelpPages
 
             layoutPanel.AddChild(border);
             layoutPanel.StretchLastChild = true;
-
-            var treeView = new TreeView
-            {
-                HorizontalAlignment = HorizontalAlignmentType.Stretch,
-                VerticalAlignment = VerticalAlignmentType.Stretch,
-                ShowRootNode = true,
-                RootNode = BuildProjectTree(),
-            };
 
             border.Content = treeView;
         }

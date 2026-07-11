@@ -189,8 +189,9 @@ namespace Examples.UI
             AddPage("Dock Panel", () => new HelpPage_DockPanel());
 
             AddCategory("Input");
-            AddPage("Button", () => new HelpPage_Button());
-            AddPage("Form Fields", () => new HelpPage_FormFields());
+            AddPage("Buttons", () => new HelpPage_Button());
+            AddPage("Text Boxes", () => new HelpPage_TextBox());
+            AddPage("Check Boxes", () => new HelpPage_CheckBox());
             AddPage("Combo Box", () => new HelpPage_ComboBox());
 
             AddCategory("Display");

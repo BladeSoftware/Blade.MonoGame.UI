@@ -1,4 +1,5 @@
 ﻿using Blade.MG.Primitives;
+using Blade.MG.UI.Animations;
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Models;
 using Blade.MG.UI.Theming;
@@ -491,6 +492,11 @@ namespace Blade.MG.UI
             RunInputHandler(() => HandleMouseInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "mouse");
             RunInputHandler(() => HandleTouchInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "touch");
             RunInputHandler(() => HandleGamePadInputAsync(eventLockedWindow, eventLockedControl, true, gameTime), "gamepad");
+
+            // Apply this frame's active property animations before layout/render read any
+            // Binding values they're driving (e.g. a focus change above may have just kicked off
+            // a new AnimateTo).
+            PropertyAnimationManager.Update();
 
             // Arrange layout (synchronous)
             foreach (var ui in uiWindows)

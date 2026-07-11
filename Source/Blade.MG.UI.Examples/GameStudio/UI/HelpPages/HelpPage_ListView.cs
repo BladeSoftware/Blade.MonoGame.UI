@@ -29,7 +29,32 @@ namespace Examples.UI.HelpPages
                 {
                     Padding = new Thickness(30, 0, 0, 0),
                     Title = "List View",
-                    Description = "A scrollable, virtualized list of items."
+                    Description = "A scrollable, virtualized list of items. Use Up/Down/Home/End to highlight an item, then Enter to select it."
+                });
+
+            var listView = new ListView()
+            {
+                ItemTemplateType = typeof(ListViewItemTemplate),
+                HorizontalAlignment = HorizontalAlignmentType.Stretch,
+                VerticalAlignment = VerticalAlignmentType.Stretch,
+                DataContext = Enum.GetNames(typeof(Country)),
+
+                // Arrow keys only move HighlightedItem; Enter/Space (or a mouse click) commits
+                // it to SelectedItem - so this page actually exercises Enter-to-select instead
+                // of arrow keys already selecting immediately (the default for a standalone
+                // ListView).
+                CommitSelectionImmediately = false,
+            };
+
+            layoutPanel.AddChild(
+                new Label()
+                {
+                    Padding = new Thickness(30, 0, 0, 0),
+                    Margin = new Thickness(0, 10, 0, 0),
+                    FontSize = 14,
+                    TextColor = new Binding<Color>(() => Theme.OnSurfaceVariant),
+                    HorizontalAlignment = HorizontalAlignmentType.Left,
+                    Text = new Binding<string>(() => $"Selected: {listView.SelectedItem?.ToString() ?? "(none)"}"),
                 });
 
             var border = new Border()
@@ -45,14 +70,6 @@ namespace Examples.UI.HelpPages
 
             layoutPanel.AddChild(border);
             layoutPanel.StretchLastChild = true;
-
-            var listView = new ListView()
-            {
-                ItemTemplateType = typeof(ListViewItemTemplate),
-                HorizontalAlignment = HorizontalAlignmentType.Stretch,
-                VerticalAlignment = VerticalAlignmentType.Stretch,
-                DataContext = Enum.GetNames(typeof(Country)),
-            };
 
             border.Content = listView;
         }

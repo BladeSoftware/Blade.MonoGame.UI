@@ -1,4 +1,5 @@
-﻿using Blade.MG.UI.Components;
+﻿using Blade.MG.UI.Animations;
+using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
 using Blade.MG.UI.Models;
 using Blade.MG.UI.Services;
@@ -7,13 +8,31 @@ using Microsoft.Xna.Framework;
 
 namespace Blade.MG.UI.Controls.Templates
 {
-    public class TextBoxTemplate : Control
+    public class TextBoxTemplate : Control, ITextEntryTemplate
     {
         private Border border1;
         private Label label1;
 
         private DateTime cursorTime;
         private bool cursorFlashOn = false;
+
+        // Eases the floating Label between its "expanded" (centered, large) and "shrunk"
+        // (top-left, small) appearance instead of jumping - see PropertyAnimationManager in
+        // Blade.MG.UI.Animations. Each Binding below tracks one real rendered property
+        // directly (no synthetic 0..1 blend factor to manually Lerp everything else from).
+        private readonly Binding<float> labelFontSize = new Binding<float>(0f);
+        private readonly Binding<Color> labelColor = new Binding<Color>(Color.Transparent);
+        private readonly Binding<Vector2> labelPosition = new Binding<Vector2>(Vector2.Zero);
+
+        // Outlined punches a hole behind the label to erase the border stroke passing behind
+        // it (see the FillRect call below) - its alpha is a real rendered property in its own
+        // right, animated the same way as the three above.
+        private readonly Binding<float> labelPunchAlpha = new Binding<float>(0f);
+
+        // Guards the very first RenderControl call, snapping straight to whatever state the
+        // box should already be in (e.g. pre-filled Text) rather than animating in from the
+        // meaningless zeroed-out defaults above.
+        private bool labelAnimationInitialized = false;
 
         public TextBoxTemplate()
         {
@@ -104,9 +123,11 @@ namespace Blade.MG.UI.Controls.Templates
 
             int helperTextHeight = hasHelperText ? 16 : 0;
 
+            // Border color/thickness are state-driven (hover/focus - see HandleStateChange),
+            // not just Variant-driven, so they're applied there instead of here - Measure()
+            // still owns everything else Variant controls (fill, corner radius, spacing).
             if (textBox.Variant == Variant.Standard)
             {
-                ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Color.Transparent);
                 border1.Background = Color.Transparent;
                 border1.CornerRadius = new CornerRadius(0);
                 border1.Margin = new Thickness(0, hasLabel ? 9 : 0, 0, helperTextHeight);
@@ -120,15 +141,14 @@ namespace Blade.MG.UI.Controls.Templates
             }
             else if (textBox.Variant == Variant.Filled)
             {
-                ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Color.Transparent);
-                border1.Background = Theme.SurfaceVariant;
-                border1.CornerRadius = new CornerRadius(8, 8, 0, 0); // Rounded top corners, flat above the underline
-                border1.Margin = new Thickness(0, hasLabel ? 9 : 0, 0, helperTextHeight);
+                border1.Background = textBox.IsEnabled.Value ? Theme.SurfaceVariant : Theme.OnDisabled;
+                border1.CornerRadius = new CornerRadius(8, 8, 0, 0);
+                //border1.Margin = new Thickness(0, hasLabel ? 9 : 0, 0, helperTextHeight);
+                border1.Margin = new Thickness(0, hasLabel ? 0 : 0, 0, helperTextHeight);
                 border1.Padding = hasLabel ? new Thickness(10, 11, 0, 5) : new Thickness(10, 0, 0, 0);
             }
             else if (textBox.Variant == Variant.Outlined)
             {
-                ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Theme.Outline);
                 border1.Background = Color.Transparent;
                 border1.CornerRadius = new CornerRadius(8);
                 border1.Margin = new Thickness(0, hasLabel ? 5 : 0, 0, helperTextHeight);
@@ -145,6 +165,7 @@ namespace Blade.MG.UI.Controls.Templates
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
+            //border1.CornerRadius = new CornerRadius(0, 0, 0, 0);
             base.RenderControl(context, layoutBounds, parentTransform);
 
             double elapsedMillis = (DateTime.Now - cursorTime).TotalMilliseconds;
@@ -156,88 +177,176 @@ namespace Blade.MG.UI.Controls.Templates
 
             var textBox = ParentAs<TextBox>();
 
+            // Recomputed fresh every frame - rather than only reactively in HandleStateChange -
+            // so it can never go stale regardless of event-cascade ordering/timing (this control
+            // is instantiated twice per TextBox - see TemplatedControl.InitTemplate's own
+            // internal-child copy alongside this one, assigned as Content - and relying on
+            // HandleFocusChangedEventAsync alone left a window where a later, stale
+            // HandleHoverChangedAsync-triggered HandleStateChange call could overwrite the
+            // correct focused color with the hover color, only correcting itself once the mouse
+            // actually left and re-triggered HandleStateChange one more time).
+            // isFocused/isHovered fold in IsEnabled so a disabled field (which can still
+            // incidentally hold focus/hover - see TextEntryControl's own IsEnabled guards, which
+            // only block *editing*, not hit-testing) never shows the interactive-looking hover/
+            // focus treatment, only the dimmed Disabled color below.
+            bool isEnabled = textBox.IsEnabled.Value;
+            bool isFocused = isEnabled && textBox.HasFocus.Value;
+            bool isHovered = isEnabled && MouseHover.Value;
+            Color indicatorColor = !isEnabled ? Theme.Disabled : (isFocused ? Theme.Primary : (isHovered ? Theme.OnSurface : Theme.OnSurfaceVariant));
+
+            ApplyThemedValue(textBox, textBox.UnderlineColor, nameof(TextEntryControl.UnderlineColor), indicatorColor);
+            ApplyThemedValue(textBox, textBox.TextColor, nameof(TextBox.TextColor), isEnabled ? Theme.OnSurface : Theme.Disabled);
+
+            if (textBox.Variant == Variant.Outlined)
+            {
+                ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), indicatorColor);
+                border1.BorderThickness = new Thickness(isFocused ? 2 : 1);
+            }
+            else
+            {
+                ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Color.Transparent);
+
+                // Zero, not 1 - Border.RenderControl's rounded-corner path insets its own
+                // Background fill by BorderThickness for the stencil mask *regardless* of
+                // whether a border stroke actually gets drawn (that only happens when
+                // BorderColor isn't transparent, per Border's own hasBorder check). A nonzero
+                // thickness here with rounded corners (Filled has CornerRadius(8,8,0,0)) shrunk
+                // the fill by 1px on every edge for a border that was never visible anyway,
+                // leaving a 1px seam of this template's own background peeking through right at
+                // the top, exactly where filledRect's patch meets border1's own fill.
+                border1.BorderThickness = (Thickness)0f;
+                //border1.CornerRadius = (CornerRadius)0f;
+            }
+
             try
             {
                 var spriteBatch = context.Renderer.BeginBatch(transform: parentTransform);
                 context.Renderer.ClipToRect(layoutBounds);
 
-
-                // If the Variant = Filled, then fill the textbox including the top margin
+                // If the Variant = Filled, then fill the textbox including the top margin.
+                // Anchored to textBox.FinalRect.Top (the same point the shrunk floating label
+                // is positioned from, below) rather than derived from border1.Margin.Value.Top -
+                // the two didn't always land on the same pixel, leaving a thin sliver of this
+                // template's own Theme.Surface background (near-white) visible above the fill,
+                // right where the floating label sits, looking like a stray white top border.
                 if (textBox.Variant == Variant.Filled)
                 {
-                    Rectangle filledRect = border1.FinalRect with { Y = border1.FinalRect.Top - border1.Margin.Value.Top, Height = border1.Margin.Value.Top };
-                    context.Renderer.FillRect(spriteBatch, filledRect, border1.Background.Value);
+                    Rectangle filledRect = border1.FinalRect with { Y = textBox.FinalRect.Top, Height = border1.FinalRect.Top - textBox.FinalRect.Top };
+                    //context.Renderer.FillRect(spriteBatch, filledRect, border1.Background.Value);
+
+                    // Material 3 hover state layer: a subtle overlay tint shown only while
+                    // hovered - not focused (focus already has its own distinct treatment) and
+                    // not disabled (isHovered is already false whenever !isEnabled).
+                    if (isHovered && !isFocused)
+                    {
+                        context.Renderer.FillRect(spriteBatch, filledRect, new Color(Theme.OnSurface, 0.08f));
+                        context.Renderer.FillRect(spriteBatch, border1.FinalRect, new Color(Theme.OnSurface, 0.08f));
+                    }
                 }
 
-
-                // Display the underline
+                // Display the underline (active indicator) - thickens on focus, matching
+                // Material 3's filled/standard text field indicator behavior.
                 if (textBox.Underline)
                 {
+                    int thickness = isFocused ? 2 : 1;
                     Rectangle underlineRect;
 
                     if (textBox.Variant == Variant.Standard)
                     {
-                        underlineRect = new Rectangle(label1.FinalRect.X, border1.FinalRect.Bottom - 1, border1.FinalRect.Width, 1);
-                        context.Renderer.FillRect(spriteBatch, underlineRect, Theme.Outline);
+                        underlineRect = new Rectangle(label1.FinalRect.X, border1.FinalRect.Bottom - thickness, border1.FinalRect.Width, thickness);
+                        context.Renderer.FillRect(spriteBatch, underlineRect, textBox.UnderlineColor.Value);
                     }
                     else if (textBox.Variant == Variant.Filled)
                     {
-                        underlineRect = new Rectangle(border1.FinalRect.X, border1.FinalRect.Bottom - 1, border1.FinalRect.Width, 1);
-                        context.Renderer.FillRect(spriteBatch, underlineRect, Theme.Outline);
+                        underlineRect = new Rectangle(border1.FinalRect.X, border1.FinalRect.Bottom - thickness, border1.FinalRect.Width, thickness);
+                        context.Renderer.FillRect(spriteBatch, underlineRect, textBox.UnderlineColor.Value);
                     }
 
                 }
 
 
-                // Display the Label - Either in the text box or above it
-                Color labelSizeColor;
-                float labelSizeFontSize;
+                // Display the Label - eases its font size/color/position/punch-hole alpha
+                // individually via PropertyAnimationManager instead of jumping instantly.
 
-                // If the text box has focus OR contains text, then shrink the label
-                bool shrinkLabel = textBox.HasFocus.Value;
+                // If the text box has focus OR contains text OR ShrinkLabel is forced on, then shrink the label
+                bool shrinkLabel = isFocused || textBox.ShrinkLabel;
                 if (!string.IsNullOrEmpty(textBox.Text?.Value))
                 {
                     shrinkLabel = true;
                 }
 
-                if (!shrinkLabel)
+                float targetFontSize;
+                Color targetColor;
+                Vector2 targetPosition;
+                float targetPunchAlpha;
+
+                if (shrinkLabel)
                 {
-                    // Text Box Text is Empty, so display Label in the text box
-                    labelSizeColor = Theme.OnSurfaceVariant;
-                    labelSizeFontSize = textBox.FontSize?.Value ?? FontService.DefaultFontSize;
-
-                    SpriteFontBase labelFont = FontService.GetFontOrDefault(textBox.FontName?.Value, labelSizeFontSize);
-
-                    Rectangle labelBounds = new Rectangle(FinalContentRect.X, label1.FinalContentRect.Y, FinalContentRect.Width, label1.FinalContentRect.Height);
-                    labelBounds = labelBounds with { X = labelBounds.X + 8 };
-
-                    context.Renderer.DrawString(spriteBatch, labelBounds, textBox.Label, labelFont, labelSizeColor, HorizontalAlignmentType.Left, VerticalAlignmentType.Center, Rectangle.Intersect(layoutBounds, FinalContentRect));
+                    // Shrunk: top-left corner, small fixed size - only actually focused gets
+                    // the Primary "active" color (Material 3); has-text-but-unfocused looks the
+                    // same as the unfocused/empty state, just in the shrunk position.
+                    targetFontSize = 15f;
+                    targetColor = !isEnabled ? Theme.Disabled : (isFocused ? Theme.Primary : Theme.OnSurfaceVariant);
+                    float shrunkTopY = textBox.Variant == Variant.Outlined ? border1.FinalRect.Top - 7 : textBox.FinalRect.Top + 2;
+                    float shrunkX = FinalContentRect.Left + 5 + 5;
+                    targetPosition = new Vector2(shrunkX, shrunkTopY);
+                    targetPunchAlpha = 1f;
                 }
                 else
                 {
-                    // Text Box has Text, so shrink the label (display Label at the top-left corner of the text box)
-                    labelSizeColor = Theme.Primary;
-                    labelSizeFontSize = 15;
+                    // Expanded: centered in the box, large, OnSurfaceVariant/Disabled.
+                    targetFontSize = textBox.FontSize?.Value ?? FontService.DefaultFontSize;
+                    targetColor = isEnabled ? Theme.OnSurfaceVariant : Theme.Disabled;
 
-                    SpriteFontBase labelFont = FontService.GetFontOrDefault(textBox.FontName?.Value, labelSizeFontSize);
-                    Vector2 labelSize = labelFont.MeasureString(textBox.Label);
+                    SpriteFontBase expandedFont = FontService.GetFontOrDefault(textBox.FontName?.Value, targetFontSize);
+                    Rectangle expandedLabelBounds = new Rectangle(FinalContentRect.X, label1.FinalContentRect.Y, FinalContentRect.Width, label1.FinalContentRect.Height);
+                    expandedLabelBounds = expandedLabelBounds with { X = expandedLabelBounds.X + 8 };
+                    // Replicate UIRenderer.DrawString's own VerticalAlignmentType.Center math
+                    // (centers on cap-height, not full glyph height, clamped to the rect's own
+                    // top) - needed as a concrete Y position since Center/Top can't be
+                    // cross-faded as enum values.
+                    float expandedTopY = MathF.Max(expandedLabelBounds.Top, (expandedLabelBounds.Top + expandedLabelBounds.Bottom) / 2f - expandedFont.MeasureString("I").Y / 2f);
 
-                    Rectangle labelBounds;
-
-                    if (textBox.Variant == Variant.Outlined)
-                    {
-                        labelBounds = new Rectangle(FinalContentRect.Left + 5, border1.FinalRect.Top - 7, (int)labelSize.X + 10, (int)labelSize.Y);
-                        context.Renderer.FillRect(spriteBatch, labelBounds, textBox.Background.Value);
-                    }
-                    else
-                    {
-                        labelBounds = new Rectangle(FinalContentRect.Left + 5, textBox.FinalRect.Top + 2, (int)labelSize.X + 10, (int)labelSize.Y);
-                    }
-
-                    labelBounds = labelBounds with { X = labelBounds.X + 5 };
-
-                    context.Renderer.DrawString(spriteBatch, labelBounds, textBox.Label, labelFont, labelSizeColor, HorizontalAlignmentType.Left, VerticalAlignmentType.Top, layoutBounds);
+                    targetPosition = new Vector2(expandedLabelBounds.X, expandedTopY);
+                    targetPunchAlpha = 0f;
                 }
+
+                if (!labelAnimationInitialized)
+                {
+                    // Snap straight to whatever state the box should already be in (e.g.
+                    // pre-filled Text) rather than animating in from a meaningless zeroed-out
+                    // default on the very first paint.
+                    labelFontSize.Value = targetFontSize;
+                    labelColor.Value = targetColor;
+                    labelPosition.Value = targetPosition;
+                    labelPunchAlpha.Value = targetPunchAlpha;
+                    labelAnimationInitialized = true;
+                }
+                else
+                {
+                    // Idempotent - a no-op once already animating toward (or at rest at) the
+                    // given target, so these can be called unconditionally every frame with no
+                    // separate "did the target change" tracking.
+                    PropertyAnimationManager.AnimateTo(labelFontSize, targetFontSize, TimeSpan.FromMilliseconds(300), Easing.EaseOutCubic);
+                    PropertyAnimationManager.AnimateTo(labelColor, targetColor, TimeSpan.FromMilliseconds(300), Easing.EaseOutCubic);
+                    PropertyAnimationManager.AnimateTo(labelPosition, targetPosition, TimeSpan.FromMilliseconds(300), Easing.EaseOutCubic);
+                    PropertyAnimationManager.AnimateTo(labelPunchAlpha, targetPunchAlpha, TimeSpan.FromMilliseconds(300), Easing.EaseOutCubic);
+                }
+
+                SpriteFontBase lerpedFont = FontService.GetFontOrDefault(textBox.FontName?.Value, labelFontSize.Value);
+                Vector2 lerpedTextSize = lerpedFont.MeasureString(textBox.Label);
+                Rectangle lerpedLabelBounds = new Rectangle((int)labelPosition.Value.X, (int)labelPosition.Value.Y, (int)lerpedTextSize.X + 10, (int)lerpedTextSize.Y);
+
+                // Outlined punches a hole behind the label to erase the border stroke passing
+                // behind it - fade the hole in/out proportionally with the label's own motion
+                // (a no-op at labelPunchAlpha == 0, since the label is nowhere near the border
+                // there) rather than an abrupt on/off threshold.
+                if (textBox.Variant == Variant.Outlined)
+                {
+                    context.Renderer.FillRect(spriteBatch, lerpedLabelBounds, new Color(textBox.Background.Value, labelPunchAlpha.Value));
+                }
+
+                context.Renderer.DrawString(spriteBatch, lerpedLabelBounds, textBox.Label, lerpedFont, labelColor.Value, HorizontalAlignmentType.Left, VerticalAlignmentType.Top, layoutBounds);
 
 
                 // Display the helper text
@@ -245,7 +354,7 @@ namespace Blade.MG.UI.Controls.Templates
                 {
 
                     // Text Box has Text, so display Label at the top-left corner of the text box
-                    Color helperTextSizeColor = Theme.OnSurfaceVariant;
+                    Color helperTextSizeColor = isEnabled ? Theme.OnSurfaceVariant : Theme.Disabled;
                     float helperTextSizeFontSize = 14;
 
                     SpriteFontBase helperTextSizeFont = FontService.GetFontOrDefault(textBox.FontName?.Value, helperTextSizeFontSize);
@@ -264,32 +373,14 @@ namespace Blade.MG.UI.Controls.Templates
                 }
 
                 // Display the Selection highlight and the Cursor
-                {
-                    string editText = textBox.Text.Value ?? "";
-                    SpriteFontBase font = FontService.GetFontOrDefault(textBox.FontName?.Value, textBox.FontSize?.Value);
+                string editText = textBox.Text.Value ?? "";
+                SpriteFontBase font = FontService.GetFontOrDefault(textBox.FontName?.Value, textBox.FontSize?.Value);
 
-                    if (textBox.SelectionLength > 0)
-                    {
-                        int selectionStart = Math.Clamp(textBox.SelectionStart, 0, editText.Length);
-                        int selectionEnd = Math.Clamp(selectionStart + textBox.SelectionLength, 0, editText.Length);
-
-                        float startX = font.MeasureString(editText[0..selectionStart]).X;
-                        float endX = font.MeasureString(editText[0..selectionEnd]).X;
-
-                        Rectangle selectionRect = new Rectangle((int)(label1.TextRect.Left + startX), (int)label1.TextRect.Top, (int)(endX - startX), (int)label1.TextRect.Height);
-                        context.Renderer.FillRect(spriteBatch, selectionRect, new Color(Theme.Primary, 0.35f), label1.FinalContentRect);
-                    }
-
-                    if (cursorFlashOn && textBox.HasFocus.Value)
-                    {
-                        int cursorPosition = Math.Clamp(textBox.CursorPosition, 0, editText.Length);
-                        Vector2 textSize = font.MeasureString(editText[0..cursorPosition]);
-
-                        Rectangle cursorRect = new Rectangle((int)(label1.TextRect.Left + textSize.X), (int)label1.TextRect.Top, 2, (int)label1.TextRect.Height);
-                        context.Renderer.FillRect(spriteBatch, cursorRect, Theme.OnSurface, label1.FinalContentRect);
-                    }
-                }
-
+                TextEntryVisuals.DrawSelectionAndCursor(
+                    context, spriteBatch, editText, label1.TextRect, label1.FinalContentRect,
+                    textBox.SelectionStart, textBox.SelectionLength, textBox.CursorPosition,
+                    cursorFlashOn, isFocused, font,
+                    new Color(Theme.Primary, 0.35f), Theme.OnSurface);
 
             }
             finally
@@ -308,35 +399,9 @@ namespace Blade.MG.UI.Controls.Templates
         {
             var textBox = ParentAs<TextBox>();
             string text = textBox.Text.Value ?? "";
-
-            if (text.Length == 0)
-            {
-                return 0;
-            }
-
-            float relativeX = screenX - label1.TextRect.Left;
-            if (relativeX <= 0)
-            {
-                return 0;
-            }
-
             SpriteFontBase font = FontService.GetFontOrDefault(textBox.FontName?.Value, textBox.FontSize?.Value);
 
-            float previousWidth = 0f;
-            for (int i = 1; i <= text.Length; i++)
-            {
-                float width = font.MeasureString(text[0..i]).X;
-                float charCenter = (previousWidth + width) / 2f;
-
-                if (relativeX < charCenter)
-                {
-                    return i - 1;
-                }
-
-                previousWidth = width;
-            }
-
-            return text.Length;
+            return TextEntryVisuals.GetCharacterIndexAtX(screenX, text, label1.TextRect, font);
         }
 
 
@@ -368,11 +433,10 @@ namespace Blade.MG.UI.Controls.Templates
         {
             var textBox = ParentAs<TextBox>();
 
-            // Text color and background are theme-driven and developer-overridable.
-            // Border color is re-applied every Measure() pass since it depends on Variant,
-            // so it isn't set reactively here.
-            ApplyThemedValue(textBox, textBox.TextColor, nameof(TextBox.TextColor), Theme.OnSurface);
             ApplyThemedValue(textBox, Background, nameof(TextBox.Background), Theme.Surface);
+
+            // Text/border/underline/label color and border thickness are all recomputed fresh
+            // every frame in RenderControl instead of here - see the comment there for why.
         }
 
     }

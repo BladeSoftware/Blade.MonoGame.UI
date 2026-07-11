@@ -14,7 +14,7 @@ public class ComboBoxTemplate : Control
     public IconButton DropDownButton;
     public Rectangle HeaderRect => HeaderBorder?.FinalRect ?? FinalRect;
     public ListView ListView;
-    public TextBox EditBox;
+    public TextField EditBox;
 
     // Tracks EditBox.HasFocus across frames so the dropdown auto-opens exactly once when focus
     // is gained (see Arrange), rather than re-opening every frame it happens to be both focused
@@ -42,7 +42,7 @@ public class ComboBoxTemplate : Control
             Padding = new Thickness(4)
         };
 
-        // Header (shows selected text or editable TextBox)
+        // Header (shows selected text or an editable TextField)
         HeaderBorder = new Border()
         {
             BorderColor = Color.Transparent,
@@ -67,21 +67,20 @@ public class ComboBoxTemplate : Control
             Margin = new Thickness(0, 0, 24, 0) // leave room for DropDownButton
         };
 
-        // TextBox for editable state
-        EditBox = new TextBox()
+        // Lean text field for editable state - just the text and an underline, none of
+        // TextBox's border/floating-label/helper-text chrome, which is both unneeded here and
+        // was previously what forced the combo box's minimum header height up (see
+        // ComponentTesterUI's Height = 40 comment history). Its themed background already
+        // defaults to transparent (see TextFieldTemplate), so the combo box's own hover/focus
+        // background (applied to RootBorder - see HandleStateChange) shows through without
+        // needing a style override.
+        EditBox = new TextField()
         {
             HorizontalAlignment = HorizontalAlignmentType.Stretch,
             VerticalAlignment = VerticalAlignmentType.Stretch,
             Margin = new Thickness(0, 0, 24, 0), // leave room for DropDownButton
             MaxLength = 250
         };
-
-        // Let the combo box's own hover/focus background (applied to RootBorder - see
-        // HandleStateChange) show through instead of TextBox's normal opaque Surface fill. Set
-        // as an override rather than a direct assignment so it survives
-        // TextBoxTemplate.HandleStateChange re-applying the themed default on every focus/hover
-        // change.
-        EditBox.SetStyleOverride(nameof(TextBox.Background), Color.Transparent);
 
         // Dropdown toggle button - drawn as an up/down chevron depending on IsDropDownOpen,
         // reusing the same "Images/arrow_up_small" texture ScrollBar.cs already draws its
@@ -201,7 +200,7 @@ public class ComboBoxTemplate : Control
         {
             EditBox.Visible = combo.IsEditable.Value ? Visibility.Visible : Visibility.Collapsed;
 
-            // TextBox hardcodes IsTabStop = true in its constructor, and Tab navigation
+            // TextEntryControl hardcodes IsTabStop = true in its constructor, and Tab navigation
             // (UIWindow.HandleTabNext/HandleTabPrevious) selects the next stop by IsTabStop
             // alone - it doesn't check Visible. Left alone, that lets Tab land keyboard focus
             // on this EditBox even while it's Collapsed in non-editable mode, and once focused
@@ -216,7 +215,7 @@ public class ComboBoxTemplate : Control
             // of that - unconditionally, regardless of Visible or IsTabStop. So simply clicking
             // anywhere on the ComboBox header (landing focus on the ComboBox/HeaderPanel, not
             // EditBox specifically) still cascades HasFocus = true down onto this EditBox. From
-            // there, TextBox.HandleKeyAsync has no idea ComboBox.IsEditable exists - it only
+            // there, TextEntryControl.HandleKeyAsync has no idea ComboBox.IsEditable exists - it only
             // checks its own HasFocus before consuming a keystroke. Force it back off every
             // frame here so a stray cascaded focus grant can never leave EditBox able to consume
             // typed input while non-editable (this runs before HandleKeyPressAsync gets to the

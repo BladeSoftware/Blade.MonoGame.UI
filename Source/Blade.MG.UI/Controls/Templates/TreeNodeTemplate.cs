@@ -2,6 +2,7 @@
 using Blade.MG.UI.Events;
 using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace Blade.MG.UI.Controls.Templates
 {
@@ -190,6 +191,93 @@ namespace Blade.MG.UI.Controls.Templates
             await base.HandleHoverChangedAsync(uiWindow, uiEvent);
 
             StateHasChanged();
+        }
+
+        // Keyboard navigation - gated on HasFocus (see InitTemplate/TreeView.GetNodeTemplate,
+        // which route real keyboard/mouse focus to the individual node template rather than the
+        // owning TreeView, unlike ListView). Up/Down/Left/Right move between visible nodes or
+        // expand/collapse the current one; the owning TreeView does the actual node-to-node
+        // focus/selection work (and virtualization-aware scroll-into-view) since it's the one
+        // that knows the tree shape - see TreeView.MoveSelectionAsync/MoveToParentAsync/
+        // MoveToFirstChildAsync.
+        public override async Task HandleKeyPressAsync(UIWindow uiWindow, UIKeyEvent uiEvent)
+        {
+            if (!uiEvent.Handled && HasFocus.Value)
+            {
+                await HandleKeyAsync(uiEvent);
+            }
+
+            await base.HandleKeyPressAsync(uiWindow, uiEvent);
+        }
+
+        private async Task HandleKeyAsync(UIKeyEvent uiEvent)
+        {
+            var treeNode = DataContext as ITreeNode;
+            var parentTree = Parent as TreeView;
+
+            if (treeNode == null || parentTree == null)
+            {
+                return;
+            }
+
+            switch (uiEvent.Key)
+            {
+                case Keys.Up:
+                    await parentTree.MoveSelectionAsync(treeNode, -1);
+                    uiEvent.Handled = true;
+                    break;
+
+                case Keys.Down:
+                    await parentTree.MoveSelectionAsync(treeNode, 1);
+                    uiEvent.Handled = true;
+                    break;
+
+                case Keys.Left:
+                    if (treeNode.IsExpanded && treeNode.Children?.Count > 0)
+                    {
+                        treeNode.IsExpanded = false;
+                        StateHasChanged();
+                    }
+                    else
+                    {
+                        await parentTree.MoveToParentAsync(treeNode);
+                    }
+                    uiEvent.Handled = true;
+                    break;
+
+                case Keys.Right:
+                    if (treeNode.Children?.Count > 0)
+                    {
+                        if (!treeNode.IsExpanded)
+                        {
+                            treeNode.IsExpanded = true;
+                            StateHasChanged();
+                        }
+                        else
+                        {
+                            await parentTree.MoveToFirstChildAsync(treeNode);
+                        }
+                    }
+                    uiEvent.Handled = true;
+                    break;
+
+                case Keys.Enter:
+                case Keys.Space:
+                    // The node is already selected (selection follows focus - see
+                    // TreeView.GetNodeTemplate's OnFocusChangedAsync), so Enter/Space's role
+                    // here is to expand/collapse the current node (matching double-click - see
+                    // OnMultiClick above) rather than commit a separate pending selection like
+                    // ListView's CommitSelectionImmediately model. Still marked Handled either
+                    // way, to prevent UIManager's default Enter/Space fallback from firing a
+                    // synthetic click at this row's center point.
+                    if (treeNode.Children?.Count > 0)
+                    {
+                        treeNode.IsExpanded = !treeNode.IsExpanded;
+                        StateHasChanged();
+                    }
+                    uiEvent.Handled = true;
+                    break;
+            }
         }
 
         protected override void HandleStateChange()
