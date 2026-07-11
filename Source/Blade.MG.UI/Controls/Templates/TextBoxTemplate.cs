@@ -327,15 +327,16 @@ namespace Blade.MG.UI.Controls.Templates
                     // Idempotent - a no-op once already animating toward (or at rest at) the
                     // given target, so these can be called unconditionally every frame with no
                     // separate "did the target change" tracking.
-                    PropertyAnimationManager.AnimateTo(labelFontSize, targetFontSize, TimeSpan.FromMilliseconds(300), Easing.EaseOutCubic);
-                    PropertyAnimationManager.AnimateTo(labelColor, targetColor, TimeSpan.FromMilliseconds(300), Easing.EaseOutCubic);
-                    PropertyAnimationManager.AnimateTo(labelPosition, targetPosition, TimeSpan.FromMilliseconds(300), Easing.EaseOutCubic);
-                    PropertyAnimationManager.AnimateTo(labelPunchAlpha, targetPunchAlpha, TimeSpan.FromMilliseconds(300), Easing.EaseOutCubic);
+                    PropertyAnimationManager.AnimateTo(labelFontSize, targetFontSize, TimeSpan.FromMilliseconds(80), Easing.EaseOutCubic);
+                    PropertyAnimationManager.AnimateTo(labelColor, targetColor, TimeSpan.FromMilliseconds(80), Easing.EaseOutCubic);
+                    PropertyAnimationManager.AnimateTo(labelPosition, targetPosition, TimeSpan.FromMilliseconds(80), Easing.EaseOutCubic);
+                    PropertyAnimationManager.AnimateTo(labelPunchAlpha, targetPunchAlpha, TimeSpan.FromMilliseconds(80), Easing.EaseOutCubic);
                 }
 
                 SpriteFontBase lerpedFont = FontService.GetFontOrDefault(textBox.FontName?.Value, labelFontSize.Value);
                 Vector2 lerpedTextSize = lerpedFont.MeasureString(textBox.Label);
-                Rectangle lerpedLabelBounds = new Rectangle((int)labelPosition.Value.X, (int)labelPosition.Value.Y, (int)lerpedTextSize.X + 10, (int)lerpedTextSize.Y);
+                Rectangle lerpedLabelBounds = new Rectangle((int)labelPosition.Value.X + 5, (int)labelPosition.Value.Y, (int)lerpedTextSize.X + 10, (int)lerpedTextSize.Y);
+                Rectangle lerpedLabelBackground = new Rectangle((int)labelPosition.Value.X, (int)labelPosition.Value.Y, (int)lerpedTextSize.X + 10, (int)lerpedTextSize.Y);
 
                 // Outlined punches a hole behind the label to erase the border stroke passing
                 // behind it - fade the hole in/out proportionally with the label's own motion
@@ -343,7 +344,8 @@ namespace Blade.MG.UI.Controls.Templates
                 // there) rather than an abrupt on/off threshold.
                 if (textBox.Variant == Variant.Outlined)
                 {
-                    context.Renderer.FillRect(spriteBatch, lerpedLabelBounds, new Color(textBox.Background.Value, labelPunchAlpha.Value));
+                    context.Renderer.FillRect(spriteBatch, lerpedLabelBackground, new Color(textBox.Background.Value, labelPunchAlpha.Value));
+                    //context.Renderer.FillRect(spriteBatch, lerpedLabelBounds, new Color(textBox.Background.Value, labelPunchAlpha.Value));
                 }
 
                 context.Renderer.DrawString(spriteBatch, lerpedLabelBounds, textBox.Label, lerpedFont, labelColor.Value, HorizontalAlignmentType.Left, VerticalAlignmentType.Top, layoutBounds);
