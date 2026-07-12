@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Components
 {
@@ -8,16 +7,16 @@ namespace Blade.MG.UI.Components
     /// </summary>
     public struct CornerRadius
     {
-        [JsonIgnore][XmlIgnore] public static CornerRadius Zero = new(0f);
+        [JsonIgnore] public static CornerRadius Zero = new(0f);
 
         public float TopLeft { get; set; }
         public float TopRight { get; set; }
         public float BottomLeft { get; set; }
         public float BottomRight { get; set; }
 
-        [JsonIgnore][XmlIgnore] public bool HasRadius => TopLeft > 0 || TopRight > 0 || BottomLeft > 0 || BottomRight > 0;
-        [JsonIgnore][XmlIgnore] public bool IsUniform => TopLeft == TopRight && TopRight == BottomRight && BottomRight == BottomLeft;
-        [JsonIgnore][XmlIgnore] public float MaxRadius => Math.Max(Math.Max(TopLeft, TopRight), Math.Max(BottomLeft, BottomRight));
+        [JsonIgnore] public bool HasRadius => TopLeft > 0 || TopRight > 0 || BottomLeft > 0 || BottomRight > 0;
+        [JsonIgnore] public bool IsUniform => TopLeft == TopRight && TopRight == BottomRight && BottomRight == BottomLeft;
+        [JsonIgnore] public float MaxRadius => Math.Max(Math.Max(TopLeft, TopRight), Math.Max(BottomLeft, BottomRight));
 
         public CornerRadius(float uniformRadius)
         {

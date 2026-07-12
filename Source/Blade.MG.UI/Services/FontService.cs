@@ -1,6 +1,5 @@
 ﻿using FontStashSharp;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Services
 {
@@ -13,14 +12,12 @@ namespace Blade.MG.UI.Services
         public static float DefaultFontSize { get; set; } = 18;
 
         [JsonIgnore]
-        [XmlIgnore]
         private static Dictionary<string, FontSystem> Fonts = new Dictionary<string, FontSystem>(StringComparer.InvariantCultureIgnoreCase);
 
         // Tracks which font data has already been added to each named FontSystem, so that
         // registering the same font twice (e.g. every UIWindow registering "Default" on
         // Initialize) is a no-op instead of adding duplicate font faces to the atlas.
         [JsonIgnore]
-        [XmlIgnore]
         private static Dictionary<string, List<byte[]>> RegisteredFontData = new Dictionary<string, List<byte[]>>(StringComparer.InvariantCultureIgnoreCase);
 
         /// <summary>

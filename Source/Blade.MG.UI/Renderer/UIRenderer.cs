@@ -6,7 +6,6 @@ using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Renderer
 {
@@ -21,12 +20,10 @@ namespace Blade.MG.UI.Renderer
         }
 
         [JsonIgnore]
-        [XmlIgnore]
         protected UIContext Context { get; set; }
         //public GraphicsDevice GraphicsDevice => Context?.Game?.GraphicsDevice;
 
         [JsonIgnore]
-        [XmlIgnore]
         public GraphicsDevice GraphicsDevice { get; set; }
 
         // Single SpriteBatch reused for every BeginBatch/EndBatch pair instead of allocating
@@ -34,27 +31,21 @@ namespace Blade.MG.UI.Renderer
         // control begins and ends its own batch before the next one starts), so one shared
         // instance is safe.
         [JsonIgnore]
-        [XmlIgnore]
         private SpriteBatch spriteBatch;
 
         [JsonIgnore]
-        [XmlIgnore]
         public RasterizerState rasterizerState { get; private set; }
 
         [JsonIgnore]
-        [XmlIgnore]
         public static DepthStencilState stencilStateReplaceAlways; // Always replace stencil pixels, no depth test
 
         [JsonIgnore]
-        [XmlIgnore]
         public static DepthStencilState stencilStateZeroAlways; // Use to clear stencil pixels
 
         [JsonIgnore]
-        [XmlIgnore]
         public static DepthStencilState stencilStateKeepLessEqual;
 
         [JsonIgnore]
-        [XmlIgnore]
         public static BlendState blendStateStencilOnly; // Blend State to only write to Depth Buffer and not Back Buffer
 
         public UIRenderer(UIContext context)
@@ -76,7 +67,6 @@ namespace Blade.MG.UI.Renderer
 
 
         [JsonIgnore]
-        [XmlIgnore]
         private static Texture2D filledTriangleTexture = null;
         public static Texture2D FilledTriangleTexture(SpriteBatch spriteBatch)
         {

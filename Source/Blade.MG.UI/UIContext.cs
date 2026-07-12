@@ -4,36 +4,29 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
     public class UIContext
     {
         [JsonIgnore]
-        [XmlIgnore]
         public Game Game { get; set; }
         //public ContentManager Content { get; init; }
 
         [JsonIgnore]
-        [XmlIgnore]
         public GraphicsDevice GraphicsDevice => Game?.GraphicsDevice;
         //public SpriteBatch SpriteBatch { get; set; }
 
         [JsonIgnore]
-        [XmlIgnore]
         public Texture2D Pixel { get; set; } // A 1x1 Texture with Color #FFFFFFFF (White)
 
         [JsonIgnore]
-        [XmlIgnore]
         public UIRenderer Renderer { get; set; }
 
         [JsonIgnore]
-        [XmlIgnore]
         public UITheme Theme { get; set; }
 
         [JsonIgnore]
-        [XmlIgnore]
         public GameTime GameTime { get; set; }
 
         // The true viewport clip chain (window bounds, plus any ScrollPanel/StackPanel/
@@ -49,7 +42,6 @@ namespace Blade.MG.UI
         // control's own box (so its shadow isn't clipped away), but still exactly the
         // scroll/stack panel's true edge when a control is flush against it.
         [JsonIgnore]
-        [XmlIgnore]
         public Rectangle AncestorClipBounds { get; set; }
 
 

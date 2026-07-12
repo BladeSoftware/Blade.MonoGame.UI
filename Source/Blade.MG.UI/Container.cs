@@ -15,7 +15,12 @@ namespace Blade.MG.UI
 
         public virtual void AddChild(UIComponent item, UIComponent parent = null, object dataContext = null)
         {
-            item.DataContext = dataContext ?? DataContext ?? parent?.DataContext;
+            // Prefer, in order: an explicit dataContext argument (the caller is deliberately
+            // binding this child to a specific data item, e.g. a list/tree/tab item template),
+            // then the item's own already-set DataContext (some controls - TabPanel, ListView -
+            // store real state there and must not have it silently wiped just by being attached
+            // to a parent), then fall back to inheriting from this container/its own parent.
+            item.DataContext = dataContext ?? item.DataContext ?? DataContext ?? parent?.DataContext;
 
             item.Parent = parent ?? this;
             children.Add(item);

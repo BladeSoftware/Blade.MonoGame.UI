@@ -4,7 +4,6 @@ using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls
 {
@@ -14,7 +13,6 @@ namespace Blade.MG.UI.Controls
         private static int frameID = 0;
 
         [JsonIgnore]
-        [XmlIgnore]
         public Type ItemTemplateType { get; set; } = typeof(TreeNodeTemplate);
 
 
@@ -171,12 +169,16 @@ namespace Blade.MG.UI.Controls
 
             ArrangeNode(context, ref availableSize, ref parentMinMax, ref layoutBounds, ref nodeBounds, RootNode, false, 0, ref desiredWidth, ref desiredHeight);
 
-            // Remove stale children
+            // Remove stale children. Children is a read-only view (Container.Children returns
+            // children.AsReadOnly()) - RemoveChild is the actual mutation API; a raw
+            // ((IList<UIComponent>)Children).RemoveAt(i) throws NotSupportedException since
+            // ReadOnlyCollection<T> rejects every mutating IList<T> member.
             for (int i = Children.Count() - 1; i >= 0; i--)
             {
-                if (Children.ElementAt(i).FrameID != frameID)
+                UIComponent staleChild = Children.ElementAt(i);
+                if (staleChild.FrameID != frameID)
                 {
-                    ((IList<UIComponent>)Children).RemoveAt(i);
+                    RemoveChild(staleChild);
                 }
 
             }

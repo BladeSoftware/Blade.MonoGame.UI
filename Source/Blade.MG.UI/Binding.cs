@@ -314,7 +314,11 @@ namespace Blade.MG.UI
 
             public override Binding<TKey> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
-                throw new NotImplementedException();
+                // Reads a plain value-backed Binding<TKey> - a $bind path declaration (see
+                // UIDocumentSerializer) is resolved one level up, before this converter is ever
+                // reached, since only that caller knows about the DataContext to bind against.
+                TKey value = _valueConverter.Read(ref reader, typeof(TKey), options);
+                return new Binding<TKey>(value);
             }
 
             public override void Write(Utf8JsonWriter writer, Binding<TKey> value, JsonSerializerOptions options)

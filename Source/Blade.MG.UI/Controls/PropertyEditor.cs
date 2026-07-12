@@ -18,10 +18,16 @@ namespace Blade.MG.UI.Controls
         private List<PropertyInfo> properties = new();
 
         // TextBox has no change-notification event to hook (its Text is a plain Binding<string>
-        // with no subscribe mechanism), so the search filter is applied by diffing the search
-        // box's text once per frame in Arrange - the same frame-to-frame diffing technique
-        // ComboBoxTemplate.Arrange already uses to detect its own EditBox's focus transitions.
+        // with no subscribe mechanism), so the search filter - and every TextBox-based property
+        // editor below - is applied by diffing text once per frame in Arrange, the same
+        // frame-to-frame diffing technique ComboBoxTemplate.Arrange already uses to detect its
+        // own EditBox's focus transitions.
         private string lastFilterText = "";
+
+        // Populated by RefreshProperties, one entry per TextBox-based editor row; each closure
+        // diffs its own TextBox's current text against what it last saw and writes the parsed
+        // value back onto the target object only when it actually changed.
+        private readonly List<Action> framePollActions = new();
 
         public object TargetObject
         {
@@ -36,6 +42,12 @@ namespace Blade.MG.UI.Controls
                 }
             }
         }
+
+        // When set, the inspector also shows the target's Grid-attached placement (Column/Row/
+        // ColumnSpan/RowSpan) - state that lives on the parent Grid, not as a property on the
+        // target itself (see Grid.GetColumn/SetColumn etc.), so it can't be reached by the
+        // reflected-properties walk below. Left null for a target editor with no Grid parent.
+        public Grid GridParent { get; set; }
 
         public PropertyEditor()
         {
@@ -138,12 +150,18 @@ namespace Blade.MG.UI.Controls
                 lastFilterText = currentFilterText;
                 RefreshProperties();
             }
+
+            foreach (Action poll in framePollActions)
+            {
+                poll();
+            }
         }
 
         private void RefreshProperties()
         {
             //grid.Children.Clear();
             grid.RemoveAllChildren();
+            framePollActions.Clear();
 
             if (targetObject == null)
             {
@@ -160,6 +178,12 @@ namespace Blade.MG.UI.Controls
 
             int row = 0;
             grid.RowDefinitions.Clear();
+
+            if (GridParent != null && targetObject is UIComponent gridChild && string.IsNullOrEmpty(filter))
+            {
+                AddGridPlacementRows(gridChild, ref row);
+            }
+
             foreach (var prop in properties)
             {
                 grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Auto) });
@@ -178,28 +202,88 @@ namespace Blade.MG.UI.Controls
             }
         }
 
+        // Grid.GetColumn/SetColumn etc. are attached state keyed by child instance, not a
+        // property on the child - so these 4 rows are built by hand instead of going through
+        // the reflected-properties loop above.
+        private void AddGridPlacementRows(UIComponent gridChild, ref int row)
+        {
+            AddGridPlacementRow("Grid Column", () => GridParent.GetColumn(gridChild), v => GridParent.SetColumn(gridChild, v), ref row);
+            AddGridPlacementRow("Grid Row", () => GridParent.GetRow(gridChild), v => GridParent.SetRow(gridChild, v), ref row);
+            AddGridPlacementRow("Grid Column Span", () => GridParent.GetColumnSpan(gridChild), v => GridParent.SetColumnSpan(gridChild, v), ref row);
+            AddGridPlacementRow("Grid Row Span", () => GridParent.GetRowSpan(gridChild), v => GridParent.SetRowSpan(gridChild, v), ref row);
+        }
+
+        private void AddGridPlacementRow(string label, Func<int> getValue, Action<int> setValue, ref int row)
+        {
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Auto) });
+
+            grid.AddChild(new Label { Text = label, Margin = new Thickness(0, 2) }, 0, row);
+
+            UIComponent editor = CreateTextEditor(getValue().ToString(), newText =>
+            {
+                if (int.TryParse(newText, out int parsed))
+                {
+                    setValue(parsed);
+                }
+            });
+            grid.AddChild(editor, 1, row);
+
+            row++;
+        }
+
         private UIComponent CreateEditor(PropertyInfo prop, object obj)
         {
-            var value = prop.GetValue(obj);
-            Type type = prop.PropertyType;
+            Type propertyType = prop.PropertyType;
+            bool isBinding = propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Binding<>);
+            Type valueType = isBinding ? propertyType.GetGenericArguments()[0] : propertyType;
 
-            if (type == typeof(bool))
+            object CurrentValue()
+            {
+                object propertyValue = prop.GetValue(obj);
+                if (!isBinding)
+                {
+                    return propertyValue;
+                }
+
+                return propertyValue == null ? null : GetBindingValueProperty(propertyValue.GetType()).GetValue(propertyValue);
+            }
+
+            void ApplyValue(object newValue)
+            {
+                if (!isBinding)
+                {
+                    prop.SetValue(obj, newValue);
+                    return;
+                }
+
+                object bindingInstance = prop.GetValue(obj);
+                if (bindingInstance == null)
+                {
+                    bindingInstance = Activator.CreateInstance(propertyType);
+                    prop.SetValue(obj, bindingInstance);
+                }
+
+                GetBindingValueProperty(bindingInstance.GetType()).SetValue(bindingInstance, newValue);
+            }
+
+            object value = CurrentValue();
+
+            if (valueType == typeof(bool))
             {
                 var checkBox = new CheckBox
                 {
-                    IsChecked = (bool)value
+                    IsChecked = value as bool? ?? false
                 };
-                //checkBox.OnCheckedChanged = (sender, args) =>
-                //{
-                //    prop.SetValue(obj, checkBox.IsChecked);
-                //};
+
+                checkBox.OnValueChanged = isChecked => ApplyValue(isChecked ?? false);
+
                 return checkBox;
             }
-            else if (type.IsEnum)
+            else if (valueType.IsEnum)
             {
                 var comboBox = new ComboBox
                 {
-                    ItemsSource = Enum.GetNames(type).ToList(),
+                    ItemsSource = Enum.GetNames(valueType).ToList(),
                     SelectedItem = value?.ToString()
                 };
 
@@ -207,24 +291,61 @@ namespace Blade.MG.UI.Controls
                 {
                     if (selectedItem != null)
                     {
-                        prop.SetValue(obj, Enum.Parse(type, selectedItem.ToString()));
+                        ApplyValue(Enum.Parse(valueType, selectedItem.ToString()));
                     }
                 };
 
                 return comboBox;
             }
-            else if (type == typeof(int) || type == typeof(float) || type == typeof(double) || type == typeof(string))
+            else if (valueType == typeof(string))
             {
-                var textBox = new TextBox
+                return CreateTextEditor(value as string ?? "", newText => ApplyValue(newText));
+            }
+            else if (valueType == typeof(int))
+            {
+                return CreateTextEditor(value?.ToString() ?? "0", newText =>
                 {
-                    Text = value?.ToString() ?? ""
-                };
-                //textBox.OnTextChanged = (sender, args) =>
-                //{
-                //    object newValue = Convert.ChangeType(textBox.Text, type); 
-                //    prop.SetValue(obj, newValue);
-                //};
-                return textBox;
+                    if (int.TryParse(newText, out int parsed)) ApplyValue(parsed);
+                });
+            }
+            else if (valueType == typeof(float))
+            {
+                return CreateTextEditor(value?.ToString() ?? "0", newText =>
+                {
+                    if (float.TryParse(newText, out float parsed)) ApplyValue(parsed);
+                });
+            }
+            else if (valueType == typeof(double))
+            {
+                return CreateTextEditor(value?.ToString() ?? "0", newText =>
+                {
+                    if (double.TryParse(newText, out double parsed)) ApplyValue(parsed);
+                });
+            }
+            else if (valueType == typeof(Length))
+            {
+                // Caught broadly (not just FormatException) because this runs once per frame
+                // while the user is mid-edit (e.g. typing "12" then "12,") - an uncaught
+                // exception here would crash the whole render loop on a single bad keystroke.
+                return CreateTextEditor(value?.ToString() ?? "", newText =>
+                {
+                    try { ApplyValue(Length.FromString(newText)); } catch { }
+                });
+            }
+            else if (valueType == typeof(Thickness))
+            {
+                return CreateTextEditor(value?.ToString() ?? "", newText =>
+                {
+                    try { ApplyValue(Thickness.FromString(newText)); } catch { }
+                });
+            }
+            else if (valueType == typeof(Color))
+            {
+                string hex = value is Color color ? ColorHelper.ToHexColor(color) : "#000000FF";
+                return CreateTextEditor(hex, newText =>
+                {
+                    try { ApplyValue(ColorHelper.FromString(newText)); } catch { }
+                });
             }
             else
             {
@@ -234,6 +355,32 @@ namespace Blade.MG.UI.Controls
                 };
                 return label;
             }
+        }
+
+        // Builds a TextBox whose text is diffed once per frame (see framePollActions/Arrange) -
+        // TextBox has no change-notification event to hook directly, same reason the search box
+        // above uses the same technique.
+        private UIComponent CreateTextEditor(string initialText, Action<string> onChanged)
+        {
+            var textBox = new TextBox { Text = initialText };
+            string lastText = initialText;
+
+            framePollActions.Add(() =>
+            {
+                string currentText = textBox.Text?.Value;
+                if (currentText != lastText)
+                {
+                    lastText = currentText;
+                    onChanged(currentText);
+                }
+            });
+
+            return textBox;
+        }
+
+        private static PropertyInfo GetBindingValueProperty(Type bindingInstanceType)
+        {
+            return bindingInstanceType.GetProperty("Value");
         }
     }
 }

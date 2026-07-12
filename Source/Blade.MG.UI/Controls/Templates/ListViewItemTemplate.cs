@@ -3,7 +3,6 @@ using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls.Templates
 {
@@ -18,7 +17,6 @@ namespace Blade.MG.UI.Controls.Templates
         public Binding<bool> IsSelected { get => isSelected; set => SetField(ref isSelected, value); }
 
         [JsonIgnore]
-        [XmlIgnore]
         private Binding<SpriteFont> SpriteFont { get; set; }
 
         public ListViewItemTemplate()

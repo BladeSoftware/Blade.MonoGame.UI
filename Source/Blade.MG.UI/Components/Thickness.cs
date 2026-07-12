@@ -1,27 +1,26 @@
 ﻿using Blade.MG.UI;
 using Blade.MG.UI.Components;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Components
 {
     public struct Thickness
     {
-        [JsonIgnore][XmlIgnore] public static Thickness Zero = new Thickness(0);
+        [JsonIgnore] public static Thickness Zero = new Thickness(0);
 
         public int Left { get; set; }
         public int Right { get; set; }
         public int Top { get; set; }
         public int Bottom { get; set; }
 
-        [JsonIgnore][XmlIgnore] public bool HasThickness => Left > 0 || Top > 0 || Right > 0 || Bottom > 0;
-        [JsonIgnore][XmlIgnore] public bool IsUniform => Left == Top && Top == Right && Right == Bottom;
-        [JsonIgnore][XmlIgnore] public float Uniform => IsUniform ? Left : 0f;
+        [JsonIgnore] public bool HasThickness => Left > 0 || Top > 0 || Right > 0 || Bottom > 0;
+        [JsonIgnore] public bool IsUniform => Left == Top && Top == Right && Right == Bottom;
+        [JsonIgnore] public float Uniform => IsUniform ? Left : 0f;
 
 
 
-        [JsonIgnore][XmlIgnore] public int Horizontal => Left + Right;
-        [JsonIgnore][XmlIgnore] public int Vertical => Top + Bottom;
+        [JsonIgnore] public int Horizontal => Left + Right;
+        [JsonIgnore] public int Vertical => Top + Bottom;
 
         public Thickness(int uniformLength)
         {

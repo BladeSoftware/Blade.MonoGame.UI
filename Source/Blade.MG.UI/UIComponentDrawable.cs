@@ -6,19 +6,16 @@ using Blade.MG.UI.Theming;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
     public abstract class UIComponentDrawable : UIComponentEvents, ICacheable
     {
         [JsonIgnore]
-        [XmlIgnore]
         public string ResourceKey { get => resourceKey ?? this.GetType().Name; set => resourceKey = value; }
         private string resourceKey;
 
         [JsonIgnore]
-        [XmlIgnore]
         public UITheme Theme => ParentWindow?.Context?.Theme ?? (this as UIWindow)?.Context?.Theme ?? UIManager.DefaultTheme;
 
         // ---=== Per-control style overrides ===---
@@ -96,11 +93,9 @@ namespace Blade.MG.UI
         public Binding<Color> Background { get; set; } = Color.Transparent;
 
         [JsonIgnore]
-        [XmlIgnore]
         public Texture2D BackgroundTexture { get; set; }
 
         [JsonIgnore]
-        [XmlIgnore]
         public TextureLayout BackgroundLayout { get; set; }
 
         //public T GetResourceValue<T>(string property)
@@ -219,7 +214,6 @@ namespace Blade.MG.UI
         /// visuals that change state infrequently (e.g. static panels, list items).
         /// </summary>
         [JsonIgnore]
-        [XmlIgnore]
         public bool EnableCaching { get; set; } = false;
 
         /// <summary>

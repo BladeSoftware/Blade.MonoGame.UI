@@ -222,7 +222,12 @@ namespace Blade.MG.UI.Components
     {
         public override Length Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            if (reader.TokenType == JsonTokenType.Number)
+            {
+                return new Length(reader.GetSingle(), LengthUnit.Pixels);
+            }
+
+            return Length.FromString(reader.GetString());
         }
 
         public override void Write(Utf8JsonWriter writer, Length value, JsonSerializerOptions options)

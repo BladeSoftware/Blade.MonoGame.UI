@@ -4,41 +4,31 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
 
-    //[KnownType("GetKnownTypes")]
     public abstract class UIComponent : IDisposable
     {
-        // private static IEnumerable<Type> knownTypes = null;
-
         [JsonIgnore]
-        [XmlIgnore]
         private UIWindow parentWindow;
 
         [JsonIgnore]
-        [XmlIgnore]
         public UIWindow ParentWindow { get { return parentWindow; } private set { SetParentWindow(value); } }
 
         [JsonIgnore]
-        [XmlIgnore]
         protected ContentManager ContentManager => ParentWindow?.ContentManager;
 
         [JsonIgnore]
-        [XmlIgnore]
         protected GraphicsDevice GraphicsDevice => ParentWindow?.Context?.GraphicsDevice;
 
         [JsonIgnore]
-        [XmlIgnore]
         protected UIContext Context => ParentWindow?.Context;
 
         /// <summary>
         /// TODO: Find a better name for these 'internal' components
         /// </summary>
         [JsonIgnore]
-        [XmlIgnore]
         protected IReadOnlyList<UIComponent> InternalChildren => internalChildren.AsReadOnly();
         private List<UIComponent> internalChildren = new List<UIComponent>();
 
@@ -46,7 +36,6 @@ namespace Blade.MG.UI
         private object dataContext;
 
         [JsonIgnore]
-        [XmlIgnore]
         public object DataContext { get { return dataContext; } set { dataContext = value; } }
         //public object DataContext { get { return dataContext ?? parent?.DataContext; } set { dataContext = value; } }
 
@@ -165,7 +154,9 @@ namespace Blade.MG.UI
 
         public virtual void AddInternalChild(UIComponent item, UIComponent parent = null, object dataContext = null)
         {
-            item.DataContext = dataContext ?? DataContext ?? parent?.DataContext;
+            // See the matching comment on Container.AddChild - same "don't clobber an
+            // already-set DataContext" reasoning applies here.
+            item.DataContext = dataContext ?? item.DataContext ?? DataContext ?? parent?.DataContext;
 
             item.Parent = parent ?? this;
             internalChildren.Add(item);
@@ -1243,51 +1234,6 @@ namespace Blade.MG.UI
             }
 
         }
-
-
-
-        //// --- Test Serialising / Deserialising ---
-        //private static IEnumerable<Type> GetKnownTypes(Assembly assembly)
-        //{
-
-        //    if (assembly == null) assembly = Assembly.GetExecutingAssembly();
-
-        //    knownTypes = assembly.GetTypes()
-        //                         .Where(t => typeof(UIComponent).IsAssignableFrom(t))
-        //                         .ToList();
-
-        //    //if (knownTypes == null)
-        //    //    knownTypes = Assembly.GetExecutingAssembly()
-        //    //                            .GetTypes()
-        //    //                            .Where(t => typeof(UIComponent).IsAssignableFrom(t))
-        //    //                            .ToList();
-        //    return knownTypes;
-        //}
-
-
-        //[OnSerializing()]
-        //internal void OnSerializingMethod(StreamingContext context)
-        //{
-        //    //            member2 = "This value went into the data file during serialization.";
-        //}
-
-        //[OnSerialized()]
-        //internal void OnSerializedMethod(StreamingContext context)
-        //{
-        //    //            member2 = "This value was reset after serialization.";
-        //}
-
-        //[OnDeserializing()]
-        //internal void OnDeserializingMethod(StreamingContext context)
-        //{
-        //    //            member3 = "This value was set during deserialization";
-        //}
-
-        //[OnDeserialized()]
-        //internal void OnDeserializedMethod(StreamingContext context)
-        //{
-        //    //            member4 = "This value was set after deserialization.";
-        //}
 
         public virtual void Dispose()
         {

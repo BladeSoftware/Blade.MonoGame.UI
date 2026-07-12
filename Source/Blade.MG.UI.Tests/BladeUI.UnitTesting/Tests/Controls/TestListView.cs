@@ -27,10 +27,10 @@ namespace BladeUI.UnitTesting.Tests.Controls
             int selectionChangedCount = 0;
             listView.OnSelectionChanged = (item) => selectionChangedCount++;
 
-            // AddChild(item, parent, dataContext) overwrites item.DataContext with its own
-            // dataContext parameter (default null) when called without one - see
-            // Container.AddChild - so DataContext must be set after adding, not via an object
-            // initializer beforehand.
+            // Container.AddChild preserves an already-set DataContext rather than overwriting
+            // it (see Container.AddChild) - this order (add first, assign after) still works,
+            // but so does the reverse; see DataContext_SetBeforeAddChild_SurvivesAttach below,
+            // which covers the order this used to require avoiding.
             ui.AddChild(listView);
             listView.DataContext = items;
             uiManager.AddUI(ui);
@@ -82,6 +82,33 @@ namespace BladeUI.UnitTesting.Tests.Controls
             Assert.AreEqual("Alpha", listView.SelectedItem);
             Assert.IsNull(listView.HighlightedItem);
             Assert.AreEqual(1, selectionChangedCount);
+        }
+
+        [TestMethod]
+        public async Task DataContext_SetBeforeAddChild_SurvivesAttach()
+        {
+            // ListView uses DataContext as its real items source (see ListView.DataContext
+            // usage) - Container.AddChild used to unconditionally overwrite a child's
+            // DataContext with its parent's the moment it was attached, which would silently
+            // wipe out items assigned beforehand. Container.AddChild now preserves an
+            // already-set DataContext instead, so this previously-unsafe order works too.
+            var uiManager = new FakeUIManager();
+            var ui = new EmptyUI();
+
+            var items = new List<string> { "Alpha", "Beta", "Gamma" };
+
+            var listView = new ListView();
+            listView.DataContext = items;
+            ui.AddChild(listView);
+
+            uiManager.AddUI(ui);
+            await uiManager.PerformLayout();
+
+            listView.HasFocus.Value = true;
+
+            await listView.HandleKeyPressAsync(ui, new UIKeyEvent { Key = Keys.Down });
+
+            Assert.AreEqual("Alpha", listView.SelectedItem);
         }
     }
 }

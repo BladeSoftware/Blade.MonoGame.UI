@@ -4,7 +4,6 @@ using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls
 {
@@ -26,7 +25,6 @@ namespace Blade.MG.UI.Controls
         public object HighlightedItem { get; private set; }
 
         [JsonIgnore]
-        [XmlIgnore]
         public Type ItemTemplateType { get; set; } = typeof(ListViewItemTemplate);
 
         private UIComponent TempNodeTemplate = null;

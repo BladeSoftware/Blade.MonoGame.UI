@@ -6,7 +6,6 @@ using Microsoft.VisualStudio.Threading;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls
 {
@@ -16,11 +15,15 @@ namespace Blade.MG.UI.Controls
         private static int frameID = 0;
 
         [JsonIgnore]
-        [XmlIgnore]
         public Type ItemTemplateType { get; set; } = typeof(TreeNodeTemplate);
 
 
-        public ITreeNode RootNode { get; set; }  // TODO: Set from DataContext ?
+        // TODO: Set from DataContext ? If this is ever implemented, mirror ListView's own use
+        // of DataContext as its real items source - Container.AddChild now preserves an
+        // already-set DataContext across an attach (see Container.AddChild), which is exactly
+        // what makes that safe. Storing the root node value anywhere that gets silently
+        // overwritten by AddChild's cascade would reintroduce the same bug ListView had.
+        public ITreeNode RootNode { get; set; }
         public bool ShowRootNode { get; set; } = true;
 
         public float NodeIndentPerLevel { get; set; } = 20f;
@@ -333,12 +336,16 @@ namespace Blade.MG.UI.Controls
 
             ArrangeNode(context, ref availableSize, ref parentMinMax, ref layoutBounds, ref nodeBounds, RootNode, false, true, 0, ref desiredWidth, ref desiredHeight);
 
-            // Remove stale children
+            // Remove stale children. Children is a read-only view (Container.Children returns
+            // children.AsReadOnly()) - RemoveChild is the actual mutation API; a raw
+            // ((IList<UIComponent>)Children).RemoveAt(i) throws NotSupportedException since
+            // ReadOnlyCollection<T> rejects every mutating IList<T> member.
             for (int i = Children.Count() - 1; i >= 0; i--)
             {
-                if (Children.ElementAt(i).FrameID != frameID)
+                UIComponent staleChild = Children.ElementAt(i);
+                if (staleChild.FrameID != frameID)
                 {
-                    ((IList<UIComponent>)Children).RemoveAt(i);
+                    RemoveChild(staleChild);
                 }
             }
 

@@ -1,13 +1,11 @@
 ﻿using Blade.MG.UI.Components;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI
 {
     public class TemplatedControl : Control
     {
         [JsonIgnore]
-        [XmlIgnore]
         public Type TemplateType
         {
             get => templateType;

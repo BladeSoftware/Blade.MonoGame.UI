@@ -2,14 +2,12 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls
 {
     public class Image : UIComponentDrawable
     {
         [JsonIgnore]
-        [XmlIgnore]
         public Texture2D ImageTexture { get; set; }
 
         public TextureLayout ImageLayout { get; set; }

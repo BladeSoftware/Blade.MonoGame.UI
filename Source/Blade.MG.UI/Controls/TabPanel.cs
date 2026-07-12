@@ -3,8 +3,9 @@ using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace Blade.MG.UI.Controls
 {
@@ -23,6 +24,16 @@ namespace Blade.MG.UI.Controls
             }
         }
 
+        /// <summary>Each tab's content and header text, for UIDocumentSerializer - tab content
+        /// isn't reachable through the base Children collection (see AddChild's throw below),
+        /// it lives in the private TabPageInternal list instead. [JsonIgnore] because this is a
+        /// read-only view for the serializer's own special-case TabPanel handling, not a plain
+        /// data member the generic property walk should also try to serialize.</summary>
+        [JsonIgnore]
+        public IEnumerable<(UIComponent Content, string Header)> TabPages =>
+            (DataContext as List<TabPageInternal>)?.Select(p => (p.Content, p.DataContext?.ToString() ?? ""))
+            ?? Enumerable.Empty<(UIComponent, string)>();
+
         private static int frameID = 0;
 
         private StackPanel tabsStackPanel;
@@ -32,7 +43,6 @@ namespace Blade.MG.UI.Controls
         public UIComponent SelectedHeader { get; set; } = null;
 
         [JsonIgnore]
-        [XmlIgnore]
         public Type TabHeaderTemplateType { get; set; } = typeof(TabHeaderTemplate);
 
         public Color DividerColor { get; set; }
