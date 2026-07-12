@@ -220,6 +220,11 @@ namespace Blade.MG.UI.Controls
             IsTopPanelVisible = true;
             IsBottomPanelVisible = true;
 
+            // See TabPanel's constructor for why this matters: DockPanel also derives from the
+            // plain Container base (not Panel), so it never opts out of focus on its own. Left
+            // true, a click on empty dock-chrome space cascades HasFocus onto every control this
+            // DockPanel contains - which for the app's outermost DockPanel is everything.
+            CanFocus = false;
         }
 
         protected override void InitTemplate()

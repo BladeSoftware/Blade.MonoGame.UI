@@ -119,6 +119,23 @@ namespace Blade.MG.UI
                     uiEvent.Handled = false;
                     await focusUIWindow.RaiseFocusChangedEventAsync(focusComponent, focusUIWindow);
                 }
+                else
+                {
+                    // The click didn't land on anything that can receive focus (empty space, or
+                    // a non-focusable container like a plain Panel/Grid) - previously this branch
+                    // did nothing at all, so whatever was focused before stayed focused/showing
+                    // its focus ring indefinitely, since only a *new* focus target ever triggered
+                    // the "unfocus the old one" step below. Clicking empty space should drop
+                    // focus, same as it does in any conventional UI.
+                    for (int i = uiWindows.Count - 1; i >= 0; i--)
+                    {
+                        UIWindow ui = uiWindows.Values[i];
+                        if (ui.FocusedComponent != null)
+                        {
+                            await ui.SetFocusAsync(null);
+                        }
+                    }
+                }
             }
 
             // Check if user has released the left mouse button - Handle this separately as we also fire Click / Double Click events on the Left Button

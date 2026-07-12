@@ -18,16 +18,12 @@ namespace Blade.MG.UI.Controls
         private List<PropertyInfo> properties = new();
 
         // TextBox has no change-notification event to hook (its Text is a plain Binding<string>
-        // with no subscribe mechanism), so the search filter - and every TextBox-based property
-        // editor below - is applied by diffing text once per frame in Arrange, the same
-        // frame-to-frame diffing technique ComboBoxTemplate.Arrange already uses to detect its
-        // own EditBox's focus transitions.
+        // with no subscribe mechanism), so the search filter is applied by diffing text once per
+        // frame in Arrange, the same frame-to-frame diffing technique ComboBoxTemplate.Arrange
+        // already uses to detect its own EditBox's focus transitions. Property value editors
+        // (CreateTextEditor) commit on focus-lost instead of live per-keystroke, so they don't
+        // need this polling - see CreateTextEditor's own comment.
         private string lastFilterText = "";
-
-        // Populated by RefreshProperties, one entry per TextBox-based editor row; each closure
-        // diffs its own TextBox's current text against what it last saw and writes the parsed
-        // value back onto the target object only when it actually changed.
-        private readonly List<Action> framePollActions = new();
 
         public object TargetObject
         {
@@ -68,8 +64,11 @@ namespace Blade.MG.UI.Controls
                 HorizontalAlignment = HorizontalAlignmentType.Stretch,
                 VerticalAlignment = VerticalAlignmentType.Stretch,
 
+                // Hidden meant a long property list (more rows than fit the panel's own
+                // height) had no way to scroll down to the rest - Auto shows a scrollbar
+                // only when the content actually overflows.
                 HorizontalScrollBarVisible = ScrollBarVisibility.Hidden,
-                VerticalScrollBarVisible = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisible = ScrollBarVisibility.Auto,
 
 
                 //Width = 600,+-*
@@ -150,18 +149,12 @@ namespace Blade.MG.UI.Controls
                 lastFilterText = currentFilterText;
                 RefreshProperties();
             }
-
-            foreach (Action poll in framePollActions)
-            {
-                poll();
-            }
         }
 
         private void RefreshProperties()
         {
             //grid.Children.Clear();
             grid.RemoveAllChildren();
-            framePollActions.Clear();
 
             if (targetObject == null)
             {
@@ -221,10 +214,9 @@ namespace Blade.MG.UI.Controls
 
             UIComponent editor = CreateTextEditor(getValue().ToString(), newText =>
             {
-                if (int.TryParse(newText, out int parsed))
-                {
-                    setValue(parsed);
-                }
+                if (!int.TryParse(newText, out int parsed)) return false;
+                setValue(parsed);
+                return true;
             });
             grid.AddChild(editor, 1, row);
 
@@ -299,27 +291,33 @@ namespace Blade.MG.UI.Controls
             }
             else if (valueType == typeof(string))
             {
-                return CreateTextEditor(value as string ?? "", newText => ApplyValue(newText));
+                return CreateTextEditor(value as string ?? "", newText => { ApplyValue(newText); return true; });
             }
             else if (valueType == typeof(int))
             {
                 return CreateTextEditor(value?.ToString() ?? "0", newText =>
                 {
-                    if (int.TryParse(newText, out int parsed)) ApplyValue(parsed);
+                    if (!int.TryParse(newText, out int parsed)) return false;
+                    ApplyValue(parsed);
+                    return true;
                 });
             }
             else if (valueType == typeof(float))
             {
                 return CreateTextEditor(value?.ToString() ?? "0", newText =>
                 {
-                    if (float.TryParse(newText, out float parsed)) ApplyValue(parsed);
+                    if (!float.TryParse(newText, out float parsed)) return false;
+                    ApplyValue(parsed);
+                    return true;
                 });
             }
             else if (valueType == typeof(double))
             {
                 return CreateTextEditor(value?.ToString() ?? "0", newText =>
                 {
-                    if (double.TryParse(newText, out double parsed)) ApplyValue(parsed);
+                    if (!double.TryParse(newText, out double parsed)) return false;
+                    ApplyValue(parsed);
+                    return true;
                 });
             }
             else if (valueType == typeof(Length))
@@ -329,14 +327,14 @@ namespace Blade.MG.UI.Controls
                 // exception here would crash the whole render loop on a single bad keystroke.
                 return CreateTextEditor(value?.ToString() ?? "", newText =>
                 {
-                    try { ApplyValue(Length.FromString(newText)); } catch { }
+                    try { ApplyValue(Length.FromString(newText)); return true; } catch { return false; }
                 });
             }
             else if (valueType == typeof(Thickness))
             {
                 return CreateTextEditor(value?.ToString() ?? "", newText =>
                 {
-                    try { ApplyValue(Thickness.FromString(newText)); } catch { }
+                    try { ApplyValue(Thickness.FromString(newText)); return true; } catch { return false; }
                 });
             }
             else if (valueType == typeof(Color))
@@ -344,7 +342,7 @@ namespace Blade.MG.UI.Controls
                 string hex = value is Color color ? ColorHelper.ToHexColor(color) : "#000000FF";
                 return CreateTextEditor(hex, newText =>
                 {
-                    try { ApplyValue(ColorHelper.FromString(newText)); } catch { }
+                    try { ApplyValue(ColorHelper.FromString(newText)); return true; } catch { return false; }
                 });
             }
             else
@@ -357,23 +355,41 @@ namespace Blade.MG.UI.Controls
             }
         }
 
-        // Builds a TextBox whose text is diffed once per frame (see framePollActions/Arrange) -
-        // TextBox has no change-notification event to hook directly, same reason the search box
-        // above uses the same technique.
-        private UIComponent CreateTextEditor(string initialText, Action<string> onChanged)
+        // Commits the field's text only when focus leaves it, not on every keystroke -
+        // TextEntryControl.HandleKeyAsync already makes a single-line TextBox give up focus on
+        // Enter (see its own comment: "Enter commits the edit the same way clicking away does"),
+        // so OnFocusChanged(Focused: false) alone covers both Enter and tabbing/clicking away;
+        // no separate key handling is needed here. tryApply returns false for text that doesn't
+        // parse (e.g. a typo like "#ZZZZZZ"), in which case the field snaps back to the last
+        // value that did apply, so an invalid edit doesn't just sit there with no feedback that
+        // it was never accepted.
+        private UIComponent CreateTextEditor(string initialText, Func<string, bool> tryApply)
         {
             var textBox = new TextBox { Text = initialText };
-            string lastText = initialText;
+            string lastValidText = initialText;
 
-            framePollActions.Add(() =>
+            textBox.OnFocusChanged = (sender, uiEvent) =>
             {
-                string currentText = textBox.Text?.Value;
-                if (currentText != lastText)
+                if (uiEvent.Focused)
                 {
-                    lastText = currentText;
-                    onChanged(currentText);
+                    return;
                 }
-            });
+
+                string currentText = textBox.Text?.Value;
+                if (currentText == lastValidText)
+                {
+                    return;
+                }
+
+                if (tryApply(currentText))
+                {
+                    lastValidText = currentText;
+                }
+                else
+                {
+                    textBox.Text.Value = lastValidText;
+                }
+            };
 
             return textBox;
         }

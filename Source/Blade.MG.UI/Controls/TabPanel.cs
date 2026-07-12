@@ -55,6 +55,14 @@ namespace Blade.MG.UI.Controls
         {
             IsHitTestVisible = true;
             DividerColor = Theme.Outline;
+
+            // A pure layout/chrome container, not an interactive control - unlike Panel (which
+            // opts out in its own constructor), TabPanel derives from the plain Container base,
+            // whose CanFocus stays at UIComponent's default of true. Left true, a click that
+            // misses every real focusable control falls through UIWindow.SelectFirst's
+            // post-order search to this TabPanel itself, which then has focus cascaded onto its
+            // entire subtree (every control in the active tab) via HandleFocusChangedEventAsync.
+            CanFocus = false;
         }
 
         protected override void InitTemplate()
