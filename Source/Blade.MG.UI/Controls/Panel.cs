@@ -44,7 +44,7 @@ namespace Blade.MG.UI.Controls
             // the panel entirely when that gutter sits flush against a same-colored sibling.
             var previousAncestorClip = context.AncestorClipBounds;
             context.AncestorClipBounds = Rectangle.Intersect(previousAncestorClip, FinalContentRect);
-
+            
             // Render any child controls
             base.RenderControl(context, Rectangle.Intersect(layoutBounds, FinalRect), parentTransform);
 

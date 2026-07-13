@@ -95,8 +95,6 @@ namespace Blade.MG.UI.Controls.Templates
             int boxHeight = 20;
             int padding = 0;
 
-            boxRect = new Rectangle { X = FinalRect.X + 2, Y = label1.TextBaseLine.Y - boxHeight + 4, Width = boxWidth, Height = boxHeight };
-
             if (defaultCheckedImage == null)
             {
                 // Default Checked Image
@@ -151,6 +149,15 @@ namespace Blade.MG.UI.Controls.Templates
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
             base.RenderControl(context, layoutBounds, parentTransform);
+
+            // Computed here (after Content/label1 has just re-rendered above, refreshing
+            // label1.TextBaseLine for *this* frame) rather than in Arrange - Arrange runs
+            // before Render, so label1.TextBaseLine would still hold last frame's rendered
+            // position at that point, leaving boxRect a frame behind whenever the label's
+            // rendered Y actually changes frame-to-frame (e.g. while scrolling).
+            const int boxWidth = 20;
+            const int boxHeight = 20;
+            boxRect = new Rectangle { X = FinalRect.X + 2, Y = label1.TextBaseLine.Y - boxHeight + 4, Width = boxWidth, Height = boxHeight };
 
             var checkbox = ParentAs<CheckBox>();
 

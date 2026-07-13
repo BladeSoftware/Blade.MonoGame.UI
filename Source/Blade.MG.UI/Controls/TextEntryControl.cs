@@ -112,11 +112,8 @@ namespace Blade.MG.UI.Controls
             // rendering artifact this avoids (a duplicate "ghost" border briefly visible behind
             // the real one). TextEntryControl's own input handling never relies on that second
             // copy either - focus/keyboard/mouse are all handled directly on this control - so
-            // skipping it is safe. TemplateInitialised is set directly here since that's the one
-            // piece of UIComponent.InitTemplate's own base behavior that still matters (it gates
-            // Parent's setter from calling InitTemplate a second time).
-            TemplateInitialised = true;
-
+            // skipping it is safe. TemplateInitialised itself is set by the Parent setter, not
+            // here (see its own comment) - nothing left in the base implementation to lose.
             Content = Activator.CreateInstance(TemplateType) as UIComponent;
         }
 

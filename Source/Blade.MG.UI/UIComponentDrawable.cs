@@ -422,7 +422,7 @@ namespace Blade.MG.UI
                 }
             }
 
-            if (BackgroundTexture != null)
+            if (BackgroundTexture != null && BackgroundLayout != null)
             {
                 var layoutParams = BackgroundLayout.GetLayoutRect(BackgroundTexture, FinalRect);
                 var scale = new Vector2(layoutParams.Scale.X / BackgroundLayout.TextureScale.X, layoutParams.Scale.Y / BackgroundLayout.TextureScale.Y);

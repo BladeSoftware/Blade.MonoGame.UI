@@ -18,7 +18,7 @@ namespace Blade.MG.UI.Controls.Templates
 
         protected override void InitTemplate()
         {
-            button = Parent as Button;
+            button = ParentAs<Button>();
 
             HorizontalAlignment = HorizontalAlignmentType.Stretch;
             VerticalAlignment = VerticalAlignmentType.Stretch;

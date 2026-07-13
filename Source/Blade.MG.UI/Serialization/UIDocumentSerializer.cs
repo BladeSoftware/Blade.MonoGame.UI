@@ -45,6 +45,8 @@ namespace Blade.MG.UI.Serialization
             options.Converters.Add(new JsonCornerRadiusConverter());
             options.Converters.Add(new JsonGridLengthConverter());
             options.Converters.Add(new JsonVector2Converter());
+            options.Converters.Add(new JsonVector3Converter());
+            options.Converters.Add(new JsonTransformConverter());
             options.Converters.Add(new JsonStringEnumConverter());
 
             return options;
@@ -225,6 +227,18 @@ namespace Blade.MG.UI.Serialization
                 if (member == null)
                 {
                     continue; // unknown/renamed property - ignore rather than fail the whole load
+                }
+
+                // Mirrors Save's own filter (GetSerializableMembers -> IsSerializableMember) so
+                // this stays symmetric with what Save would ever write going forward, and so a
+                // property that's since been marked [JsonIgnore] (e.g. TemplateInitialised - see
+                // its own comment) is ignored on load too, not just newly omitted on save. Without
+                // this, a document saved by an older build that still wrote such a field would
+                // keep reapplying it forever, since FindMember above resolves purely by name and
+                // has no idea a property used to be considered document data.
+                if (!IsSerializableMember(member, GetMemberType(member)))
+                {
+                    continue;
                 }
 
                 AssignMember(instance, member, element, dataContext);

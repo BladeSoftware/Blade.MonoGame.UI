@@ -98,8 +98,8 @@ namespace Blade.MG.UI.Controls
             base.Measure(context, ref contentAvailableSize, ref parentMinMax);
 
 
-            HorizontalScrollBar.Measure(context, ref availableSize, ref parentMinMax);
-            VerticalScrollBar.Measure(context, ref availableSize, ref parentMinMax);
+            HorizontalScrollBar?.Measure(context, ref availableSize, ref parentMinMax);
+            VerticalScrollBar?.Measure(context, ref availableSize, ref parentMinMax);
 
             if (IsHorizontalScrollbarVisible)
             {
@@ -180,14 +180,14 @@ namespace Blade.MG.UI.Controls
             int w = childBounds.Width - FinalContentRect.Width;// + verticalScrollBarWidth;
             int h = childBounds.Height - FinalContentRect.Height;// + horizontalScrollBarHeight;
 
-            HorizontalScrollBar.MaxValue = w;
-            VerticalScrollBar.MaxValue = h;
+            HorizontalScrollBar?.MaxValue = w;
+            VerticalScrollBar?.MaxValue = h;
 
             isHorizontallyScrollable = (FinalContentRect.Width < childBounds.Width);
             isVerticallyScrollable = (FinalContentRect.Height < childBounds.Height);
 
-            HorizontalScrollBar.Visible = BoolToVisibility(IsHorizontalScrollbarVisible);
-            VerticalScrollBar.Visible = BoolToVisibility(IsVerticalScrollbarVisible);
+            HorizontalScrollBar?.Visible = BoolToVisibility(IsHorizontalScrollbarVisible);
+            VerticalScrollBar?.Visible = BoolToVisibility(IsVerticalScrollbarVisible);
 
             //HorizontalScrollBar.MaxValue = w < -verticalScrollBarWidth ? w : (w + verticalScrollBarWidth);
             //VerticalScrollBar.MaxValue = h < -horizontalScrollBarHeight ? h : (h + horizontalScrollBarHeight);
@@ -210,8 +210,8 @@ namespace Blade.MG.UI.Controls
 
             rect = rect with
             {
-                X = rect.X - HorizontalScrollBar.ScrollOffset,
-                Y = rect.Y - VerticalScrollBar.ScrollOffset,
+                X = rect.X - (HorizontalScrollBar?.ScrollOffset ?? 0),
+                Y = rect.Y - (VerticalScrollBar?.ScrollOffset ?? 0),
 
                 Width = rect.Width - (IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0),
                 Height = rect.Height - (IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)

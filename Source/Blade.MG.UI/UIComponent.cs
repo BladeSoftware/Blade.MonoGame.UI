@@ -53,9 +53,16 @@ namespace Blade.MG.UI
                 if (value is UIWindow) { ParentWindow = (UIWindow)value; }
                 else if (value?.ParentWindow != null) { ParentWindow = value?.ParentWindow; }
 
-                if (!TemplateInitialised)
+                // Only build the visual template once we actually have a live ParentWindow to
+                // build it against (ContentManager/GraphicsDevice/Context all flow from
+                // ParentWindow) - if this component was attached to a not-yet-windowed parent
+                // (e.g. while UIDocumentSerializer.LoadNode builds a tree bottom-up, before the
+                // root is rooted into a live UIWindow), defer to SetParentWindow, which
+                // re-checks this once the real ParentWindow is backfilled.
+                if (!TemplateInitialised && ParentWindow != null)
                 {
                     InitTemplate();
+                    TemplateInitialised = true;
                 }
 
                 StateHasChanged();
@@ -66,6 +73,15 @@ namespace Blade.MG.UI
 
         public static int LastTabOrder = 0;
 
+        // Pure runtime state (has InitTemplate run yet?), never document data - a freshly
+        // deserialized component must always start false so its own InitTemplate (which builds
+        // its internal visual template: border/label/chrome, everything that actually draws)
+        // still runs when it's attached to a parent. Without [JsonIgnore], saving a design after
+        // it's been laid out at least once bakes "TemplateInitialised": true into every control's
+        // JSON; reloading that file then force-sets true on each freshly-constructed component
+        // before it's ever parented, permanently skipping InitTemplate for the whole tree - the
+        // symptom is layout/FinalRect being entirely correct while nothing ever renders.
+        [JsonIgnore]
         public bool TemplateInitialised { get; set; } = false;
 
         public string Name { get; set; }
@@ -233,9 +249,12 @@ namespace Blade.MG.UI
             IsHeightVirtual = false;
         }
 
+        // TemplateInitialised itself is set by the Parent setter after calling this, not here -
+        // see that comment for why. Overrides are free to skip calling base.InitTemplate()
+        // entirely (there's nothing left in it to lose) without needing to remember any
+        // workaround.
         protected virtual void InitTemplate()
         {
-            TemplateInitialised = true;
         }
 
         public void ReInitTemplate(object dataContext)
@@ -248,6 +267,7 @@ namespace Blade.MG.UI
             //TemplateInitialised = false;
             DataContext = dataContext;
             InitTemplate();
+            TemplateInitialised = true;
         }
 
         public void StateHasChanged()
@@ -982,6 +1002,16 @@ namespace Blade.MG.UI
         private void SetParentWindow(UIWindow newParentWindow)
         {
             parentWindow = newParentWindow;
+
+            // A component may have had its Parent assigned before a live ParentWindow existed
+            // (e.g. while UIDocumentSerializer.LoadNode builds a tree bottom-up) - in that case
+            // the Parent setter deferred InitTemplate. Now that a real window is finally
+            // available, run it.
+            if (!TemplateInitialised && parentWindow != null)
+            {
+                InitTemplate();
+                TemplateInitialised = true;
+            }
 
             switch (this)
             {

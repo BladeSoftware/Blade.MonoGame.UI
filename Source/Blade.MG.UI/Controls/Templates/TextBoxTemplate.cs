@@ -371,7 +371,7 @@ namespace Blade.MG.UI.Controls.Templates
                         helperTextBounds = helperTextBounds with { X = helperTextBounds.X + 8 };
                     }
 
-                    context.Renderer.DrawString(spriteBatch, helperTextBounds, textBox.HelperText, helperTextSizeFont, helperTextSizeColor, HorizontalAlignmentType.Left, VerticalAlignmentType.Top, textBox.FinalRect);
+                    context.Renderer.DrawString(spriteBatch, helperTextBounds, textBox.HelperText, helperTextSizeFont, helperTextSizeColor, HorizontalAlignmentType.Left, VerticalAlignmentType.Top, layoutBounds);
                 }
 
                 // Display the Selection highlight and the Cursor

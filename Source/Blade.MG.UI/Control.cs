@@ -52,6 +52,14 @@ namespace Blade.MG.UI
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
+            if (string.Equals(Name, "BTN-TEST1"))
+            {
+            }
+
+            if (string.Equals(Name, "Root", StringComparison.InvariantCultureIgnoreCase))
+            {
+            }
+
             if (Visible.Value != Visibility.Visible)
             {
                 return;
