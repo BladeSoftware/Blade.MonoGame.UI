@@ -24,16 +24,30 @@ namespace Blade.MG.UI
 
             item.Parent = parent ?? this;
             children.Add(item);
+            BubbleInvalidation();
         }
 
         public bool RemoveChild(UIComponent item)
         {
-            return children.Remove(item);
+            if (!children.Remove(item))
+            {
+                return false;
+            }
+
+            item.Parent = null;
+            BubbleInvalidation();
+            return true;
         }
 
         public void RemoveAllChildren()
         {
+            foreach (var child in children)
+            {
+                child.Parent = null;
+            }
+
             children.Clear();
+            BubbleInvalidation();
         }
 
         public int IndexOfChild(UIComponent item)

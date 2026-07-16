@@ -15,6 +15,13 @@ namespace Blade.MG.UI
         [JsonIgnore]
         Type BaseType { get; }
         void FromString(string value);
+
+        /// <summary>
+        /// Raised whenever Value changes to something not equal to its previous value.
+        /// Used to bubble render-cache invalidation up to ancestor controls - see
+        /// UIComponent.EnsureBindingsWired/BubbleInvalidation.
+        /// </summary>
+        event Action? Changed;
     }
 
 
@@ -30,7 +37,21 @@ namespace Blade.MG.UI
         protected Func<T> Getter;
         protected Action<T>? Setter;
 
-        public T Value { get { return GetValue(); } set { SetValue(value); } }
+        public event Action? Changed;
+
+        public T Value
+        {
+            get { return GetValue(); }
+            set
+            {
+                var old = GetValue();
+                SetValue(value);
+                if (!EqualityComparer<T>.Default.Equals(old, value))
+                {
+                    Changed?.Invoke();
+                }
+            }
+        }
 
         private T _backingVar;
 

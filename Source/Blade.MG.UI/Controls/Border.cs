@@ -27,6 +27,7 @@ namespace Blade.MG.UI.Controls
             VerticalAlignment = VerticalAlignmentType.Stretch;
 
             IsHitTestVisible = false;
+            EnableCaching = true;
         }
 
         // Rounded corners are the expensive path here: a stencil mask pass (with a

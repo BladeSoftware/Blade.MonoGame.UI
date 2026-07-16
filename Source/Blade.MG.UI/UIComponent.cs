@@ -1,8 +1,11 @@
-﻿using Blade.MG.UI.Components;
+﻿using Blade.MG.UI.Caching;
+using Blade.MG.UI.Components;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Concurrent;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 namespace Blade.MG.UI
@@ -151,6 +154,16 @@ namespace Blade.MG.UI
             }
             else
             {
+                // Replacing the field's Binding<T> instance wholesale (rather than mutating
+                // its Value) bypasses whatever Changed subscription EnsureBindingsWired set up
+                // on the old instance - re-wire it onto the new one so cache-invalidation
+                // bubbling (see BubbleInvalidation) keeps working after a rebind.
+                if (bindingsWired)
+                {
+                    field.Changed -= OnOwnBindingChanged;
+                    value.Changed += OnOwnBindingChanged;
+                }
+
                 field = value;
             }
         }
@@ -176,16 +189,30 @@ namespace Blade.MG.UI
 
             item.Parent = parent ?? this;
             internalChildren.Add(item);
+            BubbleInvalidation();
         }
 
         public bool RemoveInternalChild(UIComponent item)
         {
-            return internalChildren.Remove(item);
+            if (!internalChildren.Remove(item))
+            {
+                return false;
+            }
+
+            item.Parent = null;
+            BubbleInvalidation();
+            return true;
         }
 
         public void RemoveAllInternalChildren()
         {
+            foreach (var child in internalChildren)
+            {
+                child.Parent = null;
+            }
+
             internalChildren.Clear();
+            BubbleInvalidation();
         }
 
         public int IndexOfInternalChild(UIComponent item)
@@ -280,6 +307,68 @@ namespace Blade.MG.UI
 
         }
 
+        // ---=== Render-cache invalidation bubbling ===---
+        //
+        // CacheStateHash (see UIComponentDrawable/ICacheable) only covers a control's own
+        // Binding<T> properties, so a cached ancestor (e.g. a Border with EnableCaching) has
+        // no way to notice a change happening inside its Content/Children. To fix that,
+        // every control auto-subscribes to its own bindings' Changed events (wired lazily,
+        // once per instance, in EnsureBindingsWired) and on any change walks up the live
+        // Parent chain calling InvalidateCache() on every ICacheable ancestor - not just the
+        // nearest one, since caches can nest.
+
+        private static readonly ConcurrentDictionary<Type, PropertyInfo[]> bindingPropertiesByType = new();
+        private bool bindingsWired;
+
+        private static PropertyInfo[] GetBindingProperties(Type type)
+        {
+            return bindingPropertiesByType.GetOrAdd(type, t =>
+                t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                 .Where(p => typeof(IBinding).IsAssignableFrom(p.PropertyType) && p.GetIndexParameters().Length == 0 && p.CanRead)
+                 .ToArray());
+        }
+
+        /// <summary>
+        /// Lazily subscribes to the Changed event of every IBinding-typed property this
+        /// control has. Safe to call every frame (guarded by bindingsWired) - called from
+        /// Measure rather than the constructor, since derived-class field initializers for
+        /// Binding&lt;T&gt; properties (e.g. Border.BorderColor) haven't run yet when the base
+        /// UIComponent() constructor executes.
+        /// </summary>
+        private void EnsureBindingsWired()
+        {
+            if (bindingsWired) return;
+            bindingsWired = true;
+
+            foreach (var prop in GetBindingProperties(GetType()))
+            {
+                if (prop.GetValue(this) is IBinding binding)
+                {
+                    binding.Changed += OnOwnBindingChanged;
+                }
+            }
+        }
+
+        private void OnOwnBindingChanged()
+        {
+            BubbleInvalidation();
+        }
+
+        /// <summary>
+        /// Invalidates this control's render cache (if it has one) and every ancestor's, all
+        /// the way to the root - so a change to a deeply nested control correctly invalidates
+        /// every cached container above it, not just the nearest one.
+        /// </summary>
+        protected internal void BubbleInvalidation()
+        {
+            if (this is ICacheable cacheable)
+            {
+                cacheable.InvalidateCache();
+            }
+
+            Parent?.BubbleInvalidation();
+        }
+
         //public void StateHasChanged()
         //{
         //    JoinableTaskFactory jtf = new JoinableTaskFactory(new JoinableTaskContext());
@@ -298,6 +387,8 @@ namespace Blade.MG.UI
 
         public virtual void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
+            EnsureBindingsWired();
+
             MeasureSelf(context, ref availableSize, ref parentMinMax);
 
             // Measure the Internal Components

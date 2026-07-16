@@ -13,11 +13,22 @@ namespace Blade.MG.UI
 
             set
             {
+                if (content != null && content != value)
+                {
+                    // Detach the outgoing child so it stops bubbling invalidation into a
+                    // parent it's no longer part of (see BubbleInvalidation).
+                    content.Parent = null;
+                }
+
                 content = value;
                 if (content != null)
                 {
                     content.Parent = this;
                 }
+
+                // Replacing Content changes this control's rendered output even if no
+                // Binding<T>.Value changed (e.g. swapping in an entirely different child).
+                BubbleInvalidation();
             }
         }
 
