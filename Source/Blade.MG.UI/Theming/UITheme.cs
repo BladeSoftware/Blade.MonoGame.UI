@@ -57,6 +57,13 @@ namespace Blade.MG.UI.Theming
         public Color Surface;
         public Color OnSurface;
 
+        /// <summary>
+        /// A tonal step between Surface/Background and SurfaceVariant - use for panels that
+        /// need to read as a distinct region (a side panel, an inspector) without the stronger
+        /// contrast of SurfaceVariant (which is reserved for input fills/dividers/chrome).
+        /// </summary>
+        public Color SurfaceContainer;
+
         public Color SurfaceVariant;
         public Color OnSurfaceVariant;
 

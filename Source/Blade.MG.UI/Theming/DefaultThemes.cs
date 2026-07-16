@@ -39,6 +39,8 @@ namespace Blade.MG.UI.Theming
                 Surface = ColorHelper.FromHexColor("#FFFBFE"),
                 OnSurface = ColorHelper.FromHexColor("#1C1B1F"),
 
+                SurfaceContainer = ColorHelper.FromHexColor("#F3EDF7"),
+
                 SurfaceVariant = ColorHelper.FromHexColor("#E7E0EC"),
                 OnSurfaceVariant = ColorHelper.FromHexColor("#49454F"),
 
@@ -92,6 +94,8 @@ namespace Blade.MG.UI.Theming
 
                 Surface = ColorHelper.FromHexColor("#1C1B1F"),
                 OnSurface = ColorHelper.FromHexColor("#E6E1E5"),
+
+                SurfaceContainer = ColorHelper.FromHexColor("#211F26"),
 
                 SurfaceVariant = ColorHelper.FromHexColor("#49454F"),
                 OnSurfaceVariant = ColorHelper.FromHexColor("#CAC4D0"),
@@ -152,6 +156,8 @@ namespace Blade.MG.UI.Theming
                 Surface = ColorHelper.FromHexColor("#000000"),
                 OnSurface = ColorHelper.FromHexColor("#FFFFFF"),
 
+                SurfaceContainer = ColorHelper.FromHexColor("#0D0D0D"),
+
                 SurfaceVariant = ColorHelper.FromHexColor("#1A1A1A"),
                 OnSurfaceVariant = ColorHelper.FromHexColor("#FFFFFF"),
 
@@ -211,6 +217,8 @@ namespace Blade.MG.UI.Theming
                 Surface = ColorHelper.FromHexColor("#F4FEFD"),
                 OnSurface = ColorHelper.FromHexColor("#161D1C"),
 
+                SurfaceContainer = ColorHelper.FromHexColor("#E8F3F2"),
+
                 SurfaceVariant = ColorHelper.FromHexColor("#DAE5E4"),
                 OnSurfaceVariant = ColorHelper.FromHexColor("#3F4948"),
 
@@ -268,6 +276,8 @@ namespace Blade.MG.UI.Theming
                 Surface = ColorHelper.FromHexColor("#FBFDF7"),
                 OnSurface = ColorHelper.FromHexColor("#1A1C18"),
 
+                SurfaceContainer = ColorHelper.FromHexColor("#EFF3E7"),
+
                 SurfaceVariant = ColorHelper.FromHexColor("#DFE4D7"),
                 OnSurfaceVariant = ColorHelper.FromHexColor("#43483E"),
 
@@ -324,6 +334,8 @@ namespace Blade.MG.UI.Theming
 
                 Surface = ColorHelper.FromHexColor("#FFFBFF"),
                 OnSurface = ColorHelper.FromHexColor("#201A1B"),
+
+                SurfaceContainer = ColorHelper.FromHexColor("#FBEAEE"),
 
                 SurfaceVariant = ColorHelper.FromHexColor("#F2DDE1"),
                 OnSurfaceVariant = ColorHelper.FromHexColor("#514347"),
