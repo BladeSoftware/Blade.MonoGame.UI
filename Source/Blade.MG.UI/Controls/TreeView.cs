@@ -256,13 +256,23 @@ namespace Blade.MG.UI.Controls
             int verticalScrollBarWidth = IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;
             int horizontalScrollBarHeight = IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0;
 
-            // Node positions are anchored on this TreeView's own on-screen position (layoutBounds),
-            // not parentLayoutBounds - parentLayoutBounds is the grandparent container's content
+            // Node positions are anchored on this TreeView's own on-screen position, not
+            // parentLayoutBounds - parentLayoutBounds is the grandparent container's content
             // area, which doesn't account for any sibling controls (e.g. a toolbar StackPanel)
             // positioned above this TreeView within that same area. Anchoring on parentLayoutBounds
             // silently shifted every node up by that sibling's height, pushing the root node (and
             // therefore the whole tree) partly or fully above this TreeView's own visible top edge.
-            var treeLayoutBounds = layoutBounds with { Width = layoutBounds.Width - verticalScrollBarWidth, Height = layoutBounds.Height - horizontalScrollBarHeight };
+            //
+            // Use FinalContentRect (computed by ArrangeSelf just above), not the raw layoutBounds
+            // parameter - they only coincide when this TreeView has no Margin and its alignment
+            // resolves to an exact fill (e.g. pure Stretch with no explicit Width/Height). Any
+            // Margin, or Center/Right/Bottom alignment, or Stretch combined with an explicit
+            // Width/Height (which ArrangeSelf centers - see UIComponent.cs's Stretch-as-Center
+            // fallback), moves FinalContentRect away from layoutBounds, and node rows would then
+            // be positioned using this TreeView's pre-alignment allocation instead of its actual
+            // on-screen rect - correct enough to render close to the right place, but wrong for
+            // hit-testing (ContainsScreenPoint compares against the real screen position).
+            var treeLayoutBounds = FinalContentRect with { Width = FinalContentRect.Width - verticalScrollBarWidth, Height = FinalContentRect.Height - horizontalScrollBarHeight };
 
             ArrangeTree(context, treeLayoutBounds, ref desiredWidth, ref desiredHeight);
 

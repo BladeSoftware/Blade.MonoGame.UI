@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Blade.MG.UI
 {
@@ -27,6 +28,9 @@ namespace Blade.MG.UI
     public partial class UIManager : GameEntity //,UIManagerBase
     {
         public static bool RenderControlHitBoxes = false;
+
+        // Backs the hover-set change-detection in Draw()'s RenderControlHitBoxes diagnostic.
+        private string lastLoggedHoverSet = "";
 
         public static readonly int MaxZIndex = 9999;
 
@@ -555,6 +559,20 @@ namespace Blade.MG.UI
                 using SpriteBatch sb = new SpriteBatch(graphicsDevice);
 
                 sb.Begin();
+
+                // Identify exactly what's in the hover list (type/Name/DataContext), not just
+                // its rect - a rect alone doesn't say whether it's the control you expect or an
+                // unrelated nested one (e.g. a template's own inner Button) with a similar-looking
+                // hit box. Logged only when the set actually changes, to Debug.WriteLine
+                // (visible in Visual Studio's Output window).
+                string current = string.Join(" | ", HoverIterator.Select(c =>
+                    $"{c.GetType().Name}(Name={(c as Control)?.Name ?? "?"}, DataContext={c.DataContext?.ToString() ?? "null"}, Rect={c.FinalRect})"));
+                if (current != lastLoggedHoverSet)
+                {
+                    lastLoggedHoverSet = current;
+                    Debug.WriteLine($"[HoverDebug] hover set = [{current}]");
+                }
+
                 foreach (var control in HoverIterator)
                 {
                     Primitives2D.DrawRect(sb, control.FinalContentRect, Color.Blue);

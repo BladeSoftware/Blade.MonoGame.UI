@@ -30,18 +30,6 @@ namespace Blade.MG.UI.Controls
             EnableCaching = true;
         }
 
-        // Rounded corners are the expensive path here: a stencil mask pass (with a
-        // per-pixel loop for the corner regions), the content, a stencil restore pass, and
-        // a border pass with arcs - several draw batches every frame for something that's
-        // usually static. Caching pays for itself here, but only auto-enable it based on
-        // this control's own properties, never based on Content: a Border is often used as
-        // a rounded frame around a whole live, interactive subtree (e.g. a dialog), and
-        // CacheStateHash has no visibility into changes happening inside Content, so
-        // auto-caching purely from CornerRadius silently freezes that content's appearance
-        // (state still updates correctly underneath, it just stops being visible - e.g. list
-        // item hover/selection highlighting inside a rounded dialog border). Caching remains
-        // available via the explicit EnableCaching opt-in for Borders an app knows are safe
-        // to cache (static content, or no Content at all).
         protected override int CacheStateHash => HashCode.Combine(base.CacheStateHash, BorderColor.Value, BorderThickness.Value, CornerRadius.Value, Elevation.Value);
 
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)

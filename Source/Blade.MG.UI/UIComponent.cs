@@ -51,6 +51,12 @@ namespace Blade.MG.UI
             get => parent;
             set
             {
+                // Wire this control's own bindings here too, not just in Measure - some
+                // controls (e.g. Label.Measure) don't call base.Measure, which would
+                // otherwise silently skip EnsureBindingsWired and break cache-invalidation
+                // bubbling for that control's property changes (see BubbleInvalidation).
+                EnsureBindingsWired();
+
                 parent = value;
 
                 if (value is UIWindow) { ParentWindow = (UIWindow)value; }
@@ -1342,8 +1348,14 @@ namespace Blade.MG.UI
                         // Always propogate event if Hover = False as we've aleady moved off that control
                         if (innerGate)
                         {
+                            // component.HandleHoverChangedAsync already sets component's own
+                            // MouseHover (gated by ITS OWN CanHover, at the bottom of its own
+                            // call). The line this replaced instead set `this.MouseHover`
+                            // (missing a `component.` qualifier) with no CanHover gate at all -
+                            // e.g. while running inside a CanHover=false Button's own dispatch,
+                            // it would still flip that Button's own MouseHover true just because
+                            // one of its (also non-hoverable) descendants was under the cursor.
                             await component.HandleHoverChangedAsync(uiWindow, uiEvent);
-                            MouseHover = uiEvent.Hover;
                         }
                     }
                 });

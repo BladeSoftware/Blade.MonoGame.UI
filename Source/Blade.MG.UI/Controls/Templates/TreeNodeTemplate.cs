@@ -49,11 +49,16 @@ namespace Blade.MG.UI.Controls.Templates
                 TextColor = Theme.OnSurface,
                 Background = Color.Transparent,
 
+                // Leave hover AND focus to the owning row, same reasoning as
+                // ListViewItemTemplate.CanFocus = false - otherwise clicking this button steals
+                // keyboard focus away from the row (SelectFirst's focus search picks the
+                // deepest CanFocus match under the cursor), instead of just toggling expansion.
                 CanHover = false,
+                CanFocus = false,
 
                 OnMouseDown = (sender, uiEvent) =>
                 {
-                    treeNode.IsExpanded = !treeNode.IsExpanded;
+                    ToggleExpanded(treeNode);
                     uiEvent.Handled = true;
                 },
 
@@ -142,11 +147,25 @@ namespace Blade.MG.UI.Controls.Templates
 
             OnMultiClick = (sender, uiEvent) =>
             {
-                treeNode.IsExpanded = !treeNode.IsExpanded;
+                ToggleExpanded(treeNode);
                 uiEvent.Handled = true;
             };
 
 
+        }
+
+        // IsExpanded (ITreeNode.IsExpanded) is a plain bool, not a Binding<T> - so unlike
+        // Background/BorderColor/etc. it never raises Changed and never bubbles a cache
+        // invalidation (see BubbleInvalidation in UIComponent.cs). Since this template is a
+        // Border (always cached - see Border's constructor), toggling IsExpanded without this
+        // explicit InvalidateCache() left the cached row texture showing the arrow's old
+        // rotation until something else (e.g. a hover change) happened to invalidate the cache
+        // for an unrelated reason - the reported "arrow doesn't flip until the mouse leaves and
+        // re-enters" bug.
+        private void ToggleExpanded(ITreeNode treeNode)
+        {
+            treeNode.IsExpanded = !treeNode.IsExpanded;
+            InvalidateCache();
         }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
@@ -236,6 +255,7 @@ namespace Blade.MG.UI.Controls.Templates
                     if (treeNode.IsExpanded && treeNode.Children?.Count > 0)
                     {
                         treeNode.IsExpanded = false;
+                        InvalidateCache();
                         StateHasChanged();
                     }
                     else
@@ -251,6 +271,7 @@ namespace Blade.MG.UI.Controls.Templates
                         if (!treeNode.IsExpanded)
                         {
                             treeNode.IsExpanded = true;
+                            InvalidateCache();
                             StateHasChanged();
                         }
                         else
@@ -273,6 +294,7 @@ namespace Blade.MG.UI.Controls.Templates
                     if (treeNode.Children?.Count > 0)
                     {
                         treeNode.IsExpanded = !treeNode.IsExpanded;
+                        InvalidateCache();
                         StateHasChanged();
                     }
                     uiEvent.Handled = true;

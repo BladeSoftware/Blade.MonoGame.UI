@@ -17,14 +17,6 @@ namespace Blade.MG.UI.Controls
         private object targetObject;
         private List<PropertyInfo> properties = new();
 
-        // TextBox has no change-notification event to hook (its Text is a plain Binding<string>
-        // with no subscribe mechanism), so the search filter is applied by diffing text once per
-        // frame in Arrange, the same frame-to-frame diffing technique ComboBoxTemplate.Arrange
-        // already uses to detect its own EditBox's focus transitions. Property value editors
-        // (CreateTextEditor) commit on focus-lost instead of live per-keystroke, so they don't
-        // need this polling - see CreateTextEditor's own comment.
-        private string lastFilterText = "";
-
         public object TargetObject
         {
             get => targetObject;
@@ -88,6 +80,13 @@ namespace Blade.MG.UI.Controls
             };
             stackPanel.AddChild(searchBox);
 
+            // Text now raises Changed (Binding<T>.Value setter, equality-checked so no-op
+            // writes don't fire) - subscribe directly instead of diffing per-frame in Arrange.
+            // Safe to subscribe once here: searchBox.Text is only ever mutated via .Value =
+            // (TextEntryControl's keystroke/paste handlers), never wholesale replaced after
+            // this constructor-time assignment.
+            searchBox.Text.Changed += RefreshProperties;
+
 
             grid = new Grid
             {
@@ -137,18 +136,6 @@ namespace Blade.MG.UI.Controls
             // Initial refresh
             RefreshProperties();
 
-        }
-
-        public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
-        {
-            base.Arrange(context, layoutBounds, parentLayoutBounds);
-
-            string currentFilterText = searchBox?.Text?.Value ?? "";
-            if (currentFilterText != lastFilterText)
-            {
-                lastFilterText = currentFilterText;
-                RefreshProperties();
-            }
         }
 
         private void RefreshProperties()
