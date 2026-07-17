@@ -93,30 +93,45 @@ namespace Blade.MG.UI.Controls.Templates
             StateHasChanged();
         }
 
+        // Routed through ApplyThemedValue (checked against `button`, not this template, since
+        // button is the control an application actually holds a reference to and would call
+        // SetStyleOverride on) instead of direct .Value assignment - a plain assignment here
+        // silently discarded any SetStyleOverride the application had set, since the next
+        // hover/focus change would just snap straight back to the theme value with no way to
+        // tell an override had been requested. TextColor/Background use Button's own real
+        // property names as the override key (nameof); BorderColor/BorderThickness/Elevation
+        // have no equivalent on Button itself (they're internal to this template's border1), so
+        // they use plain string keys instead.
+        // Color properties ease toward their target via ApplyThemedValueAnimated (backed by
+        // PropertyAnimationManager, ticked once per frame from UIManager.Update - see
+        // TextBoxTemplate's label transitions for the same pattern) instead of snapping
+        // instantly, so hover/focus reads as a deliberate transition rather than a flicker.
+        // BorderThickness (Thickness) and Elevation (int) have no AnimateTo overload, so those
+        // still snap via the plain ApplyThemedValue - a 1px/1-unit jump isn't worth animating.
         protected override void HandleStateChange()
         {
             // Normal State
-            label1.TextColor.Value = Theme.OnPrimaryContainer;
-            border1.Background.Value = Theme.PrimaryContainer;
-            border1.BorderThickness.Value = BorderThickness;
-            border1.BorderColor.Value = Theme.Outline;
-            border1.Elevation.Value = 1;
+            ApplyThemedValueAnimated(button, label1.TextColor, nameof(Button.TextColor), Theme.OnPrimaryContainer);
+            ApplyThemedValueAnimated(button, border1.Background, nameof(Button.Background), Theme.PrimaryContainer);
+            ApplyThemedValue(button, border1.BorderThickness, "BorderThickness", BorderThickness);
+            ApplyThemedValueAnimated(button, border1.BorderColor, "BorderColor", Theme.Outline);
+            ApplyThemedValue(button, border1.Elevation, "Elevation", 1);
 
             // Focused State
             if (HasFocus.Value)
             {
-                border1.BorderColor.Value = Theme.Tertiary;
-                border1.Elevation.Value = 2;
+                ApplyThemedValueAnimated(button, border1.BorderColor, "BorderColor", Theme.Tertiary);
+                ApplyThemedValue(button, border1.Elevation, "Elevation", 2);
             }
 
             // Hover State
             if (MouseHover.Value)
             {
-                label1.TextColor.Value = Theme.OnSecondaryContainer;
-                border1.Background.Value = Theme.SecondaryContainer;
-                border1.BorderThickness.Value = BorderThickness;
-                border1.BorderColor.Value = Theme.Tertiary;
-                border1.Elevation.Value = 2;
+                ApplyThemedValueAnimated(button, label1.TextColor, nameof(Button.TextColor), Theme.OnSecondaryContainer);
+                ApplyThemedValueAnimated(button, border1.Background, nameof(Button.Background), Theme.SecondaryContainer);
+                ApplyThemedValue(button, border1.BorderThickness, "BorderThickness", BorderThickness);
+                ApplyThemedValueAnimated(button, border1.BorderColor, "BorderColor", Theme.Tertiary);
+                ApplyThemedValue(button, border1.Elevation, "Elevation", 2);
             }
         }
 

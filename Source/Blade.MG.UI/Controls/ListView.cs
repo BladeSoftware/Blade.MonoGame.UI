@@ -3,6 +3,7 @@ using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System.Collections;
 using System.Text.Json.Serialization;
 
 namespace Blade.MG.UI.Controls
@@ -34,6 +35,31 @@ namespace Blade.MG.UI.Controls
         // though virtualization means it may not currently be a real child.
         private int listItemCount = 0;
         private float listItemHeight = 0f;
+
+        // Real virtualization: rather than Measure/Arrange every item in DataContext every
+        // frame just to find out which ones actually land in the viewport (O(N) per frame
+        // regardless of how many are visible - the bottleneck for large lists), estimate the
+        // visible index range directly from ScrollOffset and a running-average row height, and
+        // only Measure/Arrange items in that range (+ a small buffer). This assumes roughly
+        // uniform item height, refined every frame from whatever's actually visible - the same
+        // trade-off virtualizing lists in WPF/Avalonia/Unity make; items far outside the
+        // estimated range are skipped entirely rather than measured and discarded.
+        private const int VirtualizationBufferRows = 3;
+        private float estimatedRowHeight = 32f;
+
+        // O(1) lookup by DataContext instead of scanning Children - rebuilt from the (small,
+        // already-virtualized) Children list once per Arrange pass, then kept in sync as items
+        // are added/removed within that same pass.
+        private readonly Dictionary<object, UIComponent> childrenByDataContext = new();
+
+        // How many items were actually Measured/Arranged during the last Arrange pass (the
+        // estimated visible range + buffer, not the whole DataContext). The resulting Children
+        // set alone doesn't prove virtualization is working - the pre-existing intersect-based
+        // Add/Remove check already produced a small, correct Children set even when every item
+        // was measured first - so this is exposed for tests/diagnostics that specifically need
+        // to confirm per-frame work scales with viewport size, not total item count.
+        [JsonIgnore]
+        public int LastArrangedItemCount { get; private set; }
 
         protected override void InitTemplate()
         {
@@ -132,16 +158,63 @@ namespace Blade.MG.UI.Controls
             Size availableSize = new Size(FinalContentRect.Width, FinalContentRect.Height);
             Layout parentMinMax = new Layout(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
 
-            nodeBounds = nodeBounds with { X = nodeBounds.X - HorizontalScrollOffset,  Y = nodeBounds.Y - VerticalScrollOffset };
+            IList listItems = GetIndexableItems(DataContext);
+            int totalCount = listItems?.Count ?? 0;
 
-            IEnumerable<object> listItems = DataContext as IEnumerable<object>;
+            LastArrangedItemCount = 0;
 
-            if (listItems != null)
+            if (listItems != null && totalCount > 0)
             {
-                foreach (var item in listItems)
+                RebuildChildLookup();
+
+                float rowHeight = estimatedRowHeight > 0f ? estimatedRowHeight : 32f;
+
+                int firstIndex = Math.Max(0, (int)(VerticalScrollOffset / rowHeight) - VirtualizationBufferRows);
+                int lastIndex = Math.Min(totalCount - 1, (int)((VerticalScrollOffset + FinalContentRect.Height) / rowHeight) + VirtualizationBufferRows);
+
+                nodeBounds = nodeBounds with
                 {
+                    X = nodeBounds.X - HorizontalScrollOffset,
+                    Y = nodeBounds.Y - VerticalScrollOffset + (int)(firstIndex * rowHeight)
+                };
+
+                float measuredHeightSum = 0f;
+                int measuredCount = 0;
+
+                for (int i = firstIndex; i <= lastIndex; i++)
+                {
+                    object item = listItems[i];
+                    if (item == null)
+                    {
+                        continue;
+                    }
+
+                    int rowTop = nodeBounds.Y;
+
                     ArrangeItem(context, ref availableSize, ref parentMinMax, ref layoutBounds, ref nodeBounds, item, ref desiredWidth, ref desiredHeight);
+
+                    measuredHeightSum += nodeBounds.Y - rowTop;
+                    measuredCount++;
                 }
+
+                // Refine the row-height estimate from what's actually visible this frame, so a
+                // cold-start guess (or a filtered/resized item template) converges quickly.
+                if (measuredCount > 0)
+                {
+                    estimatedRowHeight = measuredHeightSum / measuredCount;
+                }
+
+                LastArrangedItemCount = measuredCount;
+
+                // Total content height is estimated (totalCount * average row height) rather
+                // than summed from every item's real height, since most items are never
+                // measured - same trade-off as the visible-range estimate above. Total content
+                // WIDTH is only known from whatever's currently visible, unlike before this
+                // change (which measured every item) - horizontal scrolling based on an
+                // off-screen item wider than anything currently visible won't be detected until
+                // that item scrolls into view. Every real usage in this codebase sets
+                // HorizontalScrollBarVisible = Hidden, so this doesn't matter in practice.
+                desiredHeight = totalCount * estimatedRowHeight;
             }
 
 
@@ -153,12 +226,18 @@ namespace Blade.MG.UI.Controls
             // before stale ones got pruned - the visible symptom was old items never clearing
             // when a filter shrank the list, since the removal that should have deleted them
             // never actually completed. RemoveChild operates on the real backing list instead.
+            // This same pass also catches items that scrolled outside the virtualized range
+            // this frame (never touched by ArrangeItem above, so FrameID is stale).
             for (int i = Children.Count - 1; i >= 0; i--)
             {
                 var child = Children[i];
                 if (child.FrameID != frameID)
                 {
                     RemoveChild(child);
+                    if (child.DataContext != null)
+                    {
+                        childrenByDataContext.Remove(child.DataContext);
+                    }
                 }
             }
 
@@ -194,8 +273,41 @@ namespace Blade.MG.UI.Controls
             HorizontalScrollBar.Visible = BoolToVisibility(IsHorizontalScrollbarVisible);
             VerticalScrollBar.Visible = BoolToVisibility(IsVerticalScrollbarVisible);
 
-            listItemCount = listItems?.Count() ?? 0;
-            listItemHeight = listItemCount > 0 ? ListDesiredSize.Height / listItemCount : 0f;
+            listItemCount = totalCount;
+            listItemHeight = estimatedRowHeight;
+        }
+
+        // Fast path for anything actually indexable (List<T>, arrays, ObservableCollection<T>,
+        // etc. - anything implementing the non-generic IList, which List<T> does regardless of
+        // T's variance) so virtualization can jump straight to an index without allocating.
+        // Falls back to materializing a lazy IEnumerable<object> once (allocates, but only for
+        // sources that were never indexable in the first place).
+        private static IList GetIndexableItems(object dataContext)
+        {
+            if (dataContext is IList list)
+            {
+                return list;
+            }
+
+            if (dataContext is IEnumerable<object> enumerable)
+            {
+                return enumerable.ToList();
+            }
+
+            return null;
+        }
+
+        private void RebuildChildLookup()
+        {
+            childrenByDataContext.Clear();
+
+            foreach (var child in Children)
+            {
+                if (child.DataContext != null)
+                {
+                    childrenByDataContext[child.DataContext] = child;
+                }
+            }
         }
 
         private void ArrangeItem(UIContext context, ref Size availableSize, ref Layout parentMinMax, ref Rectangle layoutBounds, ref Rectangle nodeBounds, object itemDataContext, ref float desiredWidth, ref float desiredHeight)
@@ -242,12 +354,14 @@ namespace Blade.MG.UI.Controls
                 if (!isExistingNode)
                 {
                     AddChild(nodeTemplate, this, itemDataContext);
+                    childrenByDataContext[itemDataContext] = nodeTemplate;
                     TempNodeTemplate = null;
                 }
             }
             else if (isExistingNode)
             {
                 RemoveChild(nodeTemplate);
+                childrenByDataContext.Remove(itemDataContext);
             }
 
         }
@@ -276,11 +390,10 @@ namespace Blade.MG.UI.Controls
 
         private UIComponent GetNodeTemplate(object itemDataContext, out bool isExistingNode)
         {
-            var nodeTemplate = Children.Where(p => p.DataContext.GetHashCode() == itemDataContext.GetHashCode()).FirstOrDefault() as UIComponent;
-            if (nodeTemplate != null)
+            if (childrenByDataContext.TryGetValue(itemDataContext, out var existingNode))
             {
                 isExistingNode = true;
-                return nodeTemplate;
+                return existingNode;
             }
 
             isExistingNode = false;

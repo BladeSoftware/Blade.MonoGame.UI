@@ -30,6 +30,19 @@ namespace Blade.MG.UI.Controls
 
         private UIComponent TempNodeTemplate = null;
 
+        // O(1) lookup by node instead of scanning Children (which used to compare
+        // GetHashCode(), not even proper equality) - rebuilt once per Arrange pass from the
+        // (already-virtualized) Children list, then kept in sync as nodes are added/removed
+        // within that same pass. Matters most for a fully-expanded large tree, where the
+        // per-node Arrange work below is otherwise O(visible children) per lookup.
+        private readonly Dictionary<object, UIComponent> nodesByDataContext = new();
+
+        // How many nodes ArrangeNode actually visited during the last Arrange pass - exposed so
+        // tests/diagnostics can confirm collapsing a subtree actually stops the walk from
+        // descending into it, rather than just hiding its visual contribution while still
+        // paying to visit every hidden descendant.
+        [JsonIgnore]
+        public int LastArrangedNodeCount { get; private set; }
 
         private int focusedNodeHash = -1;
         private ITreeNode selectedNode = null;
@@ -174,6 +187,17 @@ namespace Blade.MG.UI.Controls
 
 
                 collapsed = collapsed || !node.IsExpanded;
+            }
+
+            // A node that's already collapsed (this node itself, or any ancestor) guarantees
+            // every descendant is collapsed too - once true, `collapsed` only ever stays true
+            // going deeper (collapsed || !child.IsExpanded). So there's nothing to gain by
+            // walking into this subtree at all: skip it entirely rather than recursing through
+            // every hidden descendant just to re-derive the same "still collapsed" result each
+            // one. This is what makes collapsing a huge subtree actually cheap.
+            if (collapsed)
+            {
+                return;
             }
 
             if (node.Children != null)
@@ -328,6 +352,9 @@ namespace Blade.MG.UI.Controls
             }
 
             frameID = frameID % 2000000 + 1;
+            LastArrangedNodeCount = 0;
+
+            RebuildNodeLookup();
 
             Rectangle nodeBounds = layoutBounds;
             Size availableSize = new Size(layoutBounds.Width, layoutBounds.Height);
@@ -356,9 +383,26 @@ namespace Blade.MG.UI.Controls
                 if (staleChild.FrameID != frameID)
                 {
                     RemoveChild(staleChild);
+                    if (staleChild.DataContext != null)
+                    {
+                        nodesByDataContext.Remove(staleChild.DataContext);
+                    }
                 }
             }
 
+        }
+
+        private void RebuildNodeLookup()
+        {
+            nodesByDataContext.Clear();
+
+            foreach (var child in Children)
+            {
+                if (child.DataContext != null)
+                {
+                    nodesByDataContext[child.DataContext] = child;
+                }
+            }
         }
 
         private void ArrangeNode(UIContext context, ref Size availableSize, ref Layout parentMinMax, ref Rectangle layoutBounds, ref Rectangle nodeBounds, ITreeNode node, bool collapsed, bool isRoot, int depth, ref float desiredWidth, ref float desiredHeight)
@@ -367,6 +411,8 @@ namespace Blade.MG.UI.Controls
             {
                 return;
             }
+
+            LastArrangedNodeCount++;
 
             if (isRoot && !ShowRootNode)
             {
@@ -418,6 +464,7 @@ namespace Blade.MG.UI.Controls
                 if (!isExistingNode)
                 {
                     AddChild(nodeTemplate, this, node);
+                    nodesByDataContext[node] = nodeTemplate;
                     TempNodeTemplate = null;
                 }
             }
@@ -427,12 +474,23 @@ namespace Blade.MG.UI.Controls
                 if (nodeTemplate != null)
                 {
                     RemoveChild(nodeTemplate);
+                    nodesByDataContext.Remove(node);
                 }
             }
 
             collapsed = collapsed || !node.IsExpanded;
 
         SkipNode:
+
+            // See the matching comment in MeasureNode - a collapsed node guarantees every
+            // descendant is collapsed too, so there's nothing to gain by walking into this
+            // subtree at all (the stale-child removal pass in ArrangeTree already cleans up any
+            // template that was real last frame and didn't get touched this frame, which
+            // includes anything newly hidden by collapsing an ancestor).
+            if (collapsed)
+            {
+                return;
+            }
 
             if (node.Children != null)
             {
@@ -537,7 +595,7 @@ namespace Blade.MG.UI.Controls
         /// <returns></returns>
         protected UIComponent GetExistingNodeTemplate(ITreeNode node)
         {
-            var nodeTemplate = Children.Where(p => p.DataContext.GetHashCode() == node.GetHashCode()).FirstOrDefault() as UIComponent;
+            nodesByDataContext.TryGetValue(node, out var nodeTemplate);
 
             return nodeTemplate;
         }
@@ -550,8 +608,7 @@ namespace Blade.MG.UI.Controls
         /// <returns></returns>
         protected UIComponent GetNodeTemplate(ITreeNode node, out bool isExistingNode)
         {
-            var nodeTemplate = Children.Where(p => p.DataContext.GetHashCode() == node.GetHashCode()).FirstOrDefault() as UIComponent;
-            if (nodeTemplate != null)
+            if (nodesByDataContext.TryGetValue(node, out var nodeTemplate))
             {
                 isExistingNode = true;
                 return nodeTemplate;

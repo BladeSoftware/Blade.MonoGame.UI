@@ -233,39 +233,49 @@ namespace Blade.MG.UI.Controls.Templates
 
             if (tabBorder == null) return;
 
+            // Routed through ApplyThemedValue (checked against `this`, the tab header itself)
+            // instead of direct assignment - a plain assignment here silently discarded any
+            // SetStyleOverride the application had set on this tab header, since the next
+            // hover/active-tab change would just snap straight back to the computed value with
+            // no way to tell an override had been requested. tabBorder/label1 have no property
+            // of their own that maps to "this" tab header, so these use dedicated string keys
+            // rather than nameof() against an unrelated property.
             if (activeTab)
             {
                 // Active tab - bright and prominent
-                tabBorder.Background = Theme.Surface;
-                tabBorder.BorderColor = Theme.Primary;
-                tabBorder.BorderThickness = new Thickness(1, 2, 1, 0); // Thicker top border
-                label1.TextColor = Theme.OnSurface;
+                ApplyThemedValue(this, tabBorder.Background, "TabBackground", Theme.Surface);
+                ApplyThemedValue(this, tabBorder.BorderColor, "TabBorderColor", Theme.Primary);
+                ApplyThemedValue(this, tabBorder.BorderThickness, "TabBorderThickness", new Thickness(1, 2, 1, 0)); // Thicker top border
+                ApplyThemedValue(this, label1.TextColor, "TabTextColor", Theme.OnSurface);
             }
             else if (mouseHover)
             {
                 // Hovered tab - slightly highlighted
-                tabBorder.Background = new Color(
+                Color hoverBackground = new Color(
                     (int)(Theme.Surface.R * 0.95f),
                     (int)(Theme.Surface.G * 0.95f),
                     (int)(Theme.Surface.B * 0.95f),
                     255
                 );
-                tabBorder.BorderColor = Theme.SurfaceVariant;
-                tabBorder.BorderThickness = new Thickness(1, 1, 1, 0);
-                label1.TextColor = Theme.OnSurface;
+                ApplyThemedValue(this, tabBorder.Background, "TabBackground", hoverBackground);
+                ApplyThemedValue(this, tabBorder.BorderColor, "TabBorderColor", Theme.SurfaceVariant);
+                ApplyThemedValue(this, tabBorder.BorderThickness, "TabBorderThickness", new Thickness(1, 1, 1, 0));
+                ApplyThemedValue(this, label1.TextColor, "TabTextColor", Theme.OnSurface);
             }
             else
             {
                 // Inactive tab - subtle and recessed
-                tabBorder.Background = new Color(
+                Color inactiveBackground = new Color(
                     (int)(Theme.Surface.R * 0.85f),
                     (int)(Theme.Surface.G * 0.85f),
                     (int)(Theme.Surface.B * 0.85f),
                     255
                 );
-                tabBorder.BorderColor = new Color(Theme.SurfaceVariant.R, Theme.SurfaceVariant.G, Theme.SurfaceVariant.B, (byte)100);
-                tabBorder.BorderThickness = new Thickness(1, 1, 1, 0);
-                label1.TextColor = Theme.OnSurface * 0.7f;
+                Color inactiveBorder = new Color(Theme.SurfaceVariant.R, Theme.SurfaceVariant.G, Theme.SurfaceVariant.B, (byte)100);
+                ApplyThemedValue(this, tabBorder.Background, "TabBackground", inactiveBackground);
+                ApplyThemedValue(this, tabBorder.BorderColor, "TabBorderColor", inactiveBorder);
+                ApplyThemedValue(this, tabBorder.BorderThickness, "TabBorderThickness", new Thickness(1, 1, 1, 0));
+                ApplyThemedValue(this, label1.TextColor, "TabTextColor", Theme.OnSurface * 0.7f);
             }
 
             //----

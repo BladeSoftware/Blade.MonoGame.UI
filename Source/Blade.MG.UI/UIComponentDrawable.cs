@@ -1,4 +1,5 @@
-﻿using Blade.MG.UI.Caching;
+﻿using Blade.MG.UI.Animations;
+using Blade.MG.UI.Caching;
 using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
 using Blade.MG.UI.Controls.Templates;
@@ -88,6 +89,35 @@ namespace Blade.MG.UI
             }
 
             target.Value = (owner != null && owner.TryGetStyleOverride(propertyName, out T overrideValue)) ? overrideValue : themeValue;
+        }
+
+        // Same override-resolution as ApplyThemedValue, but eases toward the resolved value via
+        // PropertyAnimationManager instead of snapping instantly - for hover/focus transitions
+        // where an instant color/thickness jump reads as cheap. Only Color/float have
+        // PropertyAnimationManager.AnimateTo overloads (matching TextBoxTemplate's existing
+        // usage), so this doesn't take an arbitrary T like ApplyThemedValue does.
+        private static readonly TimeSpan DefaultStateTransitionDuration = TimeSpan.FromMilliseconds(100);
+
+        protected static void ApplyThemedValueAnimated(UIComponentDrawable owner, Binding<Color> target, string propertyName, Color themeValue, TimeSpan? duration = null, Func<float, float> easing = null)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            Color resolved = (owner != null && owner.TryGetStyleOverride(propertyName, out Color overrideValue)) ? overrideValue : themeValue;
+            PropertyAnimationManager.AnimateTo(target, resolved, duration ?? DefaultStateTransitionDuration, easing ?? Easing.EaseOutCubic);
+        }
+
+        protected static void ApplyThemedValueAnimated(UIComponentDrawable owner, Binding<float> target, string propertyName, float themeValue, TimeSpan? duration = null, Func<float, float> easing = null)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            float resolved = (owner != null && owner.TryGetStyleOverride(propertyName, out float overrideValue)) ? overrideValue : themeValue;
+            PropertyAnimationManager.AnimateTo(target, resolved, duration ?? DefaultStateTransitionDuration, easing ?? Easing.EaseOutCubic);
         }
 
         public Binding<Color> Background { get; set; } = Color.Transparent;

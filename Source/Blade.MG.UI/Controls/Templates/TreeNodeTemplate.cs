@@ -308,7 +308,7 @@ namespace Blade.MG.UI.Controls.Templates
             TreeNode treeNode = DataContext as TreeNode;
 
             // Normal State
-            ApplyThemedValue(this, Background, nameof(Background), Color.Transparent);
+            ApplyThemedValueAnimated(this, Background, nameof(Background), Color.Transparent);
 
             if (label1 == null)
             {
@@ -323,26 +323,26 @@ namespace Blade.MG.UI.Controls.Templates
             }
 
             ApplyThemedValue(this, BorderThickness, nameof(BorderThickness), new Thickness(0));
-            ApplyThemedValue(this, BorderColor, nameof(BorderColor), Theme.Outline);
+            ApplyThemedValueAnimated(this, BorderColor, nameof(BorderColor), Theme.Outline);
             ApplyThemedValue(this, CornerRadius, nameof(CornerRadius), new CornerRadius(8));
-            ApplyThemedValue(this, label1.TextColor, nameof(TreeNodeTemplate.TextColor), Theme.OnPrimaryContainer);
+            ApplyThemedValueAnimated(this, label1.TextColor, nameof(TreeNodeTemplate.TextColor), Theme.OnPrimaryContainer);
 
             if (treeNode.IsSelected && MouseHover.Value)
             {
-                ApplyThemedValue(this, Background, nameof(Background), Theme.SecondaryContainer);
-                ApplyThemedValue(this, BorderColor, nameof(BorderColor), Theme.Tertiary);
+                ApplyThemedValueAnimated(this, Background, nameof(Background), Theme.SecondaryContainer);
+                ApplyThemedValueAnimated(this, BorderColor, nameof(BorderColor), Theme.Tertiary);
                 ApplyThemedValue(this, BorderThickness, nameof(BorderThickness), new Thickness(2));
-                ApplyThemedValue(this, label1.TextColor, nameof(TreeNodeTemplate.TextColor), Theme.OnSecondaryContainer);
+                ApplyThemedValueAnimated(this, label1.TextColor, nameof(TreeNodeTemplate.TextColor), Theme.OnSecondaryContainer);
             }
             else if (treeNode.IsSelected)
             {
-                ApplyThemedValue(this, Background, nameof(Background), Theme.SecondaryContainer);
+                ApplyThemedValueAnimated(this, Background, nameof(Background), Theme.SecondaryContainer);
                 ApplyThemedValue(this, BorderThickness, nameof(BorderThickness), new Thickness(2));
-                ApplyThemedValue(this, label1.TextColor, nameof(TreeNodeTemplate.TextColor), Theme.OnSecondaryContainer);
+                ApplyThemedValueAnimated(this, label1.TextColor, nameof(TreeNodeTemplate.TextColor), Theme.OnSecondaryContainer);
             }
             else if (MouseHover.Value)
             {
-                ApplyThemedValue(this, BorderColor, nameof(BorderColor), Theme.Tertiary);
+                ApplyThemedValueAnimated(this, BorderColor, nameof(BorderColor), Theme.Tertiary);
                 ApplyThemedValue(this, BorderThickness, nameof(BorderThickness), new Thickness(2));
             }
         }

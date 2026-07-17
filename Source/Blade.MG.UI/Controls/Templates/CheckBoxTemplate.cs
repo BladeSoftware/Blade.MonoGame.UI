@@ -56,21 +56,21 @@ namespace Blade.MG.UI.Controls.Templates
             var checkbox = ParentAs<CheckBox>();
 
             // Normal State
-            ApplyThemedValue(checkbox, label1.TextColor, nameof(CheckBox.TextColor), Theme.OnSurface);
-            ApplyThemedValue(checkbox, Background, nameof(CheckBox.Background), Color.Transparent);
+            ApplyThemedValueAnimated(checkbox, label1.TextColor, nameof(CheckBox.TextColor), Theme.OnSurface);
+            ApplyThemedValueAnimated(checkbox, Background, nameof(CheckBox.Background), Color.Transparent);
 
             // Hover State
             if (MouseHover.Value)
             {
-                ApplyThemedValue(checkbox, label1.TextColor, nameof(CheckBox.TextColor), Theme.Primary);
-                ApplyThemedValue(checkbox, Background, nameof(CheckBox.Background), Theme.SurfaceVariant);
+                ApplyThemedValueAnimated(checkbox, label1.TextColor, nameof(CheckBox.TextColor), Theme.Primary);
+                ApplyThemedValueAnimated(checkbox, Background, nameof(CheckBox.Background), Theme.SurfaceVariant);
             }
 
             // Focused State
             if (HasFocus.Value)
             {
-                ApplyThemedValue(checkbox, label1.TextColor, nameof(CheckBox.TextColor), Theme.Primary);
-                ApplyThemedValue(checkbox, Background, nameof(CheckBox.Background), Theme.SecondaryContainer);
+                ApplyThemedValueAnimated(checkbox, label1.TextColor, nameof(CheckBox.TextColor), Theme.Primary);
+                ApplyThemedValueAnimated(checkbox, Background, nameof(CheckBox.Background), Theme.SecondaryContainer);
             }
 
 

@@ -159,7 +159,23 @@ namespace Blade.MG.UI.Renderer
             DepthBufferEnable = false
         };
 
-        public SpriteBatch BeginBatch(Transform? transform, SpriteSortMode spriteSortMode = SpriteSortMode.Immediate, DepthStencilState depthStencilState = null, Effect effect = null, BlendState blendState = null)
+        // Deferred (not Immediate) so multiple Draw calls within one Begin/End (e.g. Border's
+        // per-corner-pixel stencil mask, which can be dozens to hundreds of 1x1 draws, or
+        // ScrollBar's handful of track/grip fills) get coalesced into far fewer actual GPU draw
+        // calls by SpriteBatch, instead of one GPU submission per Draw call. Deferred preserves
+        // submission order exactly like Immediate (no sorting), so this is a pure efficiency
+        // change with no visual difference - PROVIDED no caller changes
+        // GraphicsDevice.ScissorRectangle (via ClipToRect, or FillRect/DrawString's
+        // clippingRect parameter) to a genuinely different rect between two Draw calls sharing
+        // one Begin/End: Deferred coalesces consecutive same-texture draws using whatever GPU
+        // state is live when the batch actually flushes, not whatever was live when each
+        // individual Draw was called, so two different intended clip rects on the same texture
+        // within one batch would both silently get the same (wrong, for one of them) rect. Every
+        // existing RenderControl in this library only calls ClipToRect once (or repeatedly with
+        // the same rect) per Begin/End - confirmed by checking every BeginBatch call site - so
+        // this holds today; any future draw code must preserve that same one-clip-rect-per-batch
+        // invariant instead of reintroducing Immediate.
+        public SpriteBatch BeginBatch(Transform? transform, SpriteSortMode spriteSortMode = SpriteSortMode.Deferred, DepthStencilState depthStencilState = null, Effect effect = null, BlendState blendState = null)
         {
             PushState();
 
