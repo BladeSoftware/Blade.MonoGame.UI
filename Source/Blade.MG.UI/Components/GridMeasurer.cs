@@ -30,6 +30,52 @@
 
         }
 
+        // Re-initializes this instance for reuse across Measure passes (see Grid.Measure) instead
+        // of allocating a brand-new GridMeasurer + one GridMeasurerSizing per column/row every
+        // frame. Only reallocates the Measurables array/objects when the column/row count has
+        // actually changed since the last call - the common case (a Grid's column/row count is
+        // set up once and rarely changes) reuses the existing objects, just refreshing their
+        // Size/MaxSize/MinSize/CalcSize fields from the current definitions.
+        public void Reset(List<ColumnDefinition> columns)
+        {
+            if (Measurables == null || Measurables.Length != columns.Count)
+            {
+                Measurables = new GridMeasurerSizing[columns.Count];
+
+                for (int i = 0; i < columns.Count; i++)
+                {
+                    Measurables[i] = new GridMeasurerSizing(columns[i]);
+                }
+
+                return;
+            }
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                Measurables[i].Reset(columns[i]);
+            }
+        }
+
+        public void Reset(List<RowDefinition> rows)
+        {
+            if (Measurables == null || Measurables.Length != rows.Count)
+            {
+                Measurables = new GridMeasurerSizing[rows.Count];
+
+                for (int i = 0; i < rows.Count; i++)
+                {
+                    Measurables[i] = new GridMeasurerSizing(rows[i]);
+                }
+
+                return;
+            }
+
+            for (int i = 0; i < rows.Count; i++)
+            {
+                Measurables[i].Reset(rows[i]);
+            }
+        }
+
         public void MeasureChild(UIComponent child, float desiredSize, int origin, int span)
         {
             // If Span is Absolute then the Size of the Child doesn't affect the layout

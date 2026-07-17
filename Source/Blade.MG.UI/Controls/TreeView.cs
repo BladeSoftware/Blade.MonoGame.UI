@@ -4,7 +4,6 @@ using Blade.MG.UI.Events;
 using Blade.MG.UI.Models;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.Xna.Framework;
-using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace Blade.MG.UI.Controls
@@ -69,13 +68,6 @@ namespace Blade.MG.UI.Controls
         private JoinableTaskFactory joinableTaskFactory;
 
         //private Size NodesDesiredSize { get; set; }
-
-        private Stopwatch swArrange;
-        private long min = long.MaxValue;
-        private long max = long.MinValue;
-        private long sum = 0;
-        private long cnt = 0;
-        private long avg = 0;
 
 
         protected override void InitTemplate()
@@ -275,8 +267,6 @@ namespace Blade.MG.UI.Controls
             float desiredWidth = 0;
             float desiredHeight = 0;
 
-            swArrange = Stopwatch.StartNew();
-
             int verticalScrollBarWidth = IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0;
             int horizontalScrollBarHeight = IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0;
 
@@ -301,7 +291,6 @@ namespace Blade.MG.UI.Controls
             ArrangeTree(context, treeLayoutBounds, ref desiredWidth, ref desiredHeight);
 
             //ArrangeTree(context, layoutBounds, ref desiredWidth, ref desiredHeight);
-            swArrange.Stop();
 
             var nodesDesiredSize = new Size(desiredWidth, desiredHeight);
 
@@ -329,17 +318,10 @@ namespace Blade.MG.UI.Controls
             isHorizontallyScrollable = w > 0;
             isVerticallyScrollable = h > 0;
 
-            HorizontalScrollBar.Visible = BoolToVisibility(IsHorizontalScrollbarVisible);
-            VerticalScrollBar.Visible = BoolToVisibility(IsVerticalScrollbarVisible);
-
-
-            if (swArrange.ElapsedMilliseconds < min) min = swArrange.ElapsedMilliseconds;
-            if (swArrange.ElapsedMilliseconds > max) max = swArrange.ElapsedMilliseconds;
-            sum += swArrange.ElapsedMilliseconds;
-            cnt++;
-            avg = sum / cnt;
-
-            //Trace.WriteLine($"Arrange = {swArrange.ElapsedMilliseconds} : min={min} : max={max} : avg={avg} : cnt={cnt}");
+            // .Value = (mutating the existing binding), not the property directly - see
+            // ScrollPanel.Arrange's matching comment.
+            HorizontalScrollBar.Visible.Value = BoolToVisibility(IsHorizontalScrollbarVisible);
+            VerticalScrollBar.Visible.Value = BoolToVisibility(IsVerticalScrollbarVisible);
         }
 
 

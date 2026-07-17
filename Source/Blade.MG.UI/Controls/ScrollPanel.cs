@@ -201,8 +201,12 @@ namespace Blade.MG.UI.Controls
             isHorizontallyScrollable = (FinalContentRect.Width < childBounds.Width);
             isVerticallyScrollable = (FinalContentRect.Height < childBounds.Height);
 
-            HorizontalScrollBar?.Visible = BoolToVisibility(IsHorizontalScrollbarVisible);
-            VerticalScrollBar?.Visible = BoolToVisibility(IsVerticalScrollbarVisible);
+            // .Value = (mutating the existing binding) rather than the property directly -
+            // the latter relies on Binding<T>'s implicit T->Binding<T> conversion, allocating a
+            // brand new Binding<T> (plus two delegates) on every single Arrange call, every
+            // frame, for every ScrollPanel/StackPanel/ListView/TreeView on screen.
+            if (HorizontalScrollBar != null) HorizontalScrollBar.Visible.Value = BoolToVisibility(IsHorizontalScrollbarVisible);
+            if (VerticalScrollBar != null) VerticalScrollBar.Visible.Value = BoolToVisibility(IsVerticalScrollbarVisible);
 
             //HorizontalScrollBar.MaxValue = w < -verticalScrollBarWidth ? w : (w + verticalScrollBarWidth);
             //VerticalScrollBar.MaxValue = h < -horizontalScrollBarHeight ? h : (h + horizontalScrollBarHeight);

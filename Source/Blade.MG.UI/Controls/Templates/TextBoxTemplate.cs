@@ -126,33 +126,39 @@ namespace Blade.MG.UI.Controls.Templates
             // Border color/thickness are state-driven (hover/focus - see HandleStateChange),
             // not just Variant-driven, so they're applied there instead of here - Measure()
             // still owns everything else Variant controls (fill, corner radius, spacing).
+            // Assigning through .Value (mutating the existing Border/Label bindings already
+            // wired up by EnsureBindingsWired) rather than the properties directly - the latter
+            // relies on Binding<T>'s implicit T->Binding<T> conversion, which allocates a brand
+            // new Binding<T> (plus two delegates) on every single Measure call for every visible
+            // TextBox, every frame, regardless of Variant/hasLabel/hasHelperText actually
+            // changing.
             if (textBox.Variant == Variant.Standard)
             {
-                border1.Background = Color.Transparent;
-                border1.CornerRadius = new CornerRadius(0);
-                border1.Margin = new Thickness(0, hasLabel ? 9 : 0, 0, helperTextHeight);
+                border1.Background.Value = Color.Transparent;
+                border1.CornerRadius.Value = new CornerRadius(0);
+                border1.Margin.Value = new Thickness(0, hasLabel ? 9 : 0, 0, helperTextHeight);
                 // With no label, match DisplayLabel/label1's own implicit zero vertical
                 // padding exactly (rather than merely shrinking it) - a fixed-height host like
                 // ComboBox's 40px header budgets for a plain Label's zero-padding footprint,
                 // and even the "compact" 5px top/bottom this used to fall back to was still
                 // enough to push the box past that budget and get clipped.
-                border1.Padding = hasLabel ? new Thickness(10, 11, 0, 5) : new Thickness(10, 0, 0, 0);
+                border1.Padding.Value = hasLabel ? new Thickness(10, 11, 0, 5) : new Thickness(10, 0, 0, 0);
 
             }
             else if (textBox.Variant == Variant.Filled)
             {
-                border1.Background = textBox.IsEnabled.Value ? Theme.SurfaceVariant : Theme.OnDisabled;
-                border1.CornerRadius = new CornerRadius(8, 8, 0, 0);
-                //border1.Margin = new Thickness(0, hasLabel ? 9 : 0, 0, helperTextHeight);
-                border1.Margin = new Thickness(0, hasLabel ? 0 : 0, 0, helperTextHeight);
-                border1.Padding = hasLabel ? new Thickness(10, 11, 0, 5) : new Thickness(10, 0, 0, 0);
+                border1.Background.Value = textBox.IsEnabled.Value ? Theme.SurfaceVariant : Theme.OnDisabled;
+                border1.CornerRadius.Value = new CornerRadius(8, 8, 0, 0);
+                //border1.Margin.Value = new Thickness(0, hasLabel ? 9 : 0, 0, helperTextHeight);
+                border1.Margin.Value = new Thickness(0, hasLabel ? 0 : 0, 0, helperTextHeight);
+                border1.Padding.Value = hasLabel ? new Thickness(10, 11, 0, 5) : new Thickness(10, 0, 0, 0);
             }
             else if (textBox.Variant == Variant.Outlined)
             {
-                border1.Background = Color.Transparent;
-                border1.CornerRadius = new CornerRadius(8);
-                border1.Margin = new Thickness(0, hasLabel ? 5 : 0, 0, helperTextHeight);
-                border1.Padding = hasLabel ? new Thickness(10, 14, 10, 5) : new Thickness(10, 0, 10, 0);
+                border1.Background.Value = Color.Transparent;
+                border1.CornerRadius.Value = new CornerRadius(8);
+                border1.Margin.Value = new Thickness(0, hasLabel ? 5 : 0, 0, helperTextHeight);
+                border1.Padding.Value = hasLabel ? new Thickness(10, 14, 10, 5) : new Thickness(10, 0, 10, 0);
             }
 
             base.Measure(context, ref availableSize, ref parentMinMax);
@@ -200,7 +206,7 @@ namespace Blade.MG.UI.Controls.Templates
             if (textBox.Variant == Variant.Outlined)
             {
                 ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), indicatorColor);
-                border1.BorderThickness = new Thickness(isFocused ? 2 : 1);
+                border1.BorderThickness.Value = new Thickness(isFocused ? 2 : 1);
             }
             else
             {
@@ -214,8 +220,8 @@ namespace Blade.MG.UI.Controls.Templates
                 // the fill by 1px on every edge for a border that was never visible anyway,
                 // leaving a 1px seam of this template's own background peeking through right at
                 // the top, exactly where filledRect's patch meets border1's own fill.
-                border1.BorderThickness = (Thickness)0f;
-                //border1.CornerRadius = (CornerRadius)0f;
+                border1.BorderThickness.Value = (Thickness)0f;
+                //border1.CornerRadius.Value = (CornerRadius)0f;
             }
 
             try

@@ -283,7 +283,7 @@ namespace Blade.MG.UI.Controls
 
             if (contentPanel.Margin.Value.Top != tabsStackPanel.FinalRect.Height)
             {
-                contentPanel.Margin = new Thickness(0, tabsStackPanel.FinalRect.Height, 0, 0);
+                contentPanel.Margin.Value = new Thickness(0, tabsStackPanel.FinalRect.Height, 0, 0);
             }
 
             contentPanel.Measure(context, ref availableSize, ref parentMinMax);

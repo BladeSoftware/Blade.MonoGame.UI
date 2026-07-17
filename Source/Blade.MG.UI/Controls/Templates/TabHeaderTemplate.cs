@@ -228,7 +228,7 @@ namespace Blade.MG.UI.Controls.Templates
             // Show close button on hover or when active
             if (label2 != null)
             {
-                label2.Visible = (mouseHover || activeTab) ? Visibility.Visible : Visibility.Hidden;
+                label2.Visible.Value = (mouseHover || activeTab) ? Visibility.Visible : Visibility.Hidden;
             }
 
             if (tabBorder == null) return;

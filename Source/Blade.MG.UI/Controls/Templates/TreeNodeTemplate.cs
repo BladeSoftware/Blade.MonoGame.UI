@@ -315,7 +315,7 @@ namespace Blade.MG.UI.Controls.Templates
                 return;
             }
 
-            label1.Visible = Visibility.Visible;
+            label1.Visible.Value = Visibility.Visible;
 
             if (treeNode == null)
             {

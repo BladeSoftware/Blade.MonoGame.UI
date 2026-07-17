@@ -9,11 +9,19 @@ namespace Blade.MG.UI.Controls
 {
     public class Border : Control
     {
-        public Binding<Color> BorderColor { get; set; } = new Color();
-        public Binding<Thickness> BorderThickness { get; set; } = new Thickness();
-        public Binding<CornerRadius> CornerRadius { get; set; } = new CornerRadius();
+        // See the matching comment on UIComponent's Margin/Padding/Visible/etc. - routing
+        // through SetField keeps a reassignment like `border.BorderColor = Color.Red` from
+        // silently orphaning whatever Changed subscription EnsureBindingsWired already set up
+        // here.
+        private Binding<Color> borderColor = new Color();
+        public Binding<Color> BorderColor { get => borderColor; set => SetField(ref borderColor, value); }
+        private Binding<Thickness> borderThickness = new Thickness();
+        public Binding<Thickness> BorderThickness { get => borderThickness; set => SetField(ref borderThickness, value); }
+        private Binding<CornerRadius> cornerRadius = new CornerRadius();
+        public Binding<CornerRadius> CornerRadius { get => cornerRadius; set => SetField(ref cornerRadius, value); }
 
-        public Binding<int> Elevation { get; set; } = 0;
+        private Binding<int> elevation = 0;
+        public Binding<int> Elevation { get => elevation; set => SetField(ref elevation, value); }
 
 
         public Border()

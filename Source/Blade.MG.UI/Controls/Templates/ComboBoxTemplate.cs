@@ -198,7 +198,11 @@ public class ComboBoxTemplate : Control
         // focus search in UIManager.Mouse.cs requires Visible == Visible).
         if (EditBox != null)
         {
-            EditBox.Visible = combo.IsEditable.Value ? Visibility.Visible : Visibility.Collapsed;
+            // Assigning through .Value (mutating the existing bindings) rather than the
+            // properties directly - the latter relies on Binding<T>'s implicit T->Binding<T>
+            // conversion, which allocates a brand new Binding<T> (plus two delegates) every
+            // single Arrange call, every frame, for every ComboBox.
+            EditBox.Visible.Value = combo.IsEditable.Value ? Visibility.Visible : Visibility.Collapsed;
 
             // TextEntryControl hardcodes IsTabStop = true in its constructor, and Tab navigation
             // (UIWindow.HandleTabNext/HandleTabPrevious) selects the next stop by IsTabStop
@@ -207,7 +211,7 @@ public class ComboBoxTemplate : Control
             // the sync below pushes its typed text into combo.Text (and from there into the
             // visible DisplayLabel) regardless of IsEditable. Keeping IsTabStop in lockstep with
             // Visible closes that path.
-            EditBox.IsTabStop = combo.IsEditable.Value;
+            EditBox.IsTabStop.Value = combo.IsEditable.Value;
 
             // The real leak: UIComponent.HandleFocusChangedEventAsync (the base implementation)
             // propagates a "focused" event into *every* descendant of whatever component
@@ -227,7 +231,7 @@ public class ComboBoxTemplate : Control
         }
         if (DisplayLabel != null)
         {
-            DisplayLabel.Visible = combo.IsEditable.Value ? Visibility.Collapsed : Visibility.Visible;
+            DisplayLabel.Visible.Value = combo.IsEditable.Value ? Visibility.Collapsed : Visibility.Visible;
         }
 
         // Arrange using base

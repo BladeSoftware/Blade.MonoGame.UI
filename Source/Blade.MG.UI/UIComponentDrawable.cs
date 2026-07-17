@@ -120,7 +120,11 @@ namespace Blade.MG.UI
             PropertyAnimationManager.AnimateTo(target, resolved, duration ?? DefaultStateTransitionDuration, easing ?? Easing.EaseOutCubic);
         }
 
-        public Binding<Color> Background { get; set; } = Color.Transparent;
+        // See the matching comment on UIComponent's Margin/Padding/Visible/etc. - routing through
+        // SetField keeps a reassignment like `control.Background = Color.Red` from silently
+        // orphaning whatever Changed subscription EnsureBindingsWired already set up here.
+        private Binding<Color> background = Color.Transparent;
+        public Binding<Color> Background { get => background; set => SetField(ref background, value); }
 
         [JsonIgnore]
         public Texture2D BackgroundTexture { get; set; }

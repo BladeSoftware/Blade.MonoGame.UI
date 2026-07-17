@@ -2,7 +2,6 @@
 using Blade.MG.UI.Controls.Templates;
 using Blade.MG.UI.Models;
 using Microsoft.Xna.Framework;
-using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace Blade.MG.UI.Controls
@@ -20,12 +19,13 @@ namespace Blade.MG.UI.Controls
 
         private UIComponent TempNodeTemplate = null;
 
-
+        // O(1) lookup by node instead of scanning Children with a raw GetHashCode() comparison
+        // (which also wasn't even proper equality - see TreeView.nodesByDataContext, which this
+        // mirrors) - rebuilt once per Arrange pass, then kept in sync as nodes are added/removed
+        // within that same pass.
+        private readonly Dictionary<object, UIComponent> nodesByDataContext = new();
 
         //private Size NodesDesiredSize { get; set; }
-
-        private Stopwatch swArrange;
-        private long min = long.MaxValue, max = long.MinValue, sum = 0, cnt = 0, avg = 0;
 
 
         public ExpansionPanel()
@@ -117,9 +117,7 @@ namespace Blade.MG.UI.Controls
             float desiredWidth = 0;
             float desiredHeight = 0;
 
-            swArrange = Stopwatch.StartNew();
             ArrangeTree(context, layoutBounds, ref desiredWidth, ref desiredHeight);
-            swArrange.Stop();
 
             var nodesDesiredSize = new Size(desiredWidth, desiredHeight);
 
@@ -141,15 +139,6 @@ namespace Blade.MG.UI.Controls
 
             HorizontalScrollBar.MaxValue = w;
             VerticalScrollBar.MaxValue = h;
-
-
-            if (swArrange.ElapsedMilliseconds < min) min = swArrange.ElapsedMilliseconds;
-            if (swArrange.ElapsedMilliseconds > max) max = swArrange.ElapsedMilliseconds;
-            sum += swArrange.ElapsedMilliseconds;
-            cnt++;
-            avg = sum / cnt;
-
-            //Trace.WriteLine($"Arrange = {swArrange.ElapsedMilliseconds} : min={min} : max={max} : avg={avg} : cnt={cnt}");
         }
 
 
@@ -162,6 +151,8 @@ namespace Blade.MG.UI.Controls
             }
 
             frameID = frameID % 2000000 + 1;
+
+            RebuildNodeLookup();
 
             Rectangle nodeBounds = layoutBounds;
             Size availableSize = new Size(layoutBounds.Width, layoutBounds.Height);
@@ -179,10 +170,27 @@ namespace Blade.MG.UI.Controls
                 if (staleChild.FrameID != frameID)
                 {
                     RemoveChild(staleChild);
+                    if (staleChild.DataContext != null)
+                    {
+                        nodesByDataContext.Remove(staleChild.DataContext);
+                    }
                 }
 
             }
 
+        }
+
+        private void RebuildNodeLookup()
+        {
+            nodesByDataContext.Clear();
+
+            foreach (var child in Children)
+            {
+                if (child.DataContext != null)
+                {
+                    nodesByDataContext[child.DataContext] = child;
+                }
+            }
         }
 
         private void ArrangeNode(UIContext context, ref Size availableSize, ref Layout parentMinMax, ref Rectangle layoutBounds, ref Rectangle nodeBounds, ITreeNode node, bool collapsed, int depth, ref float desiredWidth, ref float desiredHeight)
@@ -210,12 +218,14 @@ namespace Blade.MG.UI.Controls
                 if (!isExistingNode)
                 {
                     AddChild(nodeTemplate, this, node);
+                    nodesByDataContext[node] = nodeTemplate;
                     TempNodeTemplate = null;
                 }
             }
             else if (isExistingNode)
             {
                 RemoveChild(nodeTemplate);
+                nodesByDataContext.Remove(node);
             }
 
             collapsed = collapsed || !node.IsExpanded;
@@ -254,8 +264,7 @@ namespace Blade.MG.UI.Controls
 
         private UIComponent GetNodeTemplate(ITreeNode node, out bool isExistingNode)
         {
-            var nodeTemplate = Children.Where(p => p.DataContext.GetHashCode() == node.GetHashCode()).FirstOrDefault() as UIComponent;
-            if (nodeTemplate != null)
+            if (nodesByDataContext.TryGetValue(node, out var nodeTemplate))
             {
                 isExistingNode = true;
                 return nodeTemplate;

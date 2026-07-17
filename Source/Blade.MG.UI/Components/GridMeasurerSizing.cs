@@ -37,6 +37,25 @@
             }
         }
 
+        // Re-initializes an already-allocated instance in place (see GridMeasurer.Reset) so a
+        // Grid with a stable column/row count doesn't allocate a fresh GridMeasurerSizing per
+        // column/row on every Measure pass.
+        public void Reset(ColumnDefinition column)
+        {
+            Size = column.Width;
+            MaxSize = column.MaxWidth;
+            MinSize = column.MinWidth;
+            CalcSize = IsAbsolute ? Size.Value : float.NaN;
+        }
+
+        public void Reset(RowDefinition row)
+        {
+            Size = row.Height;
+            MaxSize = row.MaxHeight;
+            MinSize = row.MinHeight;
+            CalcSize = IsAbsolute ? Size.Value : float.NaN;
+        }
+
         public bool IsAbsolute
         {
             get { return Size.IsAbsolute; }

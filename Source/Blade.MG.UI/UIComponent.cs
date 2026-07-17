@@ -32,8 +32,17 @@ namespace Blade.MG.UI
         /// TODO: Find a better name for these 'internal' components
         /// </summary>
         [JsonIgnore]
-        protected IReadOnlyList<UIComponent> InternalChildren => internalChildren.AsReadOnly();
+        protected IReadOnlyList<UIComponent> InternalChildren => internalChildrenReadOnly;
         private List<UIComponent> internalChildren = new List<UIComponent>();
+
+        // List<T>.AsReadOnly() allocates a brand-new ReadOnlyCollection<T> wrapper every call -
+        // InternalChildren used to call it on every single access (including from Measure,
+        // which every control's base Measure() reads every frame). ReadOnlyCollection<T> just
+        // wraps the underlying list by reference (a live view, not a snapshot), so it's safe to
+        // allocate this wrapper exactly once and reuse it forever - Add/Remove/Clear on
+        // internalChildren below are all immediately visible through it with no invalidation
+        // needed.
+        private readonly IReadOnlyList<UIComponent> internalChildrenReadOnly;
 
 
         private object dataContext;
@@ -102,26 +111,48 @@ namespace Blade.MG.UI
         public Length MaxWidth { get; set; }
         public Length MaxHeight { get; set; }
 
-        public Binding<Thickness> Margin { get; set; } = new Thickness();
-        public Binding<Thickness> Padding { get; set; } = new Thickness();
+        // These nine Binding<T> properties are the ones assigned a raw value (not .Value = ...)
+        // from the most call sites across the whole library and its consumers - a plain
+        // auto-property (`{ get; set; }`) means such an assignment (e.g. control.Margin = new
+        // Thickness(5)) relies on Binding<T>'s implicit T->Binding<T> conversion operator, which
+        // always allocates a brand-new Binding<T> instance wholesale. Routed through SetField
+        // instead: an implicitly-cast Binding<T> (IsImplicitCast=true, see SetField's second
+        // overload) has its resolved value copied onto the EXISTING field's own Value setter
+        // rather than replacing the field outright - so whatever EnsureBindingsWired had already
+        // subscribed to this property's Changed event stays correctly wired AND actually fires
+        // when the value changes. This does not by itself avoid the allocation the implicit conversion
+        // still performs at the call site (only rewriting a call site to `control.Margin.Value =
+        // ...` avoids that) - it only guarantees that allocation isn't paired with a correctness
+        // regression too.
+        private Binding<Thickness> margin = new Thickness();
+        public Binding<Thickness> Margin { get => margin; set => SetField(ref margin, value); }
+        private Binding<Thickness> padding = new Thickness();
+        public Binding<Thickness> Padding { get => padding; set => SetField(ref padding, value); }
 
-        public Binding<HorizontalAlignmentType> HorizontalAlignment { get; set; }
-        public Binding<VerticalAlignmentType> VerticalAlignment { get; set; }
+        private Binding<HorizontalAlignmentType> horizontalAlignment;
+        public Binding<HorizontalAlignmentType> HorizontalAlignment { get => horizontalAlignment; set => SetField(ref horizontalAlignment, value); }
+        private Binding<VerticalAlignmentType> verticalAlignment;
+        public Binding<VerticalAlignmentType> VerticalAlignment { get => verticalAlignment; set => SetField(ref verticalAlignment, value); }
         //public Binding<HorizontalAlignmentType> HorizontalContentAlignment { get; set; }
         //public Binding<VerticalAlignmentType> VerticalContentAlignment { get; set; }
 
         public int TabIndex { get; set; } = ++LastTabOrder;
 
-        public Binding<bool> IsTabStop { get; set; } = false;
-        public Binding<bool> IsEnabled { get; set; } = true;
-        public Binding<Visibility> Visible { get; set; } = Visibility.Visible;
+        private Binding<bool> isTabStop = false;
+        public Binding<bool> IsTabStop { get => isTabStop; set => SetField(ref isTabStop, value); }
+        private Binding<bool> isEnabled = true;
+        public Binding<bool> IsEnabled { get => isEnabled; set => SetField(ref isEnabled, value); }
+        private Binding<Visibility> visible = Visibility.Visible;
+        public Binding<Visibility> Visible { get => visible; set => SetField(ref visible, value); }
 
         public bool IsHitTestVisible { get; set; } = false;
         public bool CanHover { get; set; } = true;
         public bool CanFocus { get; set; } = true;  // Same meaning as IsHitTestVisible ??
 
-        public Binding<bool> HasFocus { get; set; } = false;
-        public Binding<bool> MouseHover { get; set; } = false;
+        private Binding<bool> hasFocus = false;
+        public Binding<bool> HasFocus { get => hasFocus; set => SetField(ref hasFocus, value); }
+        private Binding<bool> mouseHover = false;
+        public Binding<bool> MouseHover { get => mouseHover; set => SetField(ref mouseHover, value); }
 
 
         public Transform Transform { get; set; } = new Transform();
@@ -149,6 +180,17 @@ namespace Blade.MG.UI
 
         protected void SetField<T>(ref Binding<T> field, Binding<T> value)
         {
+            // Several call sites re-assign the same already-adopted Binding<T> instance every
+            // frame (e.g. ComboBoxTemplate.Arrange's `EditBox.Text = combo.Text;`, re-run
+            // unconditionally each Arrange pass) - without this, that would unsubscribe and
+            // re-subscribe OnOwnBindingChanged on every such call for no actual change, and
+            // C#'s event -=/+= combine a new delegate instance under the hood, so it's not even
+            // free to do redundantly.
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
             if (field == null)
             {
                 field = new Binding<T>();
@@ -156,7 +198,18 @@ namespace Blade.MG.UI
 
             if (value.IsImplicitCast)
             {
-                field.SetFromBinding(value);
+                // A plain raw-value reassignment (e.g. `border.Background = Color.Red;`, which
+                // relies on Binding<T>'s implicit T->Binding<T> conversion to manufacture this
+                // throwaway `value`) - the field's own object identity (and its Changed
+                // subscribers) must stay put, so go through the field's own Value setter rather
+                // than field.SetFromBinding(value), which used to copy value's Getter/Setter
+                // onto field directly. That bypassed Value's own equality-check-and-fire logic
+                // entirely, silently keeping the field's stale Changed subscription intact but
+                // never actually invoking it - a genuine reassignment (e.g. a hover/focus color
+                // change written this way) would correctly avoid orphaning the render-cache/
+                // layout-dirty-flagging bubbling (see BubbleInvalidation), but would never
+                // actually trigger it either.
+                field.Value = value.Value;
             }
             else
             {
@@ -262,6 +315,8 @@ namespace Blade.MG.UI
 
         public UIComponent()
         {
+            internalChildrenReadOnly = internalChildren.AsReadOnly();
+
             Width = float.NaN;
             Height = float.NaN;
             MinWidth = float.NaN;

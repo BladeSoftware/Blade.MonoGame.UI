@@ -270,8 +270,10 @@ namespace Blade.MG.UI.Controls
             isHorizontallyScrollable = w > 0;
             isVerticallyScrollable = h > 0;
 
-            HorizontalScrollBar.Visible = BoolToVisibility(IsHorizontalScrollbarVisible);
-            VerticalScrollBar.Visible = BoolToVisibility(IsVerticalScrollbarVisible);
+            // .Value = (mutating the existing binding), not the property directly - see
+            // ScrollPanel.Arrange's matching comment.
+            HorizontalScrollBar.Visible.Value = BoolToVisibility(IsHorizontalScrollbarVisible);
+            VerticalScrollBar.Visible.Value = BoolToVisibility(IsVerticalScrollbarVisible);
 
             listItemCount = totalCount;
             listItemHeight = estimatedRowHeight;

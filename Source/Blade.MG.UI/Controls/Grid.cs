@@ -22,8 +22,10 @@ namespace Blade.MG.UI.Controls
         private Dictionary<UIComponent, int> ColumnSpanProperty = new Dictionary<UIComponent, int>();
         private Dictionary<UIComponent, int> RowSpanProperty = new Dictionary<UIComponent, int>();
 
-        private GridMeasurer columnMeasurer;
-        private GridMeasurer rowMeasurer;
+        // Pooled and reused across Measure passes via Reset() rather than reallocated - see
+        // GridMeasurer.Reset for why.
+        private GridMeasurer columnMeasurer = new GridMeasurer();
+        private GridMeasurer rowMeasurer = new GridMeasurer();
 
 
         public Grid()
@@ -213,8 +215,8 @@ namespace Blade.MG.UI.Controls
             parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
 
             // If we have no Rows or Columns then add a default Row/Column set to Auto
-            columnMeasurer = ColumnDefinitions.Count > 0 ? new GridMeasurer(ColumnDefinitions) : new GridMeasurer(defaultColumns);
-            rowMeasurer = RowDefinitions.Count > 0 ? new GridMeasurer(RowDefinitions) : new GridMeasurer(defaultRows);
+            columnMeasurer.Reset(ColumnDefinitions.Count > 0 ? ColumnDefinitions : defaultColumns);
+            rowMeasurer.Reset(RowDefinitions.Count > 0 ? RowDefinitions : defaultRows);
 
 
             // Calc Child Sizes
@@ -335,9 +337,9 @@ namespace Blade.MG.UI.Controls
             // Set layout bounds for children to the grid's final content rectangle
             layoutBounds = FinalContentRect;
 
-            //-------------------   
+            //-------------------
 
-            if (columnMeasurer == null || rowMeasurer == null)
+            if (columnMeasurer.Measurables == null || rowMeasurer.Measurables == null)
             {
                 return;
             }
@@ -488,7 +490,7 @@ namespace Blade.MG.UI.Controls
         {
             base.RenderControl(context, layoutBounds, parentTransform);
 
-            if (columnMeasurer == null || rowMeasurer == null)
+            if (columnMeasurer.Measurables == null || rowMeasurer.Measurables == null)
             {
                 return;
             }

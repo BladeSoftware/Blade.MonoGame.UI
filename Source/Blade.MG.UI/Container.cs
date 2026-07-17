@@ -6,11 +6,20 @@ namespace Blade.MG.UI
     public class Container : UIComponentDrawable
     {
         private List<UIComponent> children = new List<UIComponent>();
-        public IReadOnlyList<UIComponent> Children { get => children.AsReadOnly(); }
+
+        // List<T>.AsReadOnly() allocates a brand-new ReadOnlyCollection<T> wrapper every call -
+        // Children used to call it on every single access, including from Measure/Arrange/
+        // RenderControl (every frame) and often multiple times per call (e.g. Count then an
+        // indexer read in the same loop). ReadOnlyCollection<T> just wraps the underlying list
+        // by reference (a live view, not a snapshot), so it's safe to allocate this wrapper
+        // exactly once and reuse it forever - Add/Remove/Clear on `children` below are all
+        // immediately visible through it with no invalidation needed.
+        private readonly IReadOnlyList<UIComponent> childrenReadOnly;
+        public IReadOnlyList<UIComponent> Children { get => childrenReadOnly; }
 
         public Container()
         {
-
+            childrenReadOnly = children.AsReadOnly();
         }
 
         public virtual void AddChild(UIComponent item, UIComponent parent = null, object dataContext = null)
