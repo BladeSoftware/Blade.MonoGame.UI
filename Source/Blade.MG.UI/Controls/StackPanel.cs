@@ -178,69 +178,36 @@ namespace Blade.MG.UI.Controls
                 Height = Orientation == Orientation.Vertical ? (int)child.DesiredSize.Height : rect.Height
             };
 
+            // Resolves this child's real ActualWidth/Height now (rather than waiting for
+            // Container.Arrange's own child.Arrange(...) call a moment later, which still runs
+            // right after this returns) so the running stack offset can be advanced by the
+            // child's *actual* arranged size instead of an estimate - DesiredSize folds in this
+            // child's Margin *and* Padding (see MeasureSelf), which overstates how much space
+            // it should actually take up along the stacking axis, so it can't be used directly
+            // for that bookkeeping.
+            //
+            // Container.Arrange will call child.Arrange(...) again with this exact same
+            // childLayoutBounds right after this method returns - a harmless, idempotent
+            // re-arrange (same inputs always produce the same outputs; ArrangeSelf has no
+            // hidden state) rather than a second, different transform. Unlike this method's
+            // previous version, FinalRect/FinalContentRect are never written here directly -
+            // ArrangeSelf remains their sole author, which is what a future attempt at
+            // skipping unchanged layout work would need to be able to rely on.
             child.Arrange(context, childLayoutBounds, rect);
 
-            if (Orientation == Orientation.Horizontal)
+            if (child.Visible.Value != Visibility.Collapsed)
             {
-                if (child.Visible.Value == Visibility.Collapsed)
-                {
-                    child.FinalRect = child.FinalRect with { X = rect.Left + left };
-                    child.FinalContentRect = child.FinalContentRect with { X = child.FinalRect.Left };
-                }
-                else
-                {
-                    child.FinalRect = child.FinalRect with { X = rect.Left + left + child.Margin.Value.Left };
-                    child.FinalContentRect = child.FinalContentRect with { X = child.FinalRect.Left + child.Padding.Value.Left };
-                }
-            }
-            else
-            {
-                if (child.Visible.Value == Visibility.Collapsed)
-                {
-                    child.FinalRect = child.FinalRect with { Y = rect.Top + top };
-                    child.FinalContentRect = child.FinalContentRect with { Y = child.FinalRect.Top };
-                }
-                else
-                {
-                    child.FinalRect = child.FinalRect with { Y = rect.Top + top + child.Margin.Value.Top };
-                    child.FinalContentRect = child.FinalContentRect with { Y = child.FinalRect.Top + child.Padding.Value.Top };
-                }
-            }
-
-            // Add the Margin back in
-            if (child.Visible.Value == Visibility.Collapsed)
-            {
-                child.FinalRect = child.FinalRect with
-                {
-                    X = child.FinalRect.X - child.Margin.Value.Left,
-                    Y = child.FinalRect.Y - child.Margin.Value.Top
-                };
-            }
-            else
-            {
-                child.FinalRect = child.FinalRect with
-                {
-                    X = child.FinalRect.X - child.Margin.Value.Left,
-                    Y = child.FinalRect.Y - child.Margin.Value.Top,
-                    Width = child.FinalRect.Width + child.Margin.Value.Left + child.Margin.Value.Right,
-                    Height = child.FinalRect.Height + child.Margin.Value.Top + child.Margin.Value.Bottom,
-                };
-
-                // Advance the running offset for the next sibling. child.FinalRect.Width/Height
-                // already has the margin folded in (see reassignment above), so adding the
-                // margin again here would double-count it and push every subsequent sibling
-                // one extra margin too far along the stacking axis.
                 if (Orientation == Orientation.Horizontal)
                 {
-                    stackOffset += child.FinalRect.Width;
+                    stackOffset += child.FinalRect.Width + child.Margin.Value.Left + child.Margin.Value.Right;
                 }
                 else
                 {
-                    stackOffset += child.FinalRect.Height;
+                    stackOffset += child.FinalRect.Height + child.Margin.Value.Top + child.Margin.Value.Bottom;
                 }
             }
 
-            return child.FinalRect;
+            return childLayoutBounds;
         }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
