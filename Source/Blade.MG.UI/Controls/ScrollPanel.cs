@@ -82,6 +82,25 @@ namespace Blade.MG.UI.Controls
 
         }
 
+        /// <summary>
+        /// Reduces <paramref name="availableSize"/> by whichever scrollbar(s) are currently
+        /// visible - the space children actually have to work with once the scrollbar(s)
+        /// carve out their own room. Shared by Measure below and by StackPanel.Measure's own
+        /// separate per-child measurement pass (StackPanel measures its children twice - once
+        /// via the generic Container.Measure path this Measure() calls into, and again in its
+        /// own stacking-specific loop - both need to agree on this same reduced size, or
+        /// whichever pass runs second silently wins with the wrong one, leaving no room
+        /// actually reserved for a visible scrollbar).
+        /// </summary>
+        protected Size GetScrollAwareAvailableSize(Size availableSize)
+        {
+            return availableSize with
+            {
+                Width = availableSize.Width - (IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0),
+                Height = availableSize.Height - (IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)
+            };
+        }
+
         public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
             //base.Measure(context, ref availableSize, ref parentMinMax);
@@ -89,11 +108,7 @@ namespace Blade.MG.UI.Controls
             //IsWidthVirtual = true;
             //IsHeightVirtual = true;
 
-            var contentAvailableSize = availableSize with
-            {
-                Width = availableSize.Width - (IsVerticalScrollbarVisible ? (int)VerticalScrollBar.Width.ToPixels() : 0),
-                Height = availableSize.Height - (IsHorizontalScrollbarVisible ? (int)HorizontalScrollBar.Height.ToPixels() : 0)
-            };
+            var contentAvailableSize = GetScrollAwareAvailableSize(availableSize);
 
             base.Measure(context, ref contentAvailableSize, ref parentMinMax);
 
@@ -201,7 +216,25 @@ namespace Blade.MG.UI.Controls
         /// <returns></returns>
         public override Rectangle GetChildBoundingBox(UIContext context, UIComponent child)
         {
-            var rect = base.GetChildBoundingBox(context, child);
+            // Deliberately not using base.GetChildBoundingBox (= FinalContentRect) as the
+            // starting point here. FinalContentRect is written twice per Arrange pass - once by
+            // the generic ArrangeSelf (Padding-only, no scrollbar awareness), then again by this
+            // class's own Arrange tail-end below (scrollbar-reduced) - and this method's own
+            // reduction assumes it's always reading that first, not-yet-scrollbar-reduced write.
+            // ArrangeSelf now skips its own write on an unchanged frame (see UIComponent's layout
+            // dirty-flagging) - Arrange's tail-end here does not skip (ScrollPanel doesn't
+            // participate in that mechanism), so on a skipped frame this would otherwise read
+            // back the *already* scrollbar-reduced value left over from the end of the previous
+            // frame's Arrange, and reduce it a second time. Recomputing the padding-adjusted rect
+            // directly from FinalRect (which only ArrangeSelf ever writes, so it's never subject
+            // to this double-write ordering issue) sidesteps that regardless of whether
+            // ArrangeSelf ran or was skipped this frame.
+            int contentWidth = FinalRect.Width - Padding.Value.Horizontal;
+            int contentHeight = FinalRect.Height - Padding.Value.Vertical;
+            if (contentWidth < 0) contentWidth = 0;
+            if (contentHeight < 0) contentHeight = 0;
+
+            var rect = new Rectangle(FinalRect.Left + Padding.Value.Left, FinalRect.Top + Padding.Value.Top, contentWidth, contentHeight);
 
             if (child.Visible.Value == Visibility.Collapsed)
             {

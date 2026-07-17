@@ -52,6 +52,18 @@ namespace Blade.MG.UI.Controls
 
             parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
 
+            // Label never calls base.Measure (it measures its own text directly, see below), so
+            // it doesn't get MeasureSelf's skip-check for free - font measurement is comparatively
+            // expensive and Labels are typically the most numerous control in a text-heavy UI, so
+            // this is the single highest-value target for skipping. Text/FontName/FontSize are
+            // Binding<T> and already bubble into isLayoutDirty on change (see BubbleInvalidation),
+            // so TryReuseMeasure's own comparisons (Width/Height/Margin/Padding/availableSize) are
+            // all that's needed on top to catch everything this method's math depends on.
+            if (TryReuseMeasure(availableSize))
+            {
+                return;
+            }
+
             float desiredWidth = Width.ToPixels(availableSize.Width);
             float desiredHeight = Height.ToPixels(availableSize.Height);
 

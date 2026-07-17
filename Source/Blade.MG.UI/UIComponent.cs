@@ -363,7 +363,8 @@ namespace Blade.MG.UI
         /// <summary>
         /// Invalidates this control's render cache (if it has one) and every ancestor's, all
         /// the way to the root - so a change to a deeply nested control correctly invalidates
-        /// every cached container above it, not just the nearest one.
+        /// every cached container above it, not just the nearest one. Also marks this control
+        /// (and every ancestor) layout-dirty - see isLayoutDirty below.
         /// </summary>
         protected internal void BubbleInvalidation()
         {
@@ -372,7 +373,123 @@ namespace Blade.MG.UI
                 cacheable.InvalidateCache();
             }
 
+            isLayoutDirty = true;
+
             Parent?.BubbleInvalidation();
+        }
+
+        // ---=== Layout dirty-flagging ===---
+        //
+        // MeasureSelf/ArrangeSelf are the two real choke points every simple control's layout
+        // funnels through (Border/Label/Control/etc. call straight down to these; only the more
+        // elaborate containers - Grid/StackPanel/DockPanel/TreeView/ListView/ScrollPanel/etc. -
+        // implement their own per-child arrangement on top and are left alone here, as a
+        // conservative first pass). Skipping recomputation when nothing has actually changed
+        // since the last pass matters most for the common HUD/game-UI case: mostly-static
+        // layout with the occasional focused animation or text update elsewhere in the tree,
+        // running at a very high frame rate.
+        //
+        // isLayoutDirty piggybacks on the exact same BubbleInvalidation walk already used for
+        // render-cache invalidation - it's set on every ancestor whenever any Binding<T> in the
+        // subtree changes, or a child is added/removed/replaced (see AddInternalChild etc. and
+        // Control.Content/Container.AddChild). It's only cleared in ArrangeSelf, the later of
+        // the two passes each frame (UIWindow.PerformLayout always finishes the whole tree's
+        // Measure pass before starting Arrange - see UIWindow.PerformLayout(Rectangle)), so a
+        // change picked up during Measure is guaranteed to still be visible to Arrange in the
+        // same frame.
+        //
+        // Width/Height/Margin/Padding/MinWidth/MaxWidth/MinHeight/MaxHeight/Transform are plain
+        // properties, not Binding<T> - mutating them directly doesn't fire Changed and so
+        // doesn't bubble on its own. MeasureSelf/ArrangeSelf additionally snapshot-compare their
+        // own direct inputs every call (cheap - a handful of field comparisons, no reflection or
+        // allocation) to catch those too, so isLayoutDirty is only ever an *additional* signal
+        // ("something in my subtree changed"), never the sole source of truth for "did my own
+        // configuration change".
+        //
+        // Verified safe against containers that reach into a child's FinalRect/DesiredSize from
+        // outside that child's own Measure/Arrange call (which would otherwise let stale-but-
+        // skipped output get post-processed as if it were fresh) - StackPanel.GetChildBoundingBox
+        // used to do exactly this and was fixed to stop; Grid/DockPanel/ListView do not do this;
+        // TreeView's node indentation/text updates route through proper Binding<T> assignments
+        // that bubble correctly, and its one direct DesiredSize mutation (collapsed-node height
+        // zeroing in MeasureOneNode) is unreachable in practice since a collapsed ancestor's
+        // descendants are skipped before ever reaching that call (see the "collapsed" early-
+        // return comments in MeasureNode/ArrangeNode).
+        private bool isLayoutDirty = true;
+
+        // Instrumentation only (mirrors ListView/TreeView's LastArrangedNodeCount pattern) -
+        // counts actual recomputations, not skips, so tests can directly prove the skip is
+        // happening rather than only checking the (necessarily identical either way) output.
+        [JsonIgnore] public int MeasureRecomputeCount { get; private set; }
+        [JsonIgnore] public int ArrangeRecomputeCount { get; private set; }
+
+        private bool hasMeasured;
+        private Size lastMeasureAvailableSize;
+        private Length lastMeasureWidth, lastMeasureHeight, lastMeasureMinWidth, lastMeasureMaxWidth, lastMeasureMinHeight, lastMeasureMaxHeight;
+        private Thickness lastMeasureMargin, lastMeasurePadding;
+        private Visibility lastMeasureVisible;
+
+        private bool hasArranged;
+        private Rectangle lastArrangeLayoutBounds, lastArrangeParentLayoutBounds;
+        private Length lastArrangeWidth, lastArrangeHeight, lastArrangeMinWidth, lastArrangeMaxWidth, lastArrangeMinHeight, lastArrangeMaxHeight;
+        private Thickness lastArrangeMargin, lastArrangePadding;
+        private Visibility lastArrangeVisible;
+        private HorizontalAlignmentType lastArrangeHorizontalAlignment;
+        private VerticalAlignmentType lastArrangeVerticalAlignment;
+        private Transform lastArrangeTransform;
+        private Size lastArrangeDesiredSize;
+
+        private static bool ThicknessEquals(Thickness a, Thickness b) =>
+            a.Left == b.Left && a.Top == b.Top && a.Right == b.Right && a.Bottom == b.Bottom;
+
+        // float.Equals (the instance method, not the == operator) treats NaN as equal to NaN -
+        // exactly what's wanted here, since NaN is the routine "unconstrained" sentinel used
+        // throughout this layout system (see FloatHelper.IsNaN), not a real change in value.
+        private static bool SizeEquals(Size a, Size b) => a.Width.Equals(b.Width) && a.Height.Equals(b.Height);
+
+        private static bool TransformEquals(Transform a, Transform b) =>
+            a.Translation == b.Translation && a.Rotation == b.Rotation && a.Scale == b.Scale &&
+            a.CenterPoint == b.CenterPoint && a.CenterPointRelative == b.CenterPointRelative;
+
+        /// <summary>
+        /// Shared skip-check for any Measure override that (like MeasureSelf, or Label.Measure -
+        /// a true leaf that measures font text directly and never calls base.Measure) computes
+        /// DesiredSize purely from availableSize plus its own Width/Height/Margin/Padding/
+        /// Visible - i.e. has no additional Bindings of its own that need checking beyond what
+        /// isLayoutDirty already covers (Label's Text/FontName/FontSize are Binding&lt;T&gt; and so
+        /// already bubble into isLayoutDirty on change). Returns true (and records this call's
+        /// inputs as the new baseline) when it's safe to skip recomputation and reuse the
+        /// existing DesiredSize as-is.
+        /// </summary>
+        protected bool TryReuseMeasure(Size availableSize)
+        {
+            bool measureInputsChanged = !hasMeasured
+                || !SizeEquals(availableSize, lastMeasureAvailableSize)
+                || Width != lastMeasureWidth || Height != lastMeasureHeight
+                || MinWidth != lastMeasureMinWidth || MaxWidth != lastMeasureMaxWidth
+                || MinHeight != lastMeasureMinHeight || MaxHeight != lastMeasureMaxHeight
+                || !ThicknessEquals(Margin.Value, lastMeasureMargin) || !ThicknessEquals(Padding.Value, lastMeasurePadding)
+                || Visible.Value != lastMeasureVisible;
+
+            if (!isLayoutDirty && !measureInputsChanged)
+            {
+                return true;
+            }
+
+            MeasureRecomputeCount++;
+            hasMeasured = true;
+            lastMeasureAvailableSize = availableSize;
+            lastMeasureWidth = Width;
+            lastMeasureHeight = Height;
+            lastMeasureMinWidth = MinWidth;
+            lastMeasureMaxWidth = MaxWidth;
+            lastMeasureMinHeight = MinHeight;
+            lastMeasureMaxHeight = MaxHeight;
+            lastMeasureMargin = Margin.Value;
+            lastMeasurePadding = Padding.Value;
+            lastMeasureVisible = Visible.Value;
+
+            return false;
         }
 
         //public void StateHasChanged()
@@ -404,7 +521,22 @@ namespace Blade.MG.UI
 
         protected void MeasureSelf(UIContext context, ref Size availableSize, ref Layout parentMinMax)
         {
+            // Always merge this control's own Min/Max constraints into the shared parentMinMax,
+            // even when the rest of this method is about to be skipped below - it's cheap, and
+            // sibling controls measured after this one in the same parent's child loop depend on
+            // it having been merged in (see MergeChildDesiredSizeInternal, which threads the same
+            // parentMinMax ref through every child in turn).
             parentMinMax.Merge(MinWidth, MinHeight, MaxWidth, MaxHeight, availableSize);
+
+            // Note: unlike ArrangeSelf, this only skips recomputing THIS control's own
+            // DesiredSize - it doesn't skip descending into children, since that recursion
+            // happens in the caller (Measure/Control.Measure/Container.Measure), not here.
+            // Still a real win wherever MeasureSelf's own math is the expensive part (e.g. a
+            // Border with several themed Bindings feeding into Margin/Padding calculations).
+            if (TryReuseMeasure(availableSize))
+            {
+                return;
+            }
 
             float desiredWidth = float.NaN;
             float desiredHeight = float.NaN;
@@ -458,8 +590,53 @@ namespace Blade.MG.UI
 
                 UpdateEffectiveTransform();
 
+                // isLayoutDirty is only otherwise cleared below (the non-collapsed path) -
+                // clear it here too so a control that's collapsed for many consecutive frames
+                // doesn't stay permanently "dirty" (harmless either way, since this branch is
+                // already cheap, but keeps the flag's meaning consistent).
+                isLayoutDirty = false;
                 return;
             }
+
+            bool arrangeInputsChanged = !hasArranged
+                || layoutBounds != lastArrangeLayoutBounds || parentLayoutBounds != lastArrangeParentLayoutBounds
+                || Width != lastArrangeWidth || Height != lastArrangeHeight
+                || MinWidth != lastArrangeMinWidth || MaxWidth != lastArrangeMaxWidth
+                || MinHeight != lastArrangeMinHeight || MaxHeight != lastArrangeMaxHeight
+                || !ThicknessEquals(Margin.Value, lastArrangeMargin) || !ThicknessEquals(Padding.Value, lastArrangePadding)
+                || Visible.Value != lastArrangeVisible
+                || HorizontalAlignment.Value != lastArrangeHorizontalAlignment || VerticalAlignment.Value != lastArrangeVerticalAlignment
+                || !TransformEquals(Transform, lastArrangeTransform)
+                || !SizeEquals(DesiredSize, lastArrangeDesiredSize);
+
+            if (!isLayoutDirty && !arrangeInputsChanged)
+            {
+                // Nothing this control's own FinalRect/FinalContentRect computation depends on
+                // has changed since the last pass, and BubbleInvalidation confirms nothing in
+                // its subtree changed either - both rects (and every internal child's, since
+                // none of them could be dirty either without this control also being marked
+                // dirty by the same bubble) are still correct as-is.
+                return;
+            }
+
+            isLayoutDirty = false;
+            ArrangeRecomputeCount++;
+            hasArranged = true;
+            lastArrangeLayoutBounds = layoutBounds;
+            lastArrangeParentLayoutBounds = parentLayoutBounds;
+            lastArrangeWidth = Width;
+            lastArrangeHeight = Height;
+            lastArrangeMinWidth = MinWidth;
+            lastArrangeMaxWidth = MaxWidth;
+            lastArrangeMinHeight = MinHeight;
+            lastArrangeMaxHeight = MaxHeight;
+            lastArrangeMargin = Margin.Value;
+            lastArrangePadding = Padding.Value;
+            lastArrangeVisible = Visible.Value;
+            lastArrangeHorizontalAlignment = HorizontalAlignment.Value;
+            lastArrangeVerticalAlignment = VerticalAlignment.Value;
+            lastArrangeTransform = Transform;
+            lastArrangeDesiredSize = DesiredSize;
 
             layoutBounds = new Rectangle(layoutBounds.Left + Margin.Value.Left, layoutBounds.Top + Margin.Value.Top, layoutBounds.Width - Margin.Value.Horizontal, layoutBounds.Height - Margin.Value.Vertical);
 

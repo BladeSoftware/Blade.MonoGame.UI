@@ -41,19 +41,29 @@ namespace Blade.MG.UI.Controls
             float desiredWidth = 0f;
             float desiredHeight = 0f;
 
+            // Match the scrollbar-aware size base.Measure (ScrollPanel.Measure) already used for
+            // its own internal per-child measurement pass a moment ago - this loop re-measures
+            // every child a second time (this class needs its own stacking-specific constraints,
+            // unlike the generic Container.Measure pass base.Measure funnels through), and used
+            // to do it against the raw, unreduced `availableSize` parameter instead. Since this
+            // second pass always runs later and its DesiredSize is what sticks, that silently
+            // discarded the scrollbar-reserved width every single frame, regardless of whether
+            // a scrollbar was actually visible - see GetScrollAwareAvailableSize.
+            Size scrollAwareAvailableSize = GetScrollAwareAvailableSize(availableSize);
+
             foreach (var child in Children)
             {
                 // Constrain child measurement based on orientation
-                Size childAvailableSize = availableSize;
+                Size childAvailableSize = scrollAwareAvailableSize;
                 if (Orientation == Orientation.Vertical)
                 {
                     // Constrain width, allow height to be unconstrained
-                    childAvailableSize = new Size(availableSize.Width, float.NaN);
+                    childAvailableSize = new Size(scrollAwareAvailableSize.Width, float.NaN);
                 }
                 else // Horizontal
                 {
                     // Constrain height, allow width to be unconstrained
-                    childAvailableSize = new Size(float.NaN, availableSize.Height);
+                    childAvailableSize = new Size(float.NaN, scrollAwareAvailableSize.Height);
                 }
 
                 Layout childParentMinMax = parentMinMax;
