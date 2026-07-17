@@ -12,11 +12,15 @@ namespace Blade.MG.UI.Controls
         public Binding<HorizontalAlignmentType> HorizontalTextAlignment;
         public Binding<VerticalAlignmentType> VerticalTextAlignment;
 
+        [DesignerProperty]
         public Binding<string> Text { get; set; } = string.Empty;
+        [DesignerProperty]
         public Binding<string> FontName { get; set; } = new Binding<string>();
+        [DesignerProperty]
         public Binding<float> FontSize { get; set; } = new Binding<float>();
 
         private Binding<Color> textColor = new Binding<Color>();
+        [DesignerProperty]
         public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
 
         public Rectangle TextRect { get; set; }// = new Rectangle();

@@ -124,6 +124,7 @@ namespace Blade.MG.UI
         // SetField keeps a reassignment like `control.Background = Color.Red` from silently
         // orphaning whatever Changed subscription EnsureBindingsWired already set up here.
         private Binding<Color> background = Color.Transparent;
+        [DesignerProperty]
         public Binding<Color> Background { get => background; set => SetField(ref background, value); }
 
         [JsonIgnore]

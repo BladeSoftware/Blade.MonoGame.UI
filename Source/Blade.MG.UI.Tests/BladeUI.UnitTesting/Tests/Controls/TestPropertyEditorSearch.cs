@@ -20,7 +20,9 @@ namespace BladeUI.UnitTesting.Tests.Controls
     {
         private class SearchTestTarget
         {
+            [DesignerProperty]
             public string Alpha { get; set; } = "a-value";
+            [DesignerProperty]
             public string Beta { get; set; } = "b-value";
         }
 

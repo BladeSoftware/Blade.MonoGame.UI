@@ -1,5 +1,6 @@
 ﻿using Blade.MG.UI.Caching;
 using Blade.MG.UI.Components;
+using Blade.MG.UI.Controls;
 using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -102,13 +103,20 @@ namespace Blade.MG.UI
         [JsonIgnore]
         public bool TemplateInitialised { get; set; } = false;
 
+        [DesignerProperty]
         public string Name { get; set; }
 
+        [DesignerProperty]
         public Length Width { get; set; }
+        [DesignerProperty]
         public Length Height { get; set; }
+        [DesignerProperty]
         public Length MinWidth { get; set; }
+        [DesignerProperty]
         public Length MinHeight { get; set; }
+        [DesignerProperty]
         public Length MaxWidth { get; set; }
+        [DesignerProperty]
         public Length MaxHeight { get; set; }
 
         // These nine Binding<T> properties are the ones assigned a raw value (not .Value = ...)
@@ -125,28 +133,39 @@ namespace Blade.MG.UI
         // ...` avoids that) - it only guarantees that allocation isn't paired with a correctness
         // regression too.
         private Binding<Thickness> margin = new Thickness();
+        [DesignerProperty]
         public Binding<Thickness> Margin { get => margin; set => SetField(ref margin, value); }
         private Binding<Thickness> padding = new Thickness();
+        [DesignerProperty]
         public Binding<Thickness> Padding { get => padding; set => SetField(ref padding, value); }
 
         private Binding<HorizontalAlignmentType> horizontalAlignment;
+        [DesignerProperty]
         public Binding<HorizontalAlignmentType> HorizontalAlignment { get => horizontalAlignment; set => SetField(ref horizontalAlignment, value); }
         private Binding<VerticalAlignmentType> verticalAlignment;
+        [DesignerProperty]
         public Binding<VerticalAlignmentType> VerticalAlignment { get => verticalAlignment; set => SetField(ref verticalAlignment, value); }
         //public Binding<HorizontalAlignmentType> HorizontalContentAlignment { get; set; }
         //public Binding<VerticalAlignmentType> VerticalContentAlignment { get; set; }
 
+        [DesignerProperty]
         public int TabIndex { get; set; } = ++LastTabOrder;
 
         private Binding<bool> isTabStop = false;
+        [DesignerProperty]
         public Binding<bool> IsTabStop { get => isTabStop; set => SetField(ref isTabStop, value); }
         private Binding<bool> isEnabled = true;
+        [DesignerProperty]
         public Binding<bool> IsEnabled { get => isEnabled; set => SetField(ref isEnabled, value); }
         private Binding<Visibility> visible = Visibility.Visible;
+        [DesignerProperty]
         public Binding<Visibility> Visible { get => visible; set => SetField(ref visible, value); }
 
+        [DesignerProperty]
         public bool IsHitTestVisible { get; set; } = false;
+        [DesignerProperty]
         public bool CanHover { get; set; } = true;
+        [DesignerProperty]
         public bool CanFocus { get; set; } = true;  // Same meaning as IsHitTestVisible ??
 
         private Binding<bool> hasFocus = false;
@@ -201,14 +220,12 @@ namespace Blade.MG.UI
                 // A plain raw-value reassignment (e.g. `border.Background = Color.Red;`, which
                 // relies on Binding<T>'s implicit T->Binding<T> conversion to manufacture this
                 // throwaway `value`) - the field's own object identity (and its Changed
-                // subscribers) must stay put, so go through the field's own Value setter rather
-                // than field.SetFromBinding(value), which used to copy value's Getter/Setter
-                // onto field directly. That bypassed Value's own equality-check-and-fire logic
-                // entirely, silently keeping the field's stale Changed subscription intact but
-                // never actually invoking it - a genuine reassignment (e.g. a hover/focus color
-                // change written this way) would correctly avoid orphaning the render-cache/
-                // layout-dirty-flagging bubbling (see BubbleInvalidation), but would never
-                // actually trigger it either.
+                // subscribers) must stay put, so this copies the value through the field's own
+                // Value setter rather than replacing field outright. (An earlier version of this
+                // copied value's Getter/Setter onto field directly via a since-removed
+                // Binding<T>.SetFromBinding method, bypassing Value's own equality-check-and-fire
+                // logic entirely - the field's Changed subscription stayed wired but silently
+                // never actually fired.)
                 field.Value = value.Value;
             }
             else
@@ -226,17 +243,6 @@ namespace Blade.MG.UI
                 field = value;
             }
         }
-
-        //protected void SetField<T>(ref Binding<T> field, DynamicBinding<Binding<T>> value)
-        //{
-        //    if (field == null)
-        //    {
-        //        field = new Binding<T>();
-        //    }
-
-        //    //field.SetFromBinding(value);
-        //    field = value.Binding;
-        //}
 
         //----
 

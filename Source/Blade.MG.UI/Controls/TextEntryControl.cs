@@ -19,6 +19,7 @@ namespace Blade.MG.UI.Controls
     {
         private Binding<string> text = new Binding<string>();
 
+        [DesignerProperty]
         public Binding<string> Text
         {
             get => text;
@@ -41,6 +42,7 @@ namespace Blade.MG.UI.Controls
         public Binding<VerticalAlignmentType> VerticalTextAlignment;
 
         private Binding<Color> textColor = new Binding<Color>();
+        [DesignerProperty]
         public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
 
         // Themed reactively (hover/focus - see TextBoxTemplate/TextFieldTemplate's own
@@ -48,22 +50,29 @@ namespace Blade.MG.UI.Controls
         // focus the same way a full TextBox's border does. Overridable via SetStyleOverride
         // like every other themed property.
         private Binding<Color> underlineColor = new Binding<Color>();
+        [DesignerProperty]
         public Binding<Color> UnderlineColor { get => underlineColor; set => SetField(ref underlineColor, value); }
 
+        [DesignerProperty]
         public Binding<string> FontName { get; set; } = new Binding<string>();
 
+        [DesignerProperty]
         public Binding<float> FontSize { get; set; } = new Binding<float>();
 
+        [DesignerProperty]
         public bool WordWrap { get; set; }
 
+        [DesignerProperty]
         public bool MultiLine { get; set; }
 
+        [DesignerProperty]
         public int MaxLength { get; set; }
 
         public int CursorPosition { get; set; }
         public int SelectionStart { get; set; }
         public int SelectionLength { get; set; }
 
+        [DesignerProperty]
         public bool Underline { get; set; } // Underline the text
 
         // Anchor point for an in-progress selection (Shift+navigate or mouse drag).

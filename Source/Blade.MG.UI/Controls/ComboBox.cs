@@ -32,27 +32,35 @@ namespace Blade.MG.UI.Controls
         public Func<object, string> ItemToString { get; set; } = (o) => o?.ToString() ?? "";
 
         // When true the control allows text entry to filter items
+        [DesignerProperty]
         public Binding<bool> IsEditable { get; set; } = new Binding<bool>(false);
 
         // See ComboBoxOpenTrigger. Defaults to auto-opening on the first typed character.
+        [DesignerProperty]
         public Binding<ComboBoxOpenTrigger> OpenTrigger { get; set; } = new Binding<ComboBoxOpenTrigger>(ComboBoxOpenTrigger.AutoOpenOnType);
 
         // When true the control enforces selection of an existing item
+        [DesignerProperty]
         public Binding<bool> StrictMode { get; set; } = new Binding<bool>(true);
 
         // Currently selected item
+        [DesignerProperty]
         public Binding<object> SelectedItem { get; set; } = new Binding<object>(null);
 
+        [DesignerProperty]
         public Binding<Length> DropDownHeight { get; set; } = new Binding<Length>("250px");
 
         private Binding<Color> textColor = new Binding<Color>();
+        [DesignerProperty]
         public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
 
         private Binding<Color> borderColor = new Binding<Color>();
+        [DesignerProperty]
         public Binding<Color> BorderColor { get => borderColor; set => SetField(ref borderColor, value); }
 
         // Text shown in the editable textbox (or selected item text when not editable)
         private Binding<string> text = new Binding<string>("");
+        [DesignerProperty]
         public Binding<string> Text
         {
             get => text;

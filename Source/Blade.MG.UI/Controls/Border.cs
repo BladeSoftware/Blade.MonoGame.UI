@@ -14,13 +14,17 @@ namespace Blade.MG.UI.Controls
         // silently orphaning whatever Changed subscription EnsureBindingsWired already set up
         // here.
         private Binding<Color> borderColor = new Color();
+        [DesignerProperty]
         public Binding<Color> BorderColor { get => borderColor; set => SetField(ref borderColor, value); }
         private Binding<Thickness> borderThickness = new Thickness();
+        [DesignerProperty]
         public Binding<Thickness> BorderThickness { get => borderThickness; set => SetField(ref borderThickness, value); }
         private Binding<CornerRadius> cornerRadius = new CornerRadius();
+        [DesignerProperty]
         public Binding<CornerRadius> CornerRadius { get => cornerRadius; set => SetField(ref cornerRadius, value); }
 
         private Binding<int> elevation = 0;
+        [DesignerProperty]
         public Binding<int> Elevation { get => elevation; set => SetField(ref elevation, value); }
 
 

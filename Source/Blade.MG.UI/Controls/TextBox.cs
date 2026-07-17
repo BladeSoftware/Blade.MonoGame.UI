@@ -11,11 +11,16 @@ namespace Blade.MG.UI.Controls
     public class TextBox : TextEntryControl
     {
         private Binding<Color> borderColor = new Binding<Color>();
+        [DesignerProperty]
         public Binding<Color> BorderColor { get => borderColor; set => SetField(ref borderColor, value); }
 
+        [DesignerProperty]
         public Variant Variant { get; set; }
+        [DesignerProperty]
         public string Label { get; set; }
+        [DesignerProperty]
         public string HelperText { get; set; }
+        [DesignerProperty]
         public bool ShrinkLabel { get; set; } // Label stays Shrunk and doesn't fill the textbox if the text is empty
 
         public TextBox()

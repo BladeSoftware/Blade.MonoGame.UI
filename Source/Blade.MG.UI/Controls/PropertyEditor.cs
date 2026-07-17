@@ -153,6 +153,7 @@ namespace Blade.MG.UI.Controls
             properties = targetObject.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.CanRead && p.CanWrite)
+                .Where(p => p.GetCustomAttribute<DesignerPropertyAttribute>() != null)
                 .Where(p => string.IsNullOrEmpty(filter) || p.Name.ToLowerInvariant().Contains(filter))
                 .ToList();
 
@@ -212,6 +213,9 @@ namespace Blade.MG.UI.Controls
 
         private UIComponent CreateEditor(PropertyInfo prop, object obj)
         {
+            // prop has already passed the [DesignerProperty] filter in RefreshProperties (i.e.
+            // it's already been decided that this property SHOULD show) - isBinding only decides
+            // HOW to read/write its value from here on (through Binding<T>.Value or directly).
             Type propertyType = prop.PropertyType;
             bool isBinding = propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Binding<>);
             Type valueType = isBinding ? propertyType.GetGenericArguments()[0] : propertyType;

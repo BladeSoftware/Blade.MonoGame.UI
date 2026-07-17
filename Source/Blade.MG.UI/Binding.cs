@@ -34,8 +34,17 @@ namespace Blade.MG.UI
     [JsonConverter(typeof(JsonBindingConverter))]
     public class Binding<T> : IBinding
     {
-        protected Func<T> Getter;
-        protected Action<T>? Setter;
+        // Populated only when this Binding relays external/live state (see the Func<T>
+        // constructor below) - the overwhelmingly common "just holds a value" case (including
+        // every implicit T->Binding<T> cast, e.g. `border.Background = Color.Red;`) leaves these
+        // null and reads/writes _backingVar directly instead. Construction used to unconditionally
+        // allocate a Getter/Setter closure pair (`() => _backingVar` / `v => _backingVar = v`)
+        // even for that plain case - two heap allocations per Binding<T>, every time, for state
+        // that's never actually external. GetValue/SetValue below are the only places that need
+        // to know which mode a given instance is in.
+        private Func<T>? _getter;
+        private Action<T>? _setter;
+        private T _backingVar;
 
         public event Action? Changed;
 
@@ -53,8 +62,6 @@ namespace Blade.MG.UI
             }
         }
 
-        private T _backingVar;
-
         public bool IsImplicitCast { get; init; } // True if this Binding<T> was created from an Implicit Cast
 
         private Binding() : this(default!, false)
@@ -70,8 +77,6 @@ namespace Blade.MG.UI
         public Binding(T initialValue = default, bool isCast = false)
         {
             _backingVar = initialValue;
-            Getter = () => _backingVar;
-            Setter = (value) => _backingVar = value;
             IsImplicitCast = isCast;
         }
 
@@ -82,35 +87,45 @@ namespace Blade.MG.UI
         /// </summary>
         public Binding(Func<T> getter, Action<T>? setter = null)
         {
-            Getter = getter;
-            Setter = setter;
-        }
-
-        public void SetFromBinding(Binding<T> binding)
-        {
-            this.Getter = binding.Getter;
-            this.Setter = binding.Setter;
+            _getter = getter;
+            _setter = setter;
         }
 
         public Type BaseType => typeof(T);
 
         protected virtual T GetValue()
         {
-            return Getter();
+            return _getter is not null ? _getter() : _backingVar;
         }
 
         protected virtual void SetValue(T value)
         {
-            Setter?.Invoke(value);
+            if (_getter is not null)
+            {
+                _setter?.Invoke(value);
+            }
+            else
+            {
+                _backingVar = value;
+            }
         }
 
         public void FromString(string value)
         {
-            if (Setter == null) return;
+            // A read-only relay binding (Func<T> getter with no setter, e.g. a computed display
+            // value) has nothing to write to - matches the old behavior of checking the Setter
+            // field for null, just expressed in terms of the new _getter/_setter representation.
+            // Goes through SetValue (protected virtual) rather than a raw field so this still
+            // dispatches correctly on a Binding<T1,T2,T3>, whose override converts the parsed T1
+            // value into its own T2 storage.
+            if (_getter is not null && _setter is null)
+            {
+                return;
+            }
 
             try
             {
-                Setter((T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture));
+                SetValue((T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture));
             }
             catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException)
             {
@@ -120,7 +135,7 @@ namespace Blade.MG.UI
 
         public override string ToString()
         {
-            return Getter()?.ToString() ?? "";
+            return GetValue()?.ToString() ?? "";
         }
 
         /// <summary>
@@ -186,9 +201,13 @@ namespace Blade.MG.UI
 
         public Binding(T2 initialValue = default) : base((T1)new T3().ConvertFrom(initialValue)!)
         {
-            Getter = () => { return (T2)new T3().ConvertTo(base.Getter()); };
-            Setter = (value) => { base.Setter?.Invoke((T1)new T3().ConvertFrom(value)!); };
-
+            // Goes through base.GetValue()/SetValue() (the protected virtual accessors) rather
+            // than touching base's own storage directly - Binding<T1> no longer exposes that as
+            // a pair of always-allocated Getter/Setter fields (see Binding<T>), so routing
+            // through the accessors keeps this correct regardless of how base stores its T1
+            // value internally.
+            Getter = () => { return (T2)new T3().ConvertTo(base.GetValue()); };
+            Setter = (value) => { base.SetValue((T1)new T3().ConvertFrom(value)!); };
         }
 
         /// <summary>
@@ -210,9 +229,9 @@ namespace Blade.MG.UI
             Getter = () => { return getter(); };
             Setter = (value) => { setter?.Invoke(value); };
 
-            base.Getter = () => { return (T1)new T3().ConvertFrom(Getter())!; };
-            base.Setter = (value) => { Setter?.Invoke((T2)new T3().ConvertTo(value)); };
-
+            // (No base.Getter/base.Setter assignment here - GetValue()/SetValue() above are
+            // already overridden and read/write the shadowed Getter/Setter fields directly, so
+            // base's own storage is never consulted for a Binding<T1,T2,T3> instance.)
         }
 
     }

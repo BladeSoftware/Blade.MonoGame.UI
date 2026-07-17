@@ -12,8 +12,11 @@ namespace Blade.MG.UI.Controls
         public Binding<HorizontalAlignmentType> HorizontalTextAlignment;
         public Binding<VerticalAlignmentType> VerticalTextAlignment;
 
+        [DesignerProperty]
         public Binding<string> FontName { get; set; }
+        [DesignerProperty]
         public Binding<float> FontSize { get; set; }
+        [DesignerProperty]
         public Binding<Color> TextColor { get; set; }
 
 

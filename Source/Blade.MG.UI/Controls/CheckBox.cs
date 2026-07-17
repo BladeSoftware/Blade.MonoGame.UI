@@ -9,16 +9,23 @@ namespace Blade.MG.UI.Controls
     {
         public Binding<string> Text;
 
+        [DesignerProperty]
         public Binding<string> FontName { get; set; } = new Binding<string>();
+        [DesignerProperty]
         public Binding<float> FontSize { get; set; } = new Binding<float>();
 
         private Binding<Color> textColor = new Binding<Color>();
+        [DesignerProperty]
         public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
 
+        [DesignerProperty]
         public Binding<bool?> IsChecked { get; set; } = new Binding<bool?>();
+        [DesignerProperty]
         public Binding<bool> Tristate { get; set; } = false;
 
+        [DesignerProperty]
         public string CheckedIcon { get; set; }
+        [DesignerProperty]
         public string UncheckedIcon { get; set; }
 
         public Action<bool?> OnValueChanged { get; set; }
