@@ -64,6 +64,11 @@ namespace BladeUI.UnitTesting.Tests.Controls
             await Task.Delay(200);
             await hoverTask;
 
+            // UIManager.Add(instance) only enqueues the addition too (matching Remove/etc.) -
+            // it's applied on the next frame's Update/PerformLayout, same as the Remove case
+            // pumped below, so pump one frame before checking it actually appeared.
+            await uiManager.PerformLayout();
+
             Assert.IsNotNull(uiManager.Find<Tooltip>(), "Expected the Tooltip to appear after the hover delay elapsed.");
 
             await button.HandleHoverChangedAsync(ui, new UIHoverChangedEvent { Hover = false, X = buttonCenter.X, Y = buttonCenter.Y, ForcePropagation = true });

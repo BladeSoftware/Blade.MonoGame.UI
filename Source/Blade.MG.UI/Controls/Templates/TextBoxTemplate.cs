@@ -34,10 +34,43 @@ namespace Blade.MG.UI.Controls.Templates
         // meaningless zeroed-out defaults above.
         private bool labelAnimationInitialized = false;
 
+        // border1 has render caching enabled (Border's own constructor turns it on
+        // unconditionally) and label1's glyphs are part of what gets baked into that cache.
+        // label1.Text is a getter/setter relay onto textBox.Text (see its own comment below),
+        // not the same Binding<string> instance - so every keystroke mutates textBox.Text.Value
+        // directly and never fires label1.Text's own Changed event, which is what the
+        // cache-invalidation bubbling in UIComponent.BubbleInvalidation relies on. Without this,
+        // border1's cached bitmap only refreshes when some unrelated Binding it owns directly
+        // (e.g. BorderColor, on a focus/hover change) happens to change value too - typed
+        // characters never appear until then. Tracked and compared fresh every frame (same
+        // reasoning as indicatorColor below) rather than via the Changed event, so it stays
+        // correct regardless of whether textBox.Text is ever wholesale-reassigned to a new
+        // Binding<string> instance (e.g. adopting a view-model binding).
+        private string lastCachedText;
+
         public TextBoxTemplate()
         {
             IsHitTestVisible = false;  // The template itself should not be hit-testable
             CanFocus = false;           // The template itself should not be focusable
+
+            // EnsureBindingsWired (UIComponent.cs) only auto-subscribes to a control's PUBLIC
+            // IBinding-typed properties (via reflection) - labelFontSize/labelColor/labelPosition/
+            // labelPunchAlpha above are private fields, invisible to that scan, so
+            // PropertyAnimationManager.Update()'s per-frame Apply() (which sets each one's .Value
+            // to progressively interpolate them) never bubbled a cache invalidation on its own.
+            // That went unnoticed while the caret was still frozen (see the Tenth-bug fix) since
+            // TextBoxTemplate.RenderControl basically never ran anyway; once the caret/blink fix
+            // made it run periodically again, the animation's actual per-frame progress became
+            // invisible to any cached ancestor Border except on whatever sparse frame something
+            // else (e.g. HasFocus, a real public Binding) happened to also invalidate - the label
+            // could only ever be observed at its start or (well after the 80ms duration had
+            // already elapsed internally) its end, never any frame in between - "jumping" rather
+            // than easing. Subscribing directly here bypasses the public-property-only scan
+            // entirely for these four internal-only, never-externally-bound animation targets.
+            labelFontSize.Changed += BubbleInvalidation;
+            labelColor.Changed += BubbleInvalidation;
+            labelPosition.Changed += BubbleInvalidation;
+            labelPunchAlpha.Changed += BubbleInvalidation;
         }
 
         protected override void InitTemplate()
@@ -167,20 +200,44 @@ namespace Blade.MG.UI.Controls.Templates
         public override void Arrange(UIContext context, Rectangle layoutBounds, Rectangle parentLayoutBounds)
         {
             base.Arrange(context, layoutBounds, parentLayoutBounds);
+
+            // The blink timer must be driven from here, not RenderControl: RenderControl is
+            // skipped entirely whenever an ancestor Border's render cache stays valid (see
+            // UIComponentDrawable.RenderChildOrFromCache) - e.g. every TextBox shown inside the
+            // Examples project's Section wrapper, whose inner Border caches by default - but
+            // Arrange always runs every frame regardless of caching (it's a layout, not a draw,
+            // pass). Only ticks (and only then bubbles a redraw) while this box actually has
+            // focus, so an unfocused/inactive TextBox's ancestor cache is left alone.
+            var textBox = ParentAs<TextBox>();
+            if (textBox != null && textBox.HasFocus.Value)
+            {
+                double elapsedMillis = (DateTime.Now - cursorTime).TotalMilliseconds;
+                if (elapsedMillis > 500)
+                {
+                    cursorTime = DateTime.Now;
+                    cursorFlashOn = !cursorFlashOn;
+                    BubbleInvalidation();
+                }
+            }
         }
 
         public override void RenderControl(UIContext context, Rectangle layoutBounds, Transform parentTransform)
         {
+            // Must run before base.RenderControl below - that's what actually blits border1
+            // from its cache (see the field comment on lastCachedText for why the cache can
+            // otherwise go stale on every keystroke).
+            string currentText = ParentAs<TextBox>()?.Text?.Value;
+            if (currentText != lastCachedText)
+            {
+                lastCachedText = currentText;
+                border1.InvalidateCache();
+            }
+
             //border1.CornerRadius = new CornerRadius(0, 0, 0, 0);
             base.RenderControl(context, layoutBounds, parentTransform);
 
-            double elapsedMillis = (DateTime.Now - cursorTime).TotalMilliseconds;
-            if (elapsedMillis > 500)
-            {
-                cursorTime = DateTime.Now;
-                cursorFlashOn = !cursorFlashOn;
-            }
-
+            // cursorFlashOn is now flipped in Arrange (see its own comment) - RenderControl just
+            // reads whatever state it's already in.
             var textBox = ParentAs<TextBox>();
 
             // Recomputed fresh every frame - rather than only reactively in HandleStateChange -
@@ -385,11 +442,30 @@ namespace Blade.MG.UI.Controls.Templates
                 SpriteFontBase font = FontService.GetFontOrDefault(textBox.FontName?.Value, textBox.FontSize?.Value);
 
                 TextEntryVisuals.DrawSelectionAndCursor(
-                    context, spriteBatch, editText, label1.TextRect, label1.FinalContentRect,
+                    context, spriteBatch, editText, ComputeLiveTextRect(font, editText), layoutBounds,
                     textBox.SelectionStart, textBox.SelectionLength, textBox.CursorPosition,
                     cursorFlashOn, isFocused, font,
                     new Color(Theme.Primary, 0.35f), Theme.OnSurface);
 
+                // Unconditionally re-widen the clip to layoutBounds as the LAST thing in this
+                // batch, regardless of what ran above. UIRenderer.BeginBatch uses
+                // SpriteSortMode.Deferred, which applies whatever scissor rect is live when the
+                // batch actually flushes (at EndBatch) to EVERY draw already queued in the batch -
+                // not whatever was live when each individual draw call was made. UIRenderer.
+                // DrawString itself narrows the clip to Rectangle.Intersect(clippingRect, rectangle)
+                // for whatever string it's drawing (see its own code) - so the floating label's
+                // and helper text's own DrawString calls above each leave the clip narrowed to
+                // THEIR OWN bounds afterward. Passing layoutBounds into DrawSelectionAndCursor
+                // (above) re-widens it, but only when that FillRect actually executes
+                // (cursorFlashOn && isFocused, or an active selection) - on any frame where
+                // neither fires, the LAST clip left active was the helper text's own narrow
+                // Intersect(layoutBounds, helperTextBounds), which - because Deferred applies it
+                // to the whole batch, not just the helper text draw - retroactively clipped away
+                // the underline and floating label (both positioned above the helper text's row)
+                // too. This is what caused "the underline and label blink" as a side effect of
+                // fixing the caret to actually blink: half the blink cycle now correctly
+                // re-widens the clip (whenever the caret draws), the other half doesn't.
+                context.Renderer.ClipToRect(layoutBounds);
             }
             finally
             {
@@ -399,9 +475,35 @@ namespace Blade.MG.UI.Controls.Templates
         }
 
         /// <summary>
+        /// Recomputes where label1's text is currently drawn (its Left/Bottom-aligned single
+        /// line, per TextEntryControl's constructor), without depending on label1.TextRect -
+        /// which is only ever *set* inside LabelTemplate.RenderControl, itself only reachable
+        /// through border1's own RenderChildOrFromCache check (border1 - a Border - always
+        /// enables caching). Whenever border1's cached texture stays valid, that whole render
+        /// path (and therefore the TextRect write) is skipped, leaving label1.TextRect frozen at
+        /// wherever it was last actually drawn - which used to be a non-issue back when
+        /// TextBoxTemplate.RenderControl itself rarely ran without border1 also refreshing at
+        /// the same time (e.g. a focus/hover color change invalidates border1 directly), but
+        /// became visible once the caret/blink fix started forcing TextBoxTemplate.RenderControl
+        /// to run on its own timer/on cursor moves - reusing a stale TextRect from an earlier,
+        /// unrelated layout state (e.g. before the floating label animation settled), which could
+        /// land on top of the helper text drawn below. label1.FinalContentRect, unlike TextRect,
+        /// is kept current by Arrange every single frame regardless of Draw-time caching, so
+        /// recomputing from that is never stale.
+        /// </summary>
+        private Rectangle ComputeLiveTextRect(SpriteFontBase font, string text)
+        {
+            Vector2 lineSize = font.MeasureString(string.IsNullOrEmpty(text) ? " " : text);
+            Rectangle contentRect = label1.FinalContentRect;
+
+            return new Rectangle(contentRect.Left, contentRect.Bottom - (int)lineSize.Y, (int)lineSize.X, (int)lineSize.Y);
+        }
+
+        /// <summary>
         /// Maps an absolute screen X coordinate to the nearest character index in the text
-        /// box's current text, based on the text's last-rendered position (label1.TextRect).
-        /// Used by TextBox for click-to-position-caret and click-drag selection.
+        /// box's current text, based on where the text is currently drawn (see
+        /// ComputeLiveTextRect). Used by TextBox for click-to-position-caret and click-drag
+        /// selection.
         /// </summary>
         public int GetCharacterIndexAtX(float screenX)
         {
@@ -409,7 +511,7 @@ namespace Blade.MG.UI.Controls.Templates
             string text = textBox.Text.Value ?? "";
             SpriteFontBase font = FontService.GetFontOrDefault(textBox.FontName?.Value, textBox.FontSize?.Value);
 
-            return TextEntryVisuals.GetCharacterIndexAtX(screenX, text, label1.TextRect, font);
+            return TextEntryVisuals.GetCharacterIndexAtX(screenX, text, ComputeLiveTextRect(font, text), font);
         }
 
 

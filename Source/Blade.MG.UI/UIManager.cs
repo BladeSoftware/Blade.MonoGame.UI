@@ -135,9 +135,9 @@ namespace Blade.MG.UI
 
         private void RefreshTheme(UITheme theme)
         {
-            foreach (var ui in uiWindows)
+            foreach (var ui in uiWindows.Values)
             {
-                ui.Value.RefreshTheme(theme);
+                ui.RefreshTheme(theme);
             }
         }
 
@@ -229,10 +229,21 @@ namespace Blade.MG.UI
             EnqueTask(task);
         }
 
+        // Enqueue-only, like Remove/RemoveAll/RemoveOthers/Clear below - actual insertion into
+        // uiWindows only ever happens inside HandleTaskQueue(), called once per frame at the top
+        // of Update(). This used to also call HandleTaskQueue() immediately, making Add the only
+        // mutation method that took effect synchronously - which meant a window shown as a side
+        // effect of something Update()/Draw() was itself in the middle of iterating uiWindows
+        // for (e.g. a Popup shown from a click handler, or from another window's own
+        // PerformLayout/PreRenderLayout/RenderLayout) could mutate uiWindows while that very
+        // enumeration was still active, and SortedList's enumerator throws
+        // "Collection was modified after the enumerator was instantiated" for exactly that.
+        // Deferring Add like every other mutation removes the failure mode structurally (nothing
+        // ever mutates uiWindows outside HandleTaskQueue's own dequeue loop, which doesn't
+        // foreach over uiWindows itself) instead of defensively snapshotting every read site.
         public void Add(UIWindow ui, int? priority = null)
         {
             AddWindow(ui, priority);
-            HandleTaskQueue();
         }
 
         public void Add(ICollection<UIWindow> ui, int? priority = null)
@@ -241,8 +252,6 @@ namespace Blade.MG.UI
             {
                 AddWindow(uiWindow, priority);
             }
-
-            HandleTaskQueue();
         }
 
         public T Find<T>() where T : UIWindow
@@ -471,13 +480,18 @@ namespace Blade.MG.UI
             UIWindow eventLockedWindow = null;
             UIComponent eventLockedControl = null;
 
-            // First check if events are locked to a control in any window
-            foreach (var ui in uiWindows)
+            // First check if events are locked to a control in any window. Safe from
+            // "Collection was modified" mid-iteration - Add() (like Remove/RemoveAll/
+            // RemoveOthers/Clear) only enqueues; uiWindows itself is only ever mutated inside
+            // HandleTaskQueue(), which already ran once, above, before this loop starts, and
+            // isn't called again until next frame - nothing between here and then touches
+            // uiWindows.
+            foreach (var ui in uiWindows.Values)
             {
-                if (ui.Value.EventLockedControl != null)
+                if (ui.EventLockedControl != null)
                 {
-                    eventLockedWindow = ui.Value;
-                    eventLockedControl = ui.Value.EventLockedControl;
+                    eventLockedWindow = ui;
+                    eventLockedControl = ui.EventLockedControl;
                     break;
                 }
             }
@@ -502,12 +516,16 @@ namespace Blade.MG.UI
             // a new AnimateTo).
             PropertyAnimationManager.Update();
 
-            // Arrange layout (synchronous)
-            foreach (var ui in uiWindows)
+            // Arrange layout (synchronous) - safe from "Collection was modified" mid-iteration,
+            // see the matching comment on the eventLockedWindow loop above. A window's own
+            // PerformLayout showing another window (e.g. a Popup) only enqueues that Add; it
+            // doesn't touch uiWindows until next frame, so this loop's own enumerator is never
+            // invalidated by it.
+            foreach (var ui in uiWindows.Values)
             {
-                if (ui.Value.Visible.Value == Visibility.Visible)
+                if (ui.Visible.Value == Visibility.Visible)
                 {
-                    ui.Value.PerformLayout(gameTime);
+                    ui.PerformLayout(gameTime);
                 }
             }
         }
@@ -535,20 +553,24 @@ namespace Blade.MG.UI
             // Refresh any dirty cached-control textures before the main draw pass, for every
             // window, so cache population - which needs to switch render targets - never
             // happens mid-way through drawing to the real target. No-ops per window when
-            // EnableControlCaching is off.
-            foreach (var ui in uiWindows)
+            // EnableControlCaching is off. Safe from "Collection was modified" mid-iteration -
+            // Draw() never calls HandleTaskQueue() itself, and Add()/Remove()/etc. only enqueue,
+            // so nothing can mutate uiWindows for the rest of this frame (e.g. a Tooltip's
+            // hover-delay elapsing mid-draw and calling ShowAt just enqueues; it takes effect
+            // next frame's Update()).
+            foreach (var ui in uiWindows.Values)
             {
-                if (ui.Value.Visible.Value == Visibility.Visible)
+                if (ui.Visible.Value == Visibility.Visible)
                 {
-                    ui.Value.PreRenderLayout(gameTime);
+                    ui.PreRenderLayout(gameTime);
                 }
             }
 
-            foreach (var ui in uiWindows)
+            foreach (var ui in uiWindows.Values)
             {
-                if (ui.Value.Visible.Value == Visibility.Visible)
+                if (ui.Visible.Value == Visibility.Visible)
                 {
-                    ui.Value.RenderLayout(gameTime);
+                    ui.RenderLayout(gameTime);
                 }
             }
 
@@ -697,9 +719,9 @@ namespace Blade.MG.UI
             // Image controls need to dispose of their Texture2D images
             // Possibly other controls as well
 
-            foreach (var window in uiWindows)
+            foreach (var window in uiWindows.Values)
             {
-                window.Value.Dispose();
+                window.Dispose();
             }
 
         }

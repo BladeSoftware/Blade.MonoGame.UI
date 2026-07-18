@@ -193,14 +193,21 @@ namespace Examples.UI
             AddPage("Text Boxes", () => new HelpPage_TextBox());
             AddPage("Check Boxes", () => new HelpPage_CheckBox());
             AddPage("Combo Box", () => new HelpPage_ComboBox());
+            AddPage("Radio Buttons", () => new HelpPage_RadioButton());
+            AddPage("Sliders", () => new HelpPage_Slider());
 
             AddCategory("Display");
             AddPage("Label", () => new HelpPage_Label());
             AddPage("List View", () => new HelpPage_ListView());
             AddPage("Tree View", () => new HelpPage_TreeView());
+            AddPage("Progress Bar", () => new HelpPage_ProgressBar());
 
             AddCategory("Navigation");
             AddPage("Tab Panel", () => new HelpPage_TabPanel());
+
+            AddCategory("Overlays");
+            AddPage("Popup", () => new HelpPage_Popup());
+            AddPage("Tooltip", () => new HelpPage_Tooltip());
 
             AddCategory("Data");
             AddPage("Property Editor", () => new HelpPage_PropertyEditor());

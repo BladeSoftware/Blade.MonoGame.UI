@@ -39,7 +39,26 @@ namespace Blade.MG.UI.Animations
             public void Apply() => binding.Value = Animation.Value;
         }
 
-        private static readonly Dictionary<object, IActiveAnimation> active = new();
+        // Keyed by REFERENCE identity, not the default comparer - Binding<T> overrides
+        // Equals/GetHashCode to compare/hash by its wrapped VALUE (see Binding.cs), which is
+        // exactly the value ActiveAnimation<T>.Apply() mutates every single tick while an
+        // animation is in flight. A Dictionary looks up a key's bucket via GetHashCode() - once
+        // an entry's key (the binding) has changed value since insertion, active.Remove(key) in
+        // Update() below recomputes a DIFFERENT hash than the one used to insert it, misses the
+        // bucket the entry actually lives in, and silently fails to remove it. The now-permanently
+        // stuck entry is still walked by Update()'s foreach every frame forever - every animation
+        // that ever completes (which is all of them) leaks one entry, so any repeated use of
+        // ApplyThemedValueAnimated (e.g. hovering back and forth over a row of buttons) grows this
+        // dictionary without bound and the per-frame cost with it. ReferenceEqualityComparer
+        // hashes/compares by object identity regardless of Binding<T>'s own overrides, so a
+        // binding's bucket never moves no matter how its wrapped value changes.
+        private static readonly Dictionary<object, IActiveAnimation> active = new(ReferenceEqualityComparer.Instance);
+
+        // Diagnostic only - lets tests directly prove entries are actually pruned once an
+        // animation finishes, rather than only inferring it from indirect symptoms (this dictionary
+        // is process-wide/static, so tests should compare a before/after delta, not assert an
+        // absolute value, to stay isolated from whatever else in the same test run also animates).
+        public static int ActiveCount => active.Count;
 
         /// <summary>
         /// Idempotent - safe to call every frame with the same target. No-ops if already

@@ -11,10 +11,15 @@ namespace Examples.UI.HelpPages
     {
         public class ExampleSettings
         {
+            [DesignerProperty]
             public string Name { get; set; }
+            [DesignerProperty]
             public int Health { get; set; }
+            [DesignerProperty]
             public bool IsActive { get; set; }
+            [DesignerProperty]
             public DifficultyLevel Difficulty { get; set; }
+            [DesignerProperty]
             public Country Country { get; set; }
         }
 

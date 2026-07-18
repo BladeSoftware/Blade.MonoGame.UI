@@ -68,9 +68,49 @@ namespace Blade.MG.UI.Controls
         [DesignerProperty]
         public int MaxLength { get; set; }
 
-        public int CursorPosition { get; set; }
-        public int SelectionStart { get; set; }
-        public int SelectionLength { get; set; }
+        // Plain int properties (not Binding<T>) that still need to bubble a cache invalidation
+        // on change - CursorPosition/SelectionStart/SelectionLength drive the caret/highlight
+        // TextEntryVisuals.DrawSelectionAndCursor draws directly in TextBoxTemplate.RenderControl,
+        // which is skipped entirely whenever an ancestor Border's render cache stays valid (see
+        // UIComponentDrawable.RenderChildOrFromCache) - e.g. every TextBox shown inside the
+        // Examples project's Section wrapper, whose inner Border caches by default. Without an
+        // explicit BubbleInvalidation() call here, moving the caret via arrow keys/click/drag
+        // never forced a redraw, so the caret visually froze wherever it last was.
+        private int cursorPosition;
+        public int CursorPosition
+        {
+            get => cursorPosition;
+            set
+            {
+                if (cursorPosition == value) return;
+                cursorPosition = value;
+                BubbleInvalidation();
+            }
+        }
+
+        private int selectionStart;
+        public int SelectionStart
+        {
+            get => selectionStart;
+            set
+            {
+                if (selectionStart == value) return;
+                selectionStart = value;
+                BubbleInvalidation();
+            }
+        }
+
+        private int selectionLength;
+        public int SelectionLength
+        {
+            get => selectionLength;
+            set
+            {
+                if (selectionLength == value) return;
+                selectionLength = value;
+                BubbleInvalidation();
+            }
+        }
 
         [DesignerProperty]
         public bool Underline { get; set; } // Underline the text

@@ -1346,6 +1346,18 @@ namespace Blade.MG.UI
             {
                 InitTemplate();
                 TemplateInitialised = true;
+
+                // The direct Parent setter (above) always calls StateHasChanged() after
+                // InitTemplate, but this deferred/bottom-up path used to skip it entirely - any
+                // control whose first-render styling depends on HandleStateChange running at
+                // least once (e.g. RadioButton.HandleStateChange is the ONLY place that ever
+                // corrects label1.TextColor away from its transparent `new Binding<Color>()`
+                // default) rendered with uninitialized state until some unrelated later event
+                // (a hover/focus change, which calls StateHasChanged directly) happened to fix
+                // it up. Matters for the overwhelmingly common case where a control's own
+                // InitTemplate builds its children before that control itself is attached to a
+                // live window - i.e. essentially all nested UI construction.
+                StateHasChanged();
             }
 
             switch (this)

@@ -73,6 +73,15 @@ namespace Blade.MG.UI
 
             Context.Renderer = new UIRenderer(Context);
 
+            // PreRenderContext (below) is lazily created and cached in `preRenderContext` - reset
+            // it here so that cache stays in sync with the fresh Context/Renderer just created.
+            // A window that gets Remove()'d then re-Add()'d (e.g. Popup/Tooltip's Show/Close/
+            // Show-again lifecycle) calls Initialize again, but without this reset the OLD
+            // PreRenderContext - still holding the disposed Context/Renderer/SpriteBatch from
+            // before the Remove - would keep being reused, and the first cached control that
+            // needs re-rendering after the reshow would call Begin() on a disposed SpriteBatch.
+            preRenderContext = null;
+
             FontService.RegisterFont("Default", DefaultFont.Data);
         }
 

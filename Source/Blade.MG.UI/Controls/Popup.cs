@@ -32,6 +32,20 @@ namespace Blade.MG.UI.Controls
         {
             base.LoadContent();
 
+            // AddWindow (UIManager.cs) calls Initialize()/LoadContent() unconditionally on every
+            // Add() - correct for Initialize (Context/Renderer/SpriteBatch legitimately need to
+            // be recreated after a prior Close() disposed them), but a Popup can be legitimately
+            // reshown (Close then ShowAt again) many times over its lifetime, and LoadContent
+            // must stay idempotent across those calls. Without this guard, every reshow created
+            // a brand-new contentBorder and added it as an ADDITIONAL child via AddChild below,
+            // never removing the previous one - the reported "an extra tooltip window every time
+            // you hover" bug (extra orphaned contentBorder children piling up, not extra
+            // UIManager-level windows).
+            if (contentBorder != null)
+            {
+                return;
+            }
+
             contentBorder = new ClampedBorder
             {
                 HorizontalAlignment = HorizontalAlignmentType.Absolute,

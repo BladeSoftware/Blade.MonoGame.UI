@@ -26,8 +26,25 @@ namespace Blade.MG.UI.Controls
         {
             base.LoadContent();
 
+            // Idempotency guard, same reasoning as Popup.LoadContent's - AddWindow calls
+            // LoadContent unconditionally on every Add(), and a Tooltip is reshown (Close then
+            // ShowAt again) on every hover cycle. Without this, every reshow replaced `label`
+            // (and, via Content's setter, contentBorder's Content) with a fresh, empty-text
+            // Label - discarding whatever SetText had just written to the previous one, so the
+            // displayed text was always blank.
+            if (label != null)
+            {
+                return;
+            }
+
             label = new Label
             {
+                // Label's own constructor leaves Text as a literal null reference (`Text = null;`
+                // - a plain null assignment to the Binding<string> property, not a null-valued
+                // Binding, since `null` needs no implicit conversion to satisfy a reference-type
+                // property). SetText's `label.Text.Value = text;` requires a real Binding<string>
+                // instance to already be there - without this, the first SetText call throws NRE.
+                Text = "",
                 TextColor = Theme.OnSurfaceVariant,
             };
 
@@ -80,8 +97,12 @@ namespace Blade.MG.UI.Controls
                     return;
                 }
 
-                tooltip.SetText(text);
+                // ShowAt first: on the very first show, it's what triggers LoadContent (via
+                // ShowAt -> Popup.ShowAt's Add(this) call), which is what creates `label` in the
+                // first place - calling SetText before label exists used to silently no-op (see
+                // SetText's own null-check), leaving the very first tooltip shown with no text.
                 tooltip.ShowAt(game, new Point(InputManager.Mouse.X + 16, InputManager.Mouse.Y + 16));
+                tooltip.SetText(text);
             };
         }
     }
