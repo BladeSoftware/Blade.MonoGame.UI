@@ -39,7 +39,17 @@ public class ComboBoxTemplate : Control
             CornerRadius = new CornerRadius(8),
             HorizontalAlignment = HorizontalAlignmentType.Stretch,
             VerticalAlignment = VerticalAlignmentType.Top,
-            Padding = new Thickness(4)
+
+            // A fixed 4px baseline plus whatever extra combo.Padding a developer sets - see
+            // ButtonTemplate.cs's border1 for why combo.Padding can't just be read alone here
+            // (it self-cancels against ComboBox's own FinalContentRect deflation at the same
+            // hop). Additive rather than a straight replacement so the existing 4px default
+            // chrome is unchanged when combo.Padding is left at its own default of zero.
+            // (Known limitation shared with Button's fix - see ButtonTemplate.cs's border1
+            // comment: combo.Padding is counted twice in ComboBox's own DesiredSize.)
+            Padding = new Binding<Thickness>(() => new Thickness(
+                4 + combo.Padding.Value.Left, 4 + combo.Padding.Value.Top,
+                4 + combo.Padding.Value.Right, 4 + combo.Padding.Value.Bottom))
         };
 
         // Header (shows selected text or an editable TextField)
@@ -144,7 +154,6 @@ public class ComboBoxTemplate : Control
 
         RootBorder.Content = container;
         Content = RootBorder;
-        Content.Padding = new Thickness(4);
     }
 
     public override void Measure(UIContext context, ref Size availableSize, ref Layout parentMinMax)

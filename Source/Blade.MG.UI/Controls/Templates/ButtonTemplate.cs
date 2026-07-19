@@ -47,7 +47,30 @@ namespace Blade.MG.UI.Controls.Templates
                 //HorizontalContentAlignment = HorizontalAlignmentType.Stretch,
                 //VerticalContentAlignment = VerticalAlignmentType.Stretch,
                 Margin = new Thickness(0),
-                Padding = new Thickness(0)
+
+                // Reads button.Padding rather than hardcoding zero - Button's OWN Padding can't
+                // be used for this directly (it inflates Button's DesiredSize AND deflates the
+                // FinalContentRect handed down to this template by the exact same amount, since
+                // both happen at the same ButtonTemplate/internal-child hop - the two cancel out
+                // and the pill never visibly changes size no matter what Padding is set to).
+                // border1 is one hop further in: its own Measure inflates DesiredSize same as
+                // any control's, but what actually renders is border1's *FinalRect* (the pill
+                // itself), not a FinalContentRect one level further down - only label1 sees the
+                // deflated content rect - so Padding set here genuinely reserves breathing room
+                // between the label and the pill's edge instead of self-cancelling.
+                //
+                // Known limitation: Button's own Padding field still ALSO takes part in its own
+                // generic DesiredSize/FinalRect contract (unavoidable - it isn't virtual and
+                // can't be special-cased for Button alone without invasive changes to shared
+                // UIComponent code), so Button.DesiredSize ends up counting Padding twice while
+                // only 1x is ever visibly realized on border1's pill. In an auto-sized
+                // (non-Stretch, DesiredSize-driven) horizontal StackPanel row with a sibling
+                // AFTER a padded Button, this leaves an extra Padding.Right-sized gap before that
+                // sibling (Button's own invisible FinalRect - what the row uses to position the
+                // next child - ends up wider than the visible pill). Harmless when the Button is
+                // the row's last/only child (as in HelpPage_DynamicColor's applyRow) or when it's
+                // Stretch-filling a fixed-size box (Grid cell, etc.) rather than auto-sized.
+                Padding = new Binding<Thickness>(() => button.Padding.Value)
             };
 
 

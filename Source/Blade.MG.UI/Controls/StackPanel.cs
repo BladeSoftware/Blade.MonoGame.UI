@@ -93,6 +93,16 @@ namespace Blade.MG.UI.Controls
                 }
             }
 
+            // This Stack Panel's own Margin/Padding must be folded into the raw sum of
+            // children's DesiredSize here, matching the contract every other control gets for
+            // free from MeasureSelf (UIComponent.cs): ArrangeSelf later computes
+            // `DesiredSize.Width - Margin.Value.Horizontal` unconditionally, assuming
+            // DesiredSize already includes this control's own Margin. Without this, a
+            // non-Stretch (e.g. HorizontalAlignment.Left) StackPanel's FinalRect/ActualWidth
+            // came out exactly one Margin-width too small, clipping its last child.
+            desiredWidth += Margin.Value.Left + Margin.Value.Right + Padding.Value.Left + Padding.Value.Right;
+            desiredHeight += Margin.Value.Top + Margin.Value.Bottom + Padding.Value.Top + Padding.Value.Bottom;
+
             // Merge Child Desired Size with this Stack Panel's Desired Size
             if (!float.IsNaN(desiredWidth) && !float.IsNaN(DesiredSize.Width) && desiredWidth < DesiredSize.Width)
             {

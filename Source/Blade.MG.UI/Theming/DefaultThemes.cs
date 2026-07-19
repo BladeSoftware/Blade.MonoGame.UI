@@ -6,6 +6,7 @@ namespace Blade.MG.UI.Theming
     public static class DefaultThemes
     {
         // https://m3.material.io/theme-builder#/custom
+        // https://material-3-palette-generator.vercel.app/
         public static UITheme LightTheme()
         {
             return new UITheme
@@ -312,17 +313,17 @@ namespace Blade.MG.UI.Theming
                 Primary = ColorHelper.FromHexColor("#9A2846"),
                 OnPrimary = ColorHelper.FromHexColor("#FFFFFF"),
                 PrimaryContainer = ColorHelper.FromHexColor("#FFD9DF"),
-                OnPrimaryContainer = ColorHelper.FromHexColor("#3E001C"),
+                OnPrimaryContainer = ColorHelper.FromHexColor("#400014"),
 
                 Secondary = ColorHelper.FromHexColor("#77525A"),
                 OnSecondary = ColorHelper.FromHexColor("#FFFFFF"),
                 SecondaryContainer = ColorHelper.FromHexColor("#FFD9E1"),
-                OnSecondaryContainer = ColorHelper.FromHexColor("#2C151B"),
+                OnSecondaryContainer = ColorHelper.FromHexColor("#3F0018"),
 
                 Tertiary = ColorHelper.FromHexColor("#7C5635"),
                 OnTertiary = ColorHelper.FromHexColor("#FFFFFF"),
                 TertiaryContainer = ColorHelper.FromHexColor("#FFDCBE"),
-                OnTertiaryContainer = ColorHelper.FromHexColor("#2C1600"),
+                OnTertiaryContainer = ColorHelper.FromHexColor("#2E1500"),
 
                 Error = ColorHelper.FromHexColor("#BA1A1A"),
                 OnError = ColorHelper.FromHexColor("#FFFFFF"),

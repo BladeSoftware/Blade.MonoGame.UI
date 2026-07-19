@@ -18,8 +18,19 @@ namespace Blade.MG.UI.Controls
         [DesignerProperty]
         public Binding<Color> TextColor { get => textColor; set => SetField(ref textColor, value); }
 
+        // SetField-backed (unlike a plain auto-property) so that ActivateAsync's
+        // `IsChecked = IsChecked?.Value switch {...}` reassignment - which goes through
+        // Binding<T>'s implicit bool? -> Binding<bool?> cast and would otherwise construct a
+        // BRAND NEW Binding<bool?> instance every single toggle - instead updates the EXISTING
+        // instance's .Value in place. Without this, every toggle silently discarded whatever
+        // Changed subscription EnsureBindingsWired (UIComponent.cs) had wired up, so the new
+        // instance never bubbled a cache invalidation on its own: the first click after gaining
+        // focus appeared to work only because HasFocus (a real SetField-backed Binding) changed
+        // on the same click and bubbled independently; every subsequent click, with focus
+        // unchanged, toggled the underlying value but never forced a redraw to show it.
+        private Binding<bool?> isChecked = new Binding<bool?>();
         [DesignerProperty]
-        public Binding<bool?> IsChecked { get; set; } = new Binding<bool?>();
+        public Binding<bool?> IsChecked { get => isChecked; set => SetField(ref isChecked, value); }
         [DesignerProperty]
         public Binding<bool> Tristate { get; set; } = false;
 

@@ -545,8 +545,48 @@ namespace Blade.MG.UI.Controls.Templates
 
             ApplyThemedValue(textBox, Background, nameof(TextBox.Background), Theme.Surface);
 
-            // Text/border/underline/label color and border thickness are all recomputed fresh
-            // every frame in RenderControl instead of here - see the comment there for why.
+            // RenderControl recomputes text/border/underline/label color and border thickness
+            // fresh every frame too (see its own comment on why that copy needs to stay, for
+            // hover/focus event-cascade-ordering reasons) - but relying on RenderControl ALONE
+            // left a real bug: border1 (a Border, always cache-enabled) can have its render
+            // cache invalidated (correctly) by this control's own StateHasChanged - via
+            // UIWindow.RefreshThemeRecursive's theme-refresh sweep walking into Content, or via
+            // the generic focus/hover event cascade reaching border1 directly as a descendant -
+            // well BEFORE this frame's RenderControl call ever runs. UIWindow.PreRenderLayout
+            // rebuilds any invalidated cache (via PreRenderContext.ProcessPendingUpdates) in a
+            // separate, EARLIER phase than RenderLayout (where RenderControl actually runs), so
+            // if textBox.TextColor/UnderlineColor/border1's own BorderColor/BorderThickness are
+            // only ever updated inside RenderControl, the rebuild bakes in whatever STALE value
+            // they still held from last frame - and since border1's own CacheStateHash doesn't
+            // depend on any of these (only Background/BorderColor/BorderThickness/CornerRadius/
+            // Elevation, and BorderColor/BorderThickness are themselves often constant per
+            // Variant - e.g. always Transparent/0 for Standard/Filled, regardless of focus),
+            // nothing else naturally invalidates it again afterward: the stale color sticks
+            // until something UNRELATED (e.g. typing, which explicitly calls
+            // border1.InvalidateCache() via lastCachedText) forces another rebuild. Recomputing
+            // here too means these are already correct by the time ANY cache rebuild can
+            // possibly consume them, regardless of which phase triggers it.
+            bool isEnabled = textBox.IsEnabled.Value;
+            bool isFocused = isEnabled && textBox.HasFocus.Value;
+            bool isHovered = isEnabled && MouseHover.Value;
+            Color indicatorColor = !isEnabled ? Theme.Disabled : (isFocused ? Theme.Primary : (isHovered ? Theme.OnSurface : Theme.OnSurfaceVariant));
+
+            ApplyThemedValue(textBox, textBox.UnderlineColor, nameof(TextEntryControl.UnderlineColor), indicatorColor);
+            ApplyThemedValue(textBox, textBox.TextColor, nameof(TextBox.TextColor), isEnabled ? Theme.OnSurface : Theme.Disabled);
+
+            if (border1 != null)
+            {
+                if (textBox.Variant == Variant.Outlined)
+                {
+                    ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), indicatorColor);
+                    border1.BorderThickness.Value = new Thickness(isFocused ? 2 : 1);
+                }
+                else
+                {
+                    ApplyThemedValue(textBox, border1.BorderColor, nameof(TextBox.BorderColor), Color.Transparent);
+                    border1.BorderThickness.Value = (Thickness)0f;
+                }
+            }
         }
 
     }

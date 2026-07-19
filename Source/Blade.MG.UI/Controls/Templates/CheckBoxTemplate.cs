@@ -20,6 +20,20 @@ namespace Blade.MG.UI.Controls.Templates
 
             var checkbox = ParentAs<CheckBox>();
 
+            // Reads checkbox.Padding rather than leaving it at the inherited default of zero -
+            // see ButtonTemplate.cs's border1 for the full explanation of why this needs to live
+            // HERE (on the self-painting leaf, whose own FinalRect is what's actually drawn -
+            // the checkbox square below uses FinalRect-relative coordinates, and Control's base
+            // RenderControl fills Background using FinalRect too) rather than depending on
+            // checkbox.Padding alone: CheckBox's own Padding (like any TemplatedControl's)
+            // inflates its own DesiredSize and deflates the FinalContentRect handed to this
+            // template by the same amount at the same hop, cancelling out with zero visible
+            // effect. Mirroring the value here, one hop further in, breaks that cancellation.
+            // (Known limitation shared with Button's fix: checkbox.Padding still ALSO takes
+            // part in CheckBox's own generic DesiredSize contract, so it's counted twice - see
+            // ButtonTemplate.cs's border1 comment for the exact mechanism and when it's visible.)
+            Padding = new Binding<Thickness>(() => checkbox.Padding.Value);
+
             label1 = new Label()
             {
                 Text = checkbox.Text, // Use the Button Text

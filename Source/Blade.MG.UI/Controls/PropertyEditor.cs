@@ -1,11 +1,13 @@
 ﻿using Blade.MG.UI.Components;
 using Blade.MG.UI.Controls;
+using Blade.MG.UI.Events;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Blade.MG.UI.Controls
 {
@@ -169,7 +171,7 @@ namespace Blade.MG.UI.Controls
             {
                 grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Auto) });
 
-                var label = new Label
+                var label = new PropertyLabelCell
                 {
                     Text = prop.Name,
                     Margin = new Thickness(0, 2)
@@ -178,6 +180,11 @@ namespace Blade.MG.UI.Controls
 
                 UIComponent editor = CreateEditor(prop, targetObject);
                 grid.AddChild(editor, 1, row);
+
+                // Keeps the label highlighted for as long as its own value editor holds focus,
+                // not just while the mouse happens to be over the label itself - see
+                // PropertyLabelCell's own comment.
+                editor.HasFocus.Changed += () => label.SetEditorFocused(editor.HasFocus.Value);
 
                 row++;
             }
@@ -198,7 +205,8 @@ namespace Blade.MG.UI.Controls
         {
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridUnitType.Auto) });
 
-            grid.AddChild(new Label { Text = label, Margin = new Thickness(0, 2) }, 0, row);
+            var labelCell = new PropertyLabelCell { Text = label, Margin = new Thickness(0, 2) };
+            grid.AddChild(labelCell, 0, row);
 
             UIComponent editor = CreateTextEditor(getValue().ToString(), newText =>
             {
@@ -207,6 +215,8 @@ namespace Blade.MG.UI.Controls
                 return true;
             });
             grid.AddChild(editor, 1, row);
+
+            editor.HasFocus.Changed += () => labelCell.SetEditorFocused(editor.HasFocus.Value);
 
             row++;
         }
@@ -388,6 +398,54 @@ namespace Blade.MG.UI.Controls
         private static PropertyInfo GetBindingValueProperty(Type bindingInstanceType)
         {
             return bindingInstanceType.GetProperty("Value");
+        }
+
+        // Highlights a property row's name label on hover, or for as long as the row's own
+        // value editor holds focus (so the label stays highlighted while actively editing that
+        // property, not just while the mouse happens to be over the label text itself - see the
+        // editor.HasFocus.Changed subscription at both AddChild call sites above). Uses a
+        // translucent Material-style "state layer" overlay on top of Label's own Background
+        // (the same pattern as TextBoxTemplate's Filled-variant hover treatment) rather than
+        // swapping to a solid theme container color - stays subtle regardless of which two
+        // theme colors a given palette happens to pick, and doesn't depend on them being
+        // sufficiently distinct from each other (see the Light/Crimson button-hover-contrast
+        // issue this same session).
+        private class PropertyLabelCell : Label
+        {
+            private bool editorFocused;
+
+            public PropertyLabelCell()
+            {
+                IsHitTestVisible = true;
+            }
+
+            public void SetEditorFocused(bool focused)
+            {
+                if (editorFocused == focused)
+                {
+                    return;
+                }
+
+                editorFocused = focused;
+                StateHasChanged();
+            }
+
+            public override async Task HandleHoverChangedAsync(UIWindow uiWindow, UIHoverChangedEvent uiEvent)
+            {
+                await base.HandleHoverChangedAsync(uiWindow, uiEvent);
+                StateHasChanged();
+            }
+
+            protected override void HandleStateChange()
+            {
+                Color highlight = editorFocused
+                    ? new Color(Theme.Primary, 0.10f)
+                    : MouseHover.Value
+                        ? new Color(Theme.OnSurface, 0.06f)
+                        : Color.Transparent;
+
+                ApplyThemedValueAnimated(this, Background, nameof(Background), highlight);
+            }
         }
     }
 }

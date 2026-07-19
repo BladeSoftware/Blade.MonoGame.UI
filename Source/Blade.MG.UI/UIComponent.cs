@@ -215,6 +215,24 @@ namespace Blade.MG.UI
                 field = new Binding<T>();
             }
 
+            if (value == null)
+            {
+                // A literal `null` assigned directly to a Binding<T> property (e.g.
+                // checkbox.IsChecked = null, expressing a tristate CheckBox's indeterminate
+                // state) is directly reference-compatible with Binding<T> itself (a class), so
+                // no implicit T->Binding<T> conversion runs - unlike `checkbox.IsChecked =
+                // (bool?)null;` from a variable, which WOULD go through the conversion below and
+                // arrive here as a real (non-null) Binding<T> wrapping a null value. Interpreted
+                // as "the wrapped value is null" (mirroring how every read site already treats a
+                // null Binding<T> reference via ?., e.g. CheckBoxTemplate's
+                // `checkbox.IsChecked?.Value`), not "detach this binding" - field keeps its own
+                // identity (and Changed subscribers) rather than becoming null itself, which
+                // would just move the same null-reference crash to whatever reads the property
+                // next instead of fixing it here.
+                field.Value = default;
+                return;
+            }
+
             if (value.IsImplicitCast)
             {
                 // A plain raw-value reassignment (e.g. `border.Background = Color.Red;`, which
@@ -367,6 +385,22 @@ namespace Blade.MG.UI
         public void StateHasChanged()
         {
             HandleStateChange();
+
+            // HandleStateChange overrides typically only re-apply SOME of a control's themed
+            // values (e.g. TextBoxTemplate.HandleStateChange only re-applies Background - its
+            // label color/underline are deliberately left to RenderControl, since they also
+            // depend on isFocused/isHovered). Invalidation elsewhere is purely a side effect of
+            // some Binding<T>'s Changed event firing (see BubbleInvalidation/
+            // OnOwnBindingChanged), so if THIS particular call's HandleStateChange happens not to
+            // change any Binding's value - e.g. a UIManager.SetTheme sweep where this control's
+            // Background is unchanged between the old and new theme but some OTHER themed value
+            // only read in RenderControl did change - nothing would otherwise force a redraw,
+            // leaving that value frozen until some unrelated event (e.g. a focus change, which
+            // flips its own real HasFocus Binding) happens to invalidate the cache instead. A
+            // call to StateHasChanged() is, by definition, a claim that this control's state
+            // changed - so it should always result in a redraw, not one that merely happens to
+            // follow from whichever Binding writes HandleStateChange's override chose to make.
+            BubbleInvalidation();
         }
 
         protected virtual void HandleStateChange()

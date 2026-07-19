@@ -182,6 +182,7 @@ namespace Examples.UI
             AddCategory("Get Started");
             AddPage("Welcome", () => new HelpPage_Welcome(), selectNow: true);
             AddPage("Theming", () => new HelpPage_Theme());
+            AddPage("Dynamic Color", () => new HelpPage_DynamicColor());
 
             AddCategory("Layout");
             AddPage("Panel", () => new HelpPage_Panel());
@@ -195,6 +196,7 @@ namespace Examples.UI
             AddPage("Combo Box", () => new HelpPage_ComboBox());
             AddPage("Radio Buttons", () => new HelpPage_RadioButton());
             AddPage("Sliders", () => new HelpPage_Slider());
+            AddPage("Toggle Switches", () => new HelpPage_ToggleSwitch());
 
             AddCategory("Display");
             AddPage("Label", () => new HelpPage_Label());
